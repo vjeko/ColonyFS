@@ -1,0 +1,2 @@
+project colony : build-dir build ;
+build-project src ;

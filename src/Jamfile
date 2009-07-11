@@ -1,0 +1,139 @@
+import testing ;
+
+# RLog Library.
+lib rlog ;
+
+# Boost Libraries.
+lib boost_system : : <name>boost_system-mt ;
+lib boost_filesystem : : <name>boost_filesystem-mt ;
+lib boost_serialization : : <name>boost_serialization-mt ;
+lib boost_program_options : : <name>boost_program_options-mt ;
+lib boost_unit_test_framework : : <name>boost_unit_test_framework-mt ;
+lib boost_thread : : <name>boost_thread-mt ;
+
+# XML-RPC Libraries.
+lib curl ;
+lib xmlrpc_ : : <name>xmlrpc ;
+lib xmlrpc++ ;
+lib xmlrpc_cpp ;
+lib xmlrpc_client ;
+lib xmlrpc_client++ ;
+lib xmlrpc_server ;
+lib xmlrpc_server++ ;
+lib xmlrpc_xmlparse ;
+lib xmlrpc_xmltok ;
+lib xmlrpc_util ;
+
+# Default Project Requirements.
+project colony
+  : requirements 
+
+    # Define RLog Component.
+    <define>RLOG_COMPONENT=”rlog”
+
+    # FUSE.
+    <define>_FILE_OFFSET_BITS=64
+
+    # Email boost mailing list abount this.
+    # <hardcode-dll-paths>true
+    <dll-path>/homes/gws/balkan/lib
+
+  # Build Type.
+  : default-build debug
+  : 
+  ;
+
+lib uledfs_xmlrpc :
+  [ glob xmlrpc/*.cpp ]
+
+  boost_serialization
+  rlog
+  curl
+  xmlrpc_
+  xmlrpc++
+  xmlrpc_cpp
+  xmlrpc_client
+  xmlrpc_client++
+  xmlrpc_server
+  xmlrpc_server++
+  xmlrpc_xmlparse
+  xmlrpc_xmltok
+  xmlrpc_util
+  ;
+
+lib uledfs :
+  intercom/intercom.hpp
+  intercom/connection.hpp
+  [ glob intercom/*.cpp ]
+  [ glob storage/*.cpp ]
+  [ glob controller/*.cpp ]
+  [ glob parsers/*.cpp ] 
+  [ glob api/*.cpp ]
+  [ glob scheduler/*.cpp ]
+
+  uledfs_xmlrpc
+  rlog
+  boost_system
+  boost_thread
+  boost_filesystem
+  boost_serialization
+  boost_program_options
+  ;
+
+exe chunkserver :
+  test/intercom/chunkserver_test.cpp
+
+  rlog
+  uledfs
+  boost_system
+  ;
+
+exe user :
+  test/intercom/user_test.cpp
+
+  rlog
+  uledfs
+  boost_system
+  boost_program_options
+  boost_filesystem
+  ;
+
+exe parser :
+  test/parser/parser_test.cpp
+
+  rlog
+  uledfs
+  boost_system
+  ;
+
+exe harmony :
+  test/xmlrpc/client.cpp
+  uledfs_xmlrpc
+  boost_unit_test_framework
+  boost_program_options
+  ;
+
+exe decoder :
+  test/xmlrpc/encoding_test.cpp
+
+  uledfs_xmlrpc
+  boost_unit_test_framework
+  boost_program_options
+  ;
+
+exe mount.colonyfs :
+  exec/mount.colonyfs.cpp
+
+  uledfs
+  uledfs_xmlrpc
+  boost_program_options
+  :
+
+  <linkflags>"`pkg-config fuse --libs`"
+  ;
+
+
+
+#test-suite uledfs_test :
+#  [ run test/xmlrpc/client.cpp uledfs_xmlrpc boost_unit_test_framework ]
+#  ;

@@ -1,0 +1,98 @@
+\documentclass{article}
+
+\usepackage{fullpage}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{listings}
+
+\lstset{tabsize=2}
+\lstset{basicstyle=\footnotesize\ttfamily}
+\lstset{language=C++}
+\lstset{frame=shadowbox, rulesepcolor=\color{blue}}
+
+\begin{document}
+
+\tableofcontents
+
+\newpage
+
+\section{Bugs}
+
+\section{Coding Standards}
+
+This project follows \href{http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml}{Google Coding Standard} with several extensions/exception:
+
+\begin{itemize}
+\item Functions do not use CamelCase! Use Unix like naming convention.
+
+\item Never put comma at the beginning of a new line. It significantly reduces code readability especially with 2 space tabs. For instance: 
+
+\begin{lstlisting}
+typedef boost::fusion::result_of::make_map<
+  boost::mpl::int_<1>, 
+  boost::mpl::int_<2>,
+  ...
+
+typedef boost::fusion::result_of::make_map<
+  boost::mpl::int_<1>
+  , boost::mpl::int_<2>
+  ...
+\end{lstlisting}
+
+\item Using-declarations are only allowed in function definitions.
+
+\item In complicated segments of code (i. e. meta-functions), it is an imperative to make code readable as much as possible. This is usually achieved by using using-directive and proper indentation. For instance consider this improper example: 
+
+\begin{lstlisting}
+
+boost::function<void (content_ptr_t)> _deposit_chunk_callback = &_deposit_chunk;
+boost::function<void (content_ptr_t)> _retrieve_chunk_callback = &_retrieve_chunk;
+boost::function<void (content_ptr_t)> _heartbeat_callback = &_heartbeat;
+
+boost::fusion::at_key< boost::mpl::int_<DEPOSIT_CHUNK> >(callback_map) =  _deposit_chunk_callback;
+boost::fusion::at_key< boost::mpl::int_<RETRIEVE_CHUNK> >(callback_map) =  _retrieve_chunk_callback;
+boost::fusion::at_key< boost::mpl::int_<HEARTBEAT> >(callback_map) =  _heartbeat_callback;
+
+uledfs::intercom::masternode client(io_service, callback_map);
+client.handle_init(hostname, DEPOSIT_CHUNK);
+
+\end{lstlisting}
+
+Following the suggestion above, this code should look like:
+
+\begin{lstlisting}
+{ using boost::mpl::int_;
+  using boost::function;
+  using boost::fusion::at_key;
+
+function<void (content_ptr_t)> _deposit_chunk_callback  = &_deposit_chunk;
+function<void (content_ptr_t)> _retrieve_chunk_callback = &_retrieve_chunk;
+function<void (content_ptr_t)> _heartbeat_callback      = &_heartbeat;
+
+at_key< int_<DEPOSIT_CHUNK>  >(callback_map) =  _deposit_chunk_callback;
+at_key< int_<RETRIEVE_CHUNK> >(callback_map) =  _retrieve_chunk_callback;
+at_key< int_<HEARTBEAT>      >(callback_map) =  _heartbeat_callback;
+
+uledfs::intercom::masternode client(io_service, callback_map);
+client.handle_init(hostname, DEPOSIT_CHUNK);
+
+} // namespace
+\end{lstlisting}
+\item Every typedef name must have the \_t extenstion:
+
+\begin{lstlisting}
+typedef std::pair<uledfs::intercom::masternode, uledfs::intercom::ip> masternode_ip_pair_t
+\end{lstlisting}
+
+Also consult Working Draft, Standard for Programming Language C++ for more information. 
+
+\end{itemize}
+
+\section{Build}
+
+\section{FUSE}
+
+Please consult \href{http://www.gnu.org/software/libc/manual/html_node/index.html}{GNU C Library} (chapter 14 and 13) for more information regarding FUSE API.
+
+
+\end{document}

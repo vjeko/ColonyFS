@@ -1,0 +1,66 @@
+/*
+ * harmony.hpp
+ *
+ *  Created on: Jan 31, 2009
+ *      Author: vjeko
+ */
+
+#ifndef HARMONY_HPP_
+#define HARMONY_HPP_
+
+#include "values.hpp"
+
+#include <boost/exception.hpp>
+
+#include <string>
+#include <iostream>
+
+namespace uledfs { namespace xmlrpc {
+
+typedef boost::error_info<struct tag_key, std::string> key_info;
+
+class key_missing_error : public boost::exception {};
+
+class harmony {
+protected:
+
+  typedef std::string key_t;
+  typedef std::string value_t;
+
+public:
+  harmony(std::string url);
+  virtual ~harmony();
+
+  bool put(const std::string&, const std::string&);
+  bool put(const xmlrpc::base_value value);
+  std::string get(const std::string&);
+
+  /*
+   * Get value.
+   *
+   * Do not deal with exception at this level. Let caller take an
+   * appropriate action.
+   */
+  template <typename T>
+  T get_value (key_t argument) {
+
+    key_t    key    = T::get_signature(argument);
+    value_t  value  = get(key);
+
+    return T(key, value);
+  }
+
+  // Set key value pair.
+  template <typename T>
+  void set_pair (T& pair) {
+    put( pair.get_key(), pair.get_value() );
+  }
+
+private:
+  static const int  port_ = 1212;
+  std::string       url_;
+};
+
+} } // Namespace
+
+#endif /* HARMONY_HPP_ */
