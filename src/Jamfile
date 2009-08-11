@@ -4,12 +4,12 @@ import testing ;
 lib rlog ;
 
 # Boost Libraries.
-lib boost_system : : <name>boost_system-mt ;
-lib boost_filesystem : : <name>boost_filesystem-mt ;
-lib boost_serialization : : <name>boost_serialization-mt ;
-lib boost_program_options : : <name>boost_program_options-mt ;
-lib boost_unit_test_framework : : <name>boost_unit_test_framework-mt ;
-lib boost_thread : : <name>boost_thread-mt ;
+lib boost_system : : <name>boost_system ;
+lib boost_filesystem : : <name>boost_filesystem ;
+lib boost_serialization : : <name>boost_serialization ;
+lib boost_program_options : : <name>boost_program_options ;
+lib boost_unit_test_framework : : <name>boost_unit_test_framework ;
+lib boost_thread : : <name>boost_thread ;
 
 # XML-RPC Libraries.
 lib curl ;
