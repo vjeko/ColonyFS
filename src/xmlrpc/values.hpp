@@ -32,10 +32,9 @@
  *
  * | INSTRUCTION ENCODING |
  * | 8 bytes | 128 bytes  |
- * | type    | arg        |
+ * | type    | subtype    |
  *
  */
-
 namespace uledfs { namespace xmlrpc {
 
 typedef boost::error_info<struct tag_size, int>  value_size;
@@ -62,7 +61,9 @@ public:
 	virtual void       set_key(key_type&);
 	virtual void       set_value(value_type&);
 
-	static std::string get_signature(const instruction_t intruction, const instruction_arg_t arg);
+	static std::string get_signature(
+	    const instruction_t intruction,
+	    const instruction_arg_t type);
 
   static const unsigned int VALUE_SIZE;
   static const unsigned int INSTRUCTION_SIZE;
@@ -93,7 +94,13 @@ public:
   typedef list_t                   value_type;
 
   chunkserver_value(const std::string& key, const std::string& value);
-  chunkserver_value(const swarm_t& swarm, const list_t& chunkservers);
+  chunkserver_value(const std::string& swarm, const list_t& chunkservers);
+
+  template<typename K, typename V>
+  chunkserver_value() {
+
+  }
+
   virtual ~chunkserver_value();
 
   static std::string get_signature(swarm_t swarm);

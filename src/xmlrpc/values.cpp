@@ -30,21 +30,7 @@ const char* base_value::NO_ARG = "";
 const std::string base_value::FILL("_");
 
 /* ++++++++++++++++++ BASE VALUE ++++++++++++++++++ */
-/*
-base_value::base_value(const pair_t& pair) :
-	key_(pair.substr(0, KEY_SIZE)),
-	value_(pair.substr(KEY_SIZE)) {
 
-	// Make sure the value is not exceeding its maximum
-	// size. Otherwise throw an exception.
-	if (pair.size() > KEY_VALUE_SIZE) {
-		throw size_error() << value_size(pair.size());
-	}
-
-	//boost::algorithm::trim(value_, std::locale("_"));
-
-}
-*/
 base_value::base_value(const std::string key, const std::string value) {
 
   if (value.size() > VALUE_SIZE)
@@ -56,41 +42,37 @@ base_value::base_value(const std::string key, const std::string value) {
 }
 
 base_value::base_value(
-    const instruction_t instruction_name,
-    const instruction_arg_t arg,
+    const instruction_t intruction,
+    const instruction_arg_t type,
     const value_type value) {
 
-	if (value.size() > VALUE_SIZE)
-	  throw size_error() << value_size(value.size());
-
-	key_    = get_signature(instruction_name, arg);
-	value_  = value;
+  std::string key = get_signature(intruction, type);
+  base_value(key, value);
 
 }
 
 std::string base_value::get_signature(
-    const instruction_t instruction_name,
-    const instruction_arg_t arg) {
+    const instruction_t instruction,
+    const instruction_arg_t type) {
 
-  if (instruction_name.size() > INSTRUCTION_SIZE)
-    throw size_error() << value_size(instruction_name.size());
+  if (instruction.size() > INSTRUCTION_SIZE)
+    throw size_error() << value_size(instruction.size());
 
-  if (arg.size() > INSTRUCTION_ARG_SIZE)
-    throw size_error() << value_size(arg.size());
+  if (type.size() > INSTRUCTION_ARG_SIZE)
+    throw size_error() << value_size(type.size());
 
-  instruction_t instruction(instruction_name);
+  size_t ammount;
+  std::string result;
 
-  for (unsigned int i = 0; i < INSTRUCTION_SIZE - instruction_name.size(); i++) {
-    instruction += FILL;
-  }
+  result += instruction;
+  ammount = INSTRUCTION_SIZE - instruction.size();
+  result.append(ammount, '_');
 
-  instruction_arg_t argument(arg);
+  result += type;
+  ammount = INSTRUCTION_ARG_SIZE - type.size();
+  result.append(ammount, '_');
 
-  for (unsigned int i = 0; i < INSTRUCTION_ARG_SIZE - arg.size(); i++) {
-    argument += FILL;
-  }
-
-  return instruction + argument;
+  return result;
 }
 
 base_value::base_value() {
@@ -125,7 +107,7 @@ chunkserver_value::chunkserver_value(const std::string& key, const std::string& 
   // TODO: REMOVE THIS QUICK FIX!
   if (value_.empty()) return;
 
-  boost::algorithm::split(chunkservers_, value_, boost::is_any_of(DELIMITER), boost::token_compress_on);;
+  boost::algorithm::split(chunkservers_, value_, boost::is_any_of(DELIMITER), boost::token_compress_on);
 
   list_t::iterator it = chunkservers_.begin();
   while(it != chunkservers_.end()) {
