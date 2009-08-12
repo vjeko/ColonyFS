@@ -66,8 +66,8 @@ public:
 	virtual std::string&     get_key();
 	virtual std::string&     get_value();
 
-	virtual void       set_key(key_type&);
-	virtual void       set_value(value_type&);
+	virtual void       set_key(std::string&);
+	virtual void       set_value(std::string&);
 
 	static std::string get_signature(
 	    const instruction_t intruction,
@@ -106,6 +106,8 @@ public:
   virtual ~chunkserver_value();
 
   virtual std::string& get_value();
+  virtual void         set_value(const std::string&);
+
   static std::string get_signature(swarm_t swarm);
 
   // Derived specific functions.
@@ -171,6 +173,9 @@ public:
   attribute_value(const filename_t&, const fattribute&);
   virtual ~attribute_value();
 
+  virtual std::string& get_value();
+  virtual void         set_value(const std::string&);
+
   value_type get_mapped();
 
   static std::string get_signature(key_t filename);
@@ -178,8 +183,7 @@ public:
 
 private:
 
-  std::string serialize(const value_type& attr);
-  value_type deserialize(const std::string& value);
+  fattribute fattribute_;
 };
 
 } }

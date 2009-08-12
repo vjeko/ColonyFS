@@ -93,9 +93,7 @@ void base_value::set_key(std::string& key) { key_ = key; }
 /* ++++++++++++++++++ CHUNKSERVER VALUE ++++++++++++++++++ */
 
 chunkserver_value::chunkserver_value(const std::string& key, const std::string& value) {
-  std::stringstream oss(value);
-  boost::archive::text_iarchive ia(oss);
-  ia >> chunkservers_;
+  set_value(value);
 }
 
 chunkserver_value::chunkserver_value(
@@ -112,6 +110,13 @@ std::string& chunkserver_value::get_value() {
 
   value_ = oss.str();
   return value_;
+}
+
+void chunkserver_value::set_value(const std::string& value) {
+  std::stringstream oss(value);
+  boost::archive::text_iarchive ia(oss);
+  ia >> chunkservers_;
+  value_ = value;
 }
 
 std::string chunkserver_value::get_signature(instruction_arg_t swarm) {
@@ -203,32 +208,33 @@ attribute_value::attribute_value(const std::string& key, const std::string& valu
   base_value::base_value(key, value) { }
 
 attribute_value::attribute_value(const attribute_value::filename_t& filename, const fattribute& a)
-    : base_value( _instruction_, filename) {
-  value_ = serialize(a);
+    : base_value( _instruction_, filename),
+      fattribute_(a){
 }
+
 
 attribute_value::value_type attribute_value::get_mapped() {
-  return deserialize(value_);
+  return fattribute_;
 }
 
-std::string attribute_value::serialize(const value_type& a) {
 
-  std::ostringstream s;
-  boost::archive::text_oarchive archive(s);
-  archive << a;
+std::string& attribute_value::get_value() {
+  std::stringstream ss;
+  boost::archive::text_oarchive oa(ss);
 
-  return s.str();
+  oa << fattribute_;
+  value_ = ss.str();
+
+  return value_;
 }
 
-attribute_value::value_type attribute_value::deserialize(const std::string& value) {
 
-  std::istringstream s(value);
-  boost::archive::text_iarchive archive(s);
+void attribute_value::set_value(const std::string& value) {
+  std::stringstream oss(value);
+  boost::archive::text_iarchive ia(oss);
 
-  fattribute a;
-  archive >> a;
-
-  return a;
+  ia >> fattribute_;
+  value_ = value;
 }
 
 attribute_value::~attribute_value() {}
