@@ -9,11 +9,17 @@
 #include "../debug.hpp"
 
 #include <iostream>
+#include <sstream>
 #include <algorithm>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
+
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/vector.hpp>
 
 namespace uledfs {
 
@@ -38,7 +44,6 @@ base_value::base_value(const std::string key, const std::string value) {
 
   key_     = key;
   value_   = value;
-
 }
 
 base_value::base_value(
@@ -75,62 +80,38 @@ std::string base_value::get_signature(
   return result;
 }
 
-base_value::base_value() {
-	for (unsigned int i = 0; i < KEY_SIZE; i++) {
-	  key_ += FILL;
-	}
-}
+base_value::base_value() : key_(KEY_SIZE, '_') {}
 
 base_value::~base_value() {}
 
-std::string& base_value::get_key() {
-	return key_;
-}
+std::string& base_value::get_key() { return key_; }
+std::string& base_value::get_value() { return value_; }
 
-std::string& base_value::get_value() {
-	return value_;
-}
-
-void base_value::set_value(std::string& value) {
-  value_ = value;
-}
-
-void base_value::set_key(std::string& key) {
-  key_ = key;
-}
+void base_value::set_value(std::string& value) { value_ = value; }
+void base_value::set_key(std::string& key) { key_ = key; }
 
 /* ++++++++++++++++++ CHUNKSERVER VALUE ++++++++++++++++++ */
 
-chunkserver_value::chunkserver_value(const std::string& key, const std::string& value) :
-    base_value::base_value(key, value) {
-
-  // TODO: REMOVE THIS QUICK FIX!
-  if (value_.empty()) return;
-
-  boost::algorithm::split(chunkservers_, value_, boost::is_any_of(DELIMITER), boost::token_compress_on);
-
-  list_t::iterator it = chunkservers_.begin();
-  while(it != chunkservers_.end()) {
-
-    if (it->size() == 0) {
-      chunkservers_.erase(it++);
-      continue;
-    } else {
-      ++it;
-    }
-  }
-
+chunkserver_value::chunkserver_value(const std::string& key, const std::string& value) {
+  std::stringstream oss(value);
+  boost::archive::text_iarchive ia(oss);
+  ia >> chunkservers_;
 }
 
 chunkserver_value::chunkserver_value(
     const swarm_t& swarm,
     const list_t& chunkserver_list) :
-      base_value::base_value(get_signature(swarm), "") {
+      base_value::base_value(get_signature(swarm), ""),
+      chunkservers_(chunkserver_list) {}
 
-  BOOST_FOREACH(const std::string& hostname, chunkserver_list) {
-    value_ += DELIMITER + hostname;
-  }
+std::string& chunkserver_value::get_value() {
 
+  std::stringstream oss;
+  boost::archive::text_oarchive oa(oss);
+  oa << chunkservers_;
+
+  value_ = oss.str();
+  return value_;
 }
 
 std::string chunkserver_value::get_signature(instruction_arg_t swarm) {

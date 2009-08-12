@@ -41,6 +41,14 @@ typedef boost::error_info<struct tag_size, int>  value_size;
 
 class size_error : public boost::exception {};
 
+// TODO: Integrate this.
+class instruction {
+
+public:
+  std::string type;
+  std::string subtype;
+};
+
 class base_value {
 public:
 
@@ -55,8 +63,8 @@ public:
   base_value(const std::string key, const std::string value);
 	virtual ~base_value();
 
-	virtual value_type&     get_key();
-	virtual value_type&     get_value();
+	virtual std::string&     get_key();
+	virtual std::string&     get_value();
 
 	virtual void       set_key(key_type&);
 	virtual void       set_value(value_type&);
@@ -95,14 +103,9 @@ public:
 
   chunkserver_value(const std::string& key, const std::string& value);
   chunkserver_value(const std::string& swarm, const list_t& chunkservers);
-
-  template<typename K, typename V>
-  chunkserver_value() {
-
-  }
-
   virtual ~chunkserver_value();
 
+  virtual std::string& get_value();
   static std::string get_signature(swarm_t swarm);
 
   // Derived specific functions.
