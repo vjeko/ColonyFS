@@ -84,42 +84,42 @@ private:
 class base_value {
 public:
 
-	base_value();
-	base_value(const instruction_enum type, const std::string argument = "");
+  base_value();
+  base_value(const instruction_enum type, const std::string argument = "");
   base_value(const std::string key, const std::string value);
-	virtual ~base_value();
+  virtual ~base_value();
 
-	virtual std::string&     get_key();
-	virtual std::string&     get_value();
-	const instruction&       get_instruction();
+  virtual std::string&     get_key();
+  virtual std::string&     get_value();
+  const instruction&       get_instruction();
 
-	virtual void   set_key(const std::string&);
-	virtual void   set_value(const std::string&);
+  virtual void   set_key(const std::string&);
+  virtual void   set_value(const std::string&);
 
-	template<typename Value, typename Where>
-	void deserialize(const Value& value, Where& where) {
-	  std::stringstream ss(value);
-	  boost::archive::text_iarchive ia(ss);
-	  ia >> where;
-	}
+  template<typename Value, typename Where>
+  void deserialize(const Value& value, Where& where) {
+    std::stringstream ss(value);
+    boost::archive::text_iarchive ia(ss);
+    ia >> where;
+  }
 
-	template<typename Value>
-	std::string& serialize(Value& value) {
-	  std::stringstream ss;
-	  boost::archive::text_oarchive oa(ss);
-	  oa << value;
+  template<typename Value>
+  std::string& serialize(Value& value) {
+    std::stringstream ss;
+    boost::archive::text_oarchive oa(ss);
+    oa << value;
 
-	  value_ = ss.str();
-	  return value_;
-	}
+    value_ = ss.str();
+    return value_;
+  }
 
 
 protected:
 
   instruction    instruction_;
-	std::string    key_;
+  std::string    key_;
 
-	std::string    value_;
+  std::string    value_;
 };
 
 
@@ -172,13 +172,13 @@ class chunk_value : public base_value {
 
 public:
 
-	chunk_value(const std::string& key, const std::string& value);
-	chunk_value(
-	    const std::string& filename,
-	    const size_t chunk_num,
-	    const std::string& location);
+  chunk_value(const std::string& key, const std::string& value);
+  chunk_value(
+      const std::string& filename,
+      const size_t chunk_num,
+      const std::string& location);
 
-	virtual ~chunk_value();
+  virtual ~chunk_value();
 
   std::string& get_mapped();
 };
