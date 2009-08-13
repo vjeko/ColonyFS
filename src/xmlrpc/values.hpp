@@ -35,10 +35,10 @@ class size_error : public boost::exception {};
 enum instruction_enum {
   NOOP,
 
-  CHUNKSERVER,
-  FILENAME,
-  CHUNK,
-  ATTRIBUTE
+  CHUNKSERVER_INSTRUCTION,
+  FILENAME_INSTRUCTION,
+  CHUNK_INSTRUCTION,
+  ATTRIBUTE_INSTRUCTION
 };
 
 
@@ -53,6 +53,15 @@ public:
 
   instruction(instruction_enum type, std::string argument) :
       type_(type), argument_(argument) {}
+
+
+  instruction_enum get_type() {
+    return type_;
+  }
+
+  std::string get_argument() {
+    return argument_;
+  }
 
 private:
   friend class boost::serialization::access;
@@ -82,6 +91,7 @@ public:
 
 	virtual std::string&     get_key();
 	virtual std::string&     get_value();
+	const instruction&       get_instruction();
 
 	virtual void   set_key(const std::string&);
 	virtual void   set_value(const std::string&);
@@ -125,10 +135,11 @@ public:
   chunkserver_value(const std::string& swarm, const chunkserver_list_t& chunkservers);
   virtual ~chunkserver_value();
 
-  virtual void         set_value(const std::string&);
-
-  // Derived specific functions.
   void append(std::string& hostname);
+
+  std::string& get_value();
+  void set_value(const std::string& value);
+
   chunkserver_list_t& get_mapped();
 
 protected:
@@ -158,17 +169,18 @@ protected:
 
 
 class chunk_value : public base_value {
-public:
 
-  typedef int            index_t;
+public:
 
 	chunk_value(const std::string& key, const std::string& value);
 	chunk_value(
 	    const std::string& filename,
-	    const index_t,
+	    const size_t chunk_num,
 	    const std::string& location);
 
 	virtual ~chunk_value();
+
+  std::string& get_mapped();
 };
 
 

@@ -58,7 +58,15 @@ std::string& base_value::get_key() {
 
 
 
-std::string& base_value::get_value() { return value_; }
+std::string& base_value::get_value() {
+  return value_;
+}
+
+
+
+const instruction& base_value::get_instruction() {
+  return instruction_;
+}
 
 
 
@@ -79,23 +87,18 @@ void base_value::set_key(const std::string& key) {
 
 
 
-chunkserver_value::chunkserver_value(const std::string& key, const std::string& value) {}
+chunkserver_value::chunkserver_value(const std::string& key, const std::string& value) {
+  set_key(key);
+  set_value(value);
+}
 
 
 
 chunkserver_value::chunkserver_value(
     const std::string& swarm,
     const chunkserver_list_t& chunkserver_list) :
-      base_value(CHUNKSERVER, swarm),
+      base_value(CHUNKSERVER_INSTRUCTION, swarm),
       chunkservers_(chunkserver_list) {}
-
-
-void chunkserver_value::set_value(const std::string& value) {
-  std::stringstream oss(value);
-  boost::archive::text_iarchive ia(oss);
-  ia >> chunkservers_;
-}
-
 
 
 chunkserver_value::~chunkserver_value() { }
@@ -115,7 +118,18 @@ void chunkserver_value::append(std::string& hostname) {
   } else {
     rInfo("we are already part of the swarm");
   }
+}
 
+
+
+std::string& chunkserver_value::get_value() {
+  return base_value::serialize(chunkservers_);
+}
+
+
+
+void chunkserver_value::set_value(const std::string& value) {
+  base_value::deserialize(value, chunkservers_);
 }
 
 
@@ -143,7 +157,7 @@ filename_value::filename_value(const std::string& key, const std::string& value)
 filename_value::filename_value(
     const std::string& filename,
     const size_t chunk_num) :
-      base_value(FILENAME, filename),
+      base_value(FILENAME_INSTRUCTION, filename),
       chunk_num_(chunk_num) {}
 
 
@@ -171,19 +185,27 @@ std::string& filename_value::get_value() {
 
 
 chunk_value::chunk_value(const std::string& key, const std::string& value) :
-  base_value::base_value(key, value) { }
+  base_value::base_value(key, value) {}
 
 
 
 chunk_value::chunk_value(
     const std::string& filename,
-    const index_t n,
-    const std::string& value) :
-      base_value(CHUNK, boost::lexical_cast<std::string>(n) + filename) { }
+    const size_t chunk_num,
+    const std::string& location) :
+      base_value(CHUNK_INSTRUCTION, boost::lexical_cast<std::string>(chunk_num) + filename) {
+  set_value(location);
+}
 
 
 
 chunk_value::~chunk_value() {}
+
+
+
+std::string& chunk_value::get_mapped() {
+  return value_;
+}
 
 
 
@@ -203,7 +225,7 @@ attribute_value::attribute_value(const std::string& key, const std::string& valu
 attribute_value::attribute_value(
     const std::string& filename,
     const fattribute& attribute)
-    : base_value(ATTRIBUTE, filename),
+    : base_value(ATTRIBUTE_INSTRUCTION, filename),
       fattribute_(attribute) {}
 
 

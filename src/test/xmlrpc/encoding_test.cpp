@@ -10,6 +10,7 @@
 
 #include <boost/test/unit_test.hpp>
 #include <boost/assign.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 
 #include <cstdlib>
@@ -19,55 +20,76 @@
 
 #include "../../xmlrpc/values.hpp"
 
-/**
- * This test case tests Harmony put and get storage interface
- * consistency.
- */
-BOOST_AUTO_TEST_CASE( encoding_xmlrpc ) {
+
+
+std::string g_filename("value_filename");
+std::string g_hostname("codered.cs.washington.edu");
+std::string g_swarm("swarm-name");
+size_t g_chunk_num = 20;
+
+
+
+
+BOOST_AUTO_TEST_CASE( value_filename ) {
 
   using namespace uledfs::xmlrpc;
 
-  std::string filename("sample_filename");
-  size_t chunk_num = 20;
+  filename_value original(g_filename, g_chunk_num);
 
-  filename_value original_file(filename, chunk_num);
+  std::string key = original.get_key();
+  std::string value = original.get_value();
 
-  std::string key = original_file.get_key();
-  std::string value = original_file.get_value();
+  filename_value reconstructed(key, value);
+  instruction instruction = reconstructed.get_instruction();
 
-  std::cout << "Key: " << key << std::endl;
-  std::cout << "Value: " << value << std::endl;
-
-  filename_value reconstructed_file(key, value);
-
-  std::cout << "Key: " << reconstructed_file.get_key() << std::endl;
-  std::cout << "Value: " << reconstructed_file.get_mapped() << std::endl;
+  BOOST_CHECK_EQUAL(FILENAME_INSTRUCTION, instruction.get_type());
+  BOOST_CHECK_EQUAL(g_filename, instruction.get_argument());
+  BOOST_CHECK_EQUAL(g_chunk_num, reconstructed.get_mapped());
+}
 
 
-  uledfs::xmlrpc::chunk_value chunk("filename", 20, "codered.cs.washington.edu");
-  std::cout << chunk.get_key() << chunk.get_value() << std::endl;
 
-  std::string swarm("swarm-name");
+BOOST_AUTO_TEST_CASE( value_chunk ) {
 
-  uledfs::xmlrpc::chunkserver_value::value_type chunkservers;
+  using namespace uledfs::xmlrpc;
+
+  chunk_value original(g_filename, g_chunk_num, g_hostname);
+  std::string key = original.get_key();
+  std::string value = original.get_value();
+
+  chunk_value reconstructed(key, value);
+  instruction instruction = reconstructed.get_instruction();
+
+  std::string argument = boost::lexical_cast<std::string>(g_chunk_num) + g_filename;
+
+  BOOST_CHECK_EQUAL(CHUNK_INSTRUCTION, instruction.get_type());
+  BOOST_CHECK_EQUAL(argument, instruction.get_argument());
+  BOOST_CHECK_EQUAL(g_hostname, reconstructed.get_mapped());
+}
+
+
+
+BOOST_AUTO_TEST_CASE( value_chunkserver ) {
+
+  using namespace uledfs::xmlrpc;
+
+  chunkserver_value::value_type chunkservers;
   chunkservers.push_back("hostname1");
   chunkservers.push_back("hostname2");
   chunkservers.push_back("hostname3");
 
-  uledfs::xmlrpc::chunkserver_value chunkserver_swarm(swarm, chunkservers);
-  std::string key_value(chunkserver_swarm.get_key() + chunkserver_swarm.get_value());
+  chunkserver_value original(g_swarm, chunkservers);
 
-  std::cout << key_value << std::endl;
+  std::string key = original.get_key();
+  std::string value = original.get_value();
 
-  chunkserver_swarm = uledfs::xmlrpc::chunkserver_value(chunkserver_swarm.get_key(), chunkserver_swarm.get_value());
-  chunkservers      = uledfs::xmlrpc::chunkserver_value::value_type (chunkserver_swarm.get_mapped());
+  chunkserver_value reconstructed(key, value);
 
-  BOOST_FOREACH(std::string& host, chunkservers) {
-    std::cout << "Host: " << host << std::endl;
-  }
+  instruction instruction = reconstructed.get_instruction();
+
+  BOOST_CHECK_EQUAL(CHUNKSERVER_INSTRUCTION, instruction.get_type());
+  BOOST_CHECK_EQUAL(g_swarm, instruction.get_argument());
+  BOOST_CHECK(chunkservers == reconstructed.get_mapped());
 
   BOOST_TEST_MESSAGE( "\tTesting value encoding scheme." );
-
-
-
 }
