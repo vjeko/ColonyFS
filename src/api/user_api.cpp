@@ -46,8 +46,8 @@ void user_api::read(
 
   // Retrieve the filename information.
   filename_value  file      = dht_.get_value<filename_value>(in.leaf());
-  filename_value::filename_t filename  = in.leaf();
-  filename_value::index_t number = boost::lexical_cast<filename_value::index_t>( file.get_value() );
+  std::string filename  = in.leaf();
+  int number = boost::lexical_cast<filename_value::index_t>( file.get_value() );
 
   rLog(user_log_, "... total number of chunks is %d\n", number );
 

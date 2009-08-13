@@ -52,12 +52,12 @@ BOOST_AUTO_TEST_CASE( encoding_xmlrpc ) {
 
   BOOST_TEST_MESSAGE( "\tTesting value encoding scheme." );
 
-  uledfs::xmlrpc::base_value::key_type encoding;
+  std::string encoding;
   for (unsigned int i = 0; i < uledfs::xmlrpc::base_value::KEY_SIZE; i++) {
 	  encoding += "_";
   }
 
-  uledfs::xmlrpc::base_value::value_type value;
+  std::string value;
   for (unsigned int i = 0; i < uledfs::xmlrpc::base_value::INSTRUCTION_ARG_SIZE; i++) {
 	  value += "|";
   }

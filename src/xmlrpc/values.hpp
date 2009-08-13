@@ -52,14 +52,12 @@ public:
 class base_value {
 public:
 
-  typedef std::string  instruction_t;
-  typedef std::string  instruction_arg_t;
-
-  typedef std::string  key_type;
-  typedef std::string  value_type;
-
 	base_value();
-	base_value(const instruction_t, const instruction_arg_t, const value_type);
+	base_value(
+	    const std::string intruction,
+	    const std::string instruction_type,
+	    const std::string value);
+
   base_value(const std::string key, const std::string value);
 	virtual ~base_value();
 
@@ -70,8 +68,8 @@ public:
 	virtual void       set_value(std::string&);
 
 	static std::string get_signature(
-	    const instruction_t intruction,
-	    const instruction_arg_t type);
+	    const std::string intruction,
+	    const std::string intruction_type);
 
   static const unsigned int VALUE_SIZE;
   static const unsigned int INSTRUCTION_SIZE;
@@ -94,11 +92,7 @@ protected:
 class chunkserver_value : public base_value {
 public:
 
-  typedef std::string              swarm_t;
-  typedef std::string              hostname_t;
-  typedef std::vector<hostname_t>  list_t;
-
-  typedef swarm_t                  key_type;
+  typedef std::vector<std::string> list_t;
   typedef list_t                   value_type;
 
   chunkserver_value(const std::string& key, const std::string& value);
@@ -108,7 +102,7 @@ public:
   virtual std::string& get_value();
   virtual void         set_value(const std::string&);
 
-  static std::string get_signature(swarm_t swarm);
+  static std::string get_signature(std::string swarm);
 
   // Derived specific functions.
   void append(std::string& hostname);
@@ -126,16 +120,12 @@ class filename_value : public base_value {
 public:
 
   typedef int            index_t;
-  typedef std::string    filename_t;
-
-  typedef filename_t     key_type;
-  typedef index_t        value_type;
 
   filename_value(const std::string& key, const std::string& value);
-  filename_value(const filename_t&, const index_t);
+  filename_value(const std::string& filename, const index_t);
   virtual ~filename_value();
 
-  static std::string get_signature(key_type key);
+  static std::string get_signature(std::string filename);
 
   static signature_t _instruction_;
 };
@@ -144,18 +134,17 @@ class chunk_value : public base_value {
 public:
 
   typedef int            index_t;
-  typedef std::string    filename_t;
-  typedef std::string    location_t;
-
-  typedef std::string    key_type;
-  typedef location_t     value_type;
 
 	chunk_value(const std::string& key, const std::string& value);
-	chunk_value(const filename_t&, const index_t, const location_t& location);
+	chunk_value(
+	    const std::string& filename,
+	    const index_t,
+	    const std::string& location);
+
 	virtual ~chunk_value();
 
-	static std::string get_signature(key_type key);
-	static std::string get_signature(filename_t filename, index_t chunk_number);
+	static std::string get_signature(std::string key);
+	static std::string get_signature(std::string filename, index_t chunk_number);
 
   static signature_t _instruction_;
 };
@@ -164,21 +153,19 @@ class attribute_value : public base_value {
 
 public:
 
-  typedef std::string   filename_t;
-
-  typedef filename_t     key_type;
-  typedef fattribute     value_type;
+  typedef std::string key_type;
+  typedef fattribute  value_type;
 
   attribute_value(const std::string& key, const std::string& value);
-  attribute_value(const filename_t&, const fattribute&);
+  attribute_value(const std::string& filename, const fattribute& fattribute);
   virtual ~attribute_value();
 
   virtual std::string& get_value();
   virtual void         set_value(const std::string&);
 
-  value_type get_mapped();
+  fattribute get_mapped();
 
-  static std::string get_signature(key_t filename);
+  static std::string get_signature(std::string filename);
   static signature_t _instruction_;
 
 private:

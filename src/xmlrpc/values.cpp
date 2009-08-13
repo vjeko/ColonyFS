@@ -47,9 +47,9 @@ base_value::base_value(const std::string key, const std::string value) {
 }
 
 base_value::base_value(
-    const instruction_t intruction,
-    const instruction_arg_t type,
-    const value_type value) {
+    const std::string intruction,
+    const std::string type,
+    const std::string value) {
 
   std::string key = get_signature(intruction, type);
   base_value(key, value);
@@ -57,8 +57,8 @@ base_value::base_value(
 }
 
 std::string base_value::get_signature(
-    const instruction_t instruction,
-    const instruction_arg_t type) {
+    const std::string instruction,
+    const std::string type) {
 
   if (instruction.size() > INSTRUCTION_SIZE)
     throw size_error() << value_size(instruction.size());
@@ -97,7 +97,7 @@ chunkserver_value::chunkserver_value(const std::string& key, const std::string& 
 }
 
 chunkserver_value::chunkserver_value(
-    const swarm_t& swarm,
+    const std::string& swarm,
     const list_t& chunkserver_list) :
       base_value::base_value(get_signature(swarm), ""),
       chunkservers_(chunkserver_list) {}
@@ -119,7 +119,7 @@ void chunkserver_value::set_value(const std::string& value) {
   value_ = value;
 }
 
-std::string chunkserver_value::get_signature(instruction_arg_t swarm) {
+std::string chunkserver_value::get_signature(std::string swarm) {
   return base_value::get_signature(_instruction_, swarm);
 }
 
@@ -155,7 +155,7 @@ filename_value::filename_value(const std::string& key, const std::string& value)
   base_value::base_value(key, value) { }
 
 filename_value::filename_value(
-    const filename_t& filename,
+    const std::string& filename,
     const index_t n) :
 
       base_value(_instruction_,
@@ -166,7 +166,7 @@ filename_value::filename_value(
 
 filename_value::~filename_value() {}
 
-std::string filename_value::get_signature(key_type key) {
+std::string filename_value::get_signature(std::string key) {
   return base_value::get_signature(_instruction_, key);
 }
 
@@ -179,23 +179,23 @@ chunk_value::chunk_value(const std::string& key, const std::string& value) :
   base_value::base_value(key, value) { }
 
 chunk_value::chunk_value(
-    const filename_t& filename,
+    const std::string& filename,
     const index_t n,
-    const location_t& value) :
+    const std::string& value) :
 
       base_value(_instruction_,
-          boost::lexical_cast<instruction_arg_t>(n) + filename,
+          boost::lexical_cast<std::string>(n) + filename,
           value) {
 
 }
 
 chunk_value::~chunk_value() {}
 
-std::string chunk_value::get_signature(key_type key) {
+std::string chunk_value::get_signature(std::string key) {
   return base_value::get_signature(_instruction_, key);
 }
 
-std::string chunk_value::get_signature(filename_t filename, index_t chunk_number) {
+std::string chunk_value::get_signature(std::string filename, index_t chunk_number) {
   return chunk_value::get_signature(boost::lexical_cast<std::string>(chunk_number) + filename);
 }
 
@@ -207,13 +207,13 @@ const char* chunk_value::_instruction_ = "c";
 attribute_value::attribute_value(const std::string& key, const std::string& value) :
   base_value::base_value(key, value) { }
 
-attribute_value::attribute_value(const attribute_value::filename_t& filename, const fattribute& a)
+attribute_value::attribute_value(const std::string& filename, const fattribute& a)
     : base_value( _instruction_, filename),
       fattribute_(a){
 }
 
 
-attribute_value::value_type attribute_value::get_mapped() {
+fattribute attribute_value::get_mapped() {
   return fattribute_;
 }
 
