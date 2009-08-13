@@ -129,7 +129,7 @@ private:
   rlog::RLogChannel                  *user_harmony_control_;
 
   rng_type                                  rng_;
-  xmlrpc::chunkserver_value::list_t chunkservers_;
+  xmlrpc::chunkserver_value::value_type     chunkservers_;
 };
 
 }

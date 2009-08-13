@@ -23,9 +23,13 @@
 
 namespace uledfs { namespace xmlrpc {
 
-typedef boost::error_info<struct tag_size, int>  value_size;
 
+
+
+typedef boost::error_info<struct tag_size, int>  value_size;
 class size_error : public boost::exception {};
+
+
 
 
 enum instruction_enum {
@@ -38,6 +42,8 @@ enum instruction_enum {
 };
 
 
+
+
 class instruction {
 
 public:
@@ -45,8 +51,8 @@ public:
   instruction(instruction_enum type = NOOP) :
       type_(type) {}
 
-  instruction(instruction_enum type, std::string subtype) :
-      type_(type), subtype_(subtype) {}
+  instruction(instruction_enum type, std::string argument) :
+      type_(type), argument_(argument) {}
 
 private:
   friend class boost::serialization::access;
@@ -54,73 +60,102 @@ private:
   template<class Archive>
   void serialize(Archive & ar, const unsigned int version) {
       ar & type_;
-      ar & subtype_;
+      ar & argument_;
   }
 
 
   instruction_enum  type_;
-  std::string       subtype_;
+  std::string       argument_;
 };
+
+
+
+
 
 class base_value {
 public:
 
 	base_value();
-	base_value(instruction_enum type, std::string subtype = "");
+	base_value(const instruction_enum type, const std::string argument = "");
   base_value(const std::string key, const std::string value);
 	virtual ~base_value();
 
 	virtual std::string&     get_key();
 	virtual std::string&     get_value();
 
-	virtual void       set_key(std::string&);
-	virtual void       set_value(std::string&);
+	virtual void   set_key(const std::string&);
+	virtual void   set_value(const std::string&);
+
+	template<typename Value, typename Where>
+	void deserialize(const Value& value, Where& where) {
+	  std::stringstream ss(value);
+	  boost::archive::text_iarchive ia(ss);
+	  ia >> where;
+	}
+
+	template<typename Value>
+	std::string& serialize(Value& value) {
+	  std::stringstream ss;
+	  boost::archive::text_oarchive oa(ss);
+	  oa << value;
+
+	  value_ = ss.str();
+	  return value_;
+	}
+
 
 protected:
 
-  typedef const char*       signature_t;
-
   instruction    instruction_;
 	std::string    key_;
+
 	std::string    value_;
 };
+
+
+
 
 class chunkserver_value : public base_value {
 public:
 
-  typedef std::vector<std::string> list_t;
-  typedef list_t                   value_type;
+  typedef std::vector<std::string> chunkserver_list_t;
+  typedef chunkserver_list_t       value_type;
 
   chunkserver_value(const std::string& key, const std::string& value);
-  chunkserver_value(const std::string& swarm, const list_t& chunkservers);
+  chunkserver_value(const std::string& swarm, const chunkserver_list_t& chunkservers);
   virtual ~chunkserver_value();
 
-  virtual std::string& get_value();
   virtual void         set_value(const std::string&);
 
   // Derived specific functions.
   void append(std::string& hostname);
-  list_t& get_chunkservers();
-
-  static signature_t        _instruction_;
+  chunkserver_list_t& get_mapped();
 
 protected:
 
-  list_t                    chunkservers_;
-  static const std::string  DELIMITER;
+  chunkserver_list_t chunkservers_;
 };
+
+
+
 
 class filename_value : public base_value {
 public:
 
-  typedef int            index_t;
-
   filename_value(const std::string& key, const std::string& value);
-  filename_value(const std::string& filename, const index_t);
+  filename_value(const std::string& filename, const size_t chunk_num);
   virtual ~filename_value();
 
-  static signature_t _instruction_;
+
+  size_t get_mapped();
+  std::string& get_value();
+
+protected:
+  size_t chunk_num_;
 };
+
+
+
 
 class chunk_value : public base_value {
 public:
@@ -134,9 +169,10 @@ public:
 	    const std::string& location);
 
 	virtual ~chunk_value();
-
-  static signature_t _instruction_;
 };
+
+
+
 
 class attribute_value : public base_value {
 
@@ -149,13 +185,11 @@ public:
   attribute_value(const std::string& filename, const fattribute& fattribute);
   virtual ~attribute_value();
 
-  virtual std::string& get_value();
-  virtual void         set_value(const std::string&);
+  void         set_value(const std::string&);
 
   fattribute get_mapped();
 
   static std::string get_signature(std::string filename);
-  static signature_t _instruction_;
 
 private:
 

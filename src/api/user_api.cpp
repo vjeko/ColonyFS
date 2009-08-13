@@ -47,14 +47,14 @@ void user_api::read(
   // Retrieve the filename information.
   filename_value  file      = dht_.get_value<filename_value>(in.leaf());
   std::string filename  = in.leaf();
-  int number = boost::lexical_cast<filename_value::index_t>( file.get_value() );
+  int number = boost::lexical_cast<size_t>( file.get_value() );
 
   rLog(user_log_, "... total number of chunks is %d\n", number );
 
   std::vector<boost::shared_ptr<uledfs::storage::chunk_data> > data_ptr_pool;
 
   // Retrieve each of the chunks and add them to the collection.
-  for (filename_value::index_t i = 0; i < number; i++) {
+  for (size_t i = 0; i < number; i++) {
     boost::shared_ptr<storage::chunk_data> data_ptr(new storage::chunk_data(filename, i));
     data_ptr_pool.push_back(data_ptr);
 

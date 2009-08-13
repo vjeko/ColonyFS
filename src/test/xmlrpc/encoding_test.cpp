@@ -25,15 +25,31 @@
  */
 BOOST_AUTO_TEST_CASE( encoding_xmlrpc ) {
 
-  uledfs::xmlrpc::filename_value file("filename", 20);
-  std::cout << file.get_key() << file.get_value() << std::endl;
+  using namespace uledfs::xmlrpc;
+
+  std::string filename("sample_filename");
+  size_t chunk_num = 20;
+
+  filename_value original_file(filename, chunk_num);
+
+  std::string key = original_file.get_key();
+  std::string value = original_file.get_value();
+
+  std::cout << "Key: " << key << std::endl;
+  std::cout << "Value: " << value << std::endl;
+
+  filename_value reconstructed_file(key, value);
+
+  std::cout << "Key: " << reconstructed_file.get_key() << std::endl;
+  std::cout << "Value: " << reconstructed_file.get_mapped() << std::endl;
+
 
   uledfs::xmlrpc::chunk_value chunk("filename", 20, "codered.cs.washington.edu");
   std::cout << chunk.get_key() << chunk.get_value() << std::endl;
 
   std::string swarm("swarm-name");
 
-  uledfs::xmlrpc::chunkserver_value::list_t chunkservers;
+  uledfs::xmlrpc::chunkserver_value::value_type chunkservers;
   chunkservers.push_back("hostname1");
   chunkservers.push_back("hostname2");
   chunkservers.push_back("hostname3");
@@ -44,7 +60,7 @@ BOOST_AUTO_TEST_CASE( encoding_xmlrpc ) {
   std::cout << key_value << std::endl;
 
   chunkserver_swarm = uledfs::xmlrpc::chunkserver_value(chunkserver_swarm.get_key(), chunkserver_swarm.get_value());
-  chunkservers      = uledfs::xmlrpc::chunkserver_value::list_t (chunkserver_swarm.get_chunkservers());
+  chunkservers      = uledfs::xmlrpc::chunkserver_value::value_type (chunkserver_swarm.get_mapped());
 
   BOOST_FOREACH(std::string& host, chunkservers) {
     std::cout << "Host: " << host << std::endl;

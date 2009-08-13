@@ -28,7 +28,7 @@ user_harmony::user_harmony(
 
 
   xmlrpc::chunkserver_value chunkserver_value( dht_.get_value<xmlrpc::chunkserver_value>(parser_.get_swarm()) );
-  chunkservers_ = chunkserver_value.get_chunkservers();
+  chunkservers_ = chunkserver_value.get_mapped();
 
 }
 

@@ -29,100 +29,151 @@ namespace xmlrpc {
 
 base_value::base_value() {}
 
-base_value::base_value(instruction_enum type, std::string subtype):
-  instruction_(type) {}
+
+
+base_value::base_value(const instruction_enum type, const std::string argument):
+  instruction_(type, argument) {}
+
 
 
 base_value::base_value(const std::string key, const std::string value) {
-
-  if (value.size() > 376)
-    throw size_error() << value_size(value.size());
-
-  key_     = key;
-  value_   = value;
-}
-
-base_value::~base_value() {}
-
-std::string& base_value::get_key() { return key_; }
-std::string& base_value::get_value() { return value_; }
-
-void base_value::set_value(std::string& value) { value_ = value; }
-void base_value::set_key(std::string& key) { key_ = key; }
-
-/* ++++++++++++++++++ CHUNKSERVER VALUE ++++++++++++++++++ */
-
-chunkserver_value::chunkserver_value(const std::string& key, const std::string& value) {
+  set_key(key);
   set_value(value);
 }
 
+
+
+base_value::~base_value() {}
+
+
+
+std::string& base_value::get_key() {
+  std::stringstream ss;
+  boost::archive::text_oarchive oa(ss);
+  oa << instruction_;
+
+  key_ = ss.str();
+  return key_;
+}
+
+
+
+std::string& base_value::get_value() { return value_; }
+
+
+
+void base_value::set_value(const std::string& value) {
+  value_ = value;
+}
+
+
+void base_value::set_key(const std::string& key) {
+  deserialize(key, instruction_);
+}
+
+
+
+
+/* ++++++++++++++++++ CHUNKSERVER VALUE ++++++++++++++++++ */
+
+
+
+
+chunkserver_value::chunkserver_value(const std::string& key, const std::string& value) {}
+
+
+
 chunkserver_value::chunkserver_value(
     const std::string& swarm,
-    const list_t& chunkserver_list) :
-      base_value(CHUNKSERVER),
+    const chunkserver_list_t& chunkserver_list) :
+      base_value(CHUNKSERVER, swarm),
       chunkservers_(chunkserver_list) {}
 
-std::string& chunkserver_value::get_value() {
-
-  std::stringstream oss;
-  boost::archive::text_oarchive oa(oss);
-  oa << chunkservers_;
-
-  value_ = oss.str();
-  return value_;
-}
 
 void chunkserver_value::set_value(const std::string& value) {
   std::stringstream oss(value);
   boost::archive::text_iarchive ia(oss);
   ia >> chunkservers_;
-  value_ = value;
 }
 
+
+
 chunkserver_value::~chunkserver_value() { }
+
+
 
 void chunkserver_value::append(std::string& hostname) {
 
   rInfo("there are %zd hosts in the swarm...", chunkservers_.size());
 
-  list_t::iterator it = std::find(chunkservers_.begin(), chunkservers_.end(), hostname);
+  chunkserver_list_t::iterator it =
+      std::find(chunkservers_.begin(), chunkservers_.end(), hostname);
 
   if (it == chunkservers_.end()) {
     rInfo("we are not part of the swarm... joining");
-
     chunkservers_.push_back(hostname);
-    value_ += DELIMITER + hostname;
   } else {
     rInfo("we are already part of the swarm");
   }
 
 }
 
-chunkserver_value::list_t& chunkserver_value::get_chunkservers() {
+
+
+chunkserver_value::chunkserver_list_t& chunkserver_value::get_mapped() {
   return chunkservers_;
 }
 
-const std::string chunkserver_value::DELIMITER("|");
-const char*       chunkserver_value::_instruction_ = "cs";
+
+
 
 /* ++++++++++++++++++ FILENAME VALUE ++++++++++++++++++ */
 
+
+
+
 filename_value::filename_value(const std::string& key, const std::string& value) :
-  base_value::base_value(key, value) { }
+    base_value::base_value(key, value) {
+  set_key(key);
+  base_value::deserialize(value, chunk_num_);
+}
+
+
 
 filename_value::filename_value(
     const std::string& filename,
-    const index_t n) :
-      base_value(FILENAME, filename){
+    const size_t chunk_num) :
+      base_value(FILENAME, filename),
+      chunk_num_(chunk_num) {}
 
-}
+
 
 filename_value::~filename_value() {}
 
+
+
+size_t filename_value::get_mapped() {
+  return chunk_num_;
+}
+
+
+
+std::string& filename_value::get_value() {
+  return base_value::serialize(chunk_num_);
+}
+
+
+
+
 /* ++++++++++++++++++ CHUNK VALUE ++++++++++++++++++ */
+
+
+
 
 chunk_value::chunk_value(const std::string& key, const std::string& value) :
   base_value::base_value(key, value) { }
+
+
 
 chunk_value::chunk_value(
     const std::string& filename,
@@ -130,17 +181,37 @@ chunk_value::chunk_value(
     const std::string& value) :
       base_value(CHUNK, boost::lexical_cast<std::string>(n) + filename) { }
 
+
+
 chunk_value::~chunk_value() {}
+
+
 
 
 /* ++++++++++++++++++ FILESYSTEM INTERFACE VALUE ++++++++++++++++++ */
 
-attribute_value::attribute_value(const std::string& key, const std::string& value) {}
 
-attribute_value::attribute_value(const std::string& filename, const fattribute& a)
-    : base_value(ATTRIBUTE, filename),
-      fattribute_(a){
+
+
+attribute_value::attribute_value(const std::string& key, const std::string& value) {
+  set_key(key);
+  set_value(value);
 }
+
+
+
+attribute_value::attribute_value(
+    const std::string& filename,
+    const fattribute& attribute)
+    : base_value(ATTRIBUTE, filename),
+      fattribute_(attribute) {}
+
+
+
+void attribute_value::set_value(const std::string& value) {
+  deserialize(value, fattribute_);
+}
+
 
 
 fattribute attribute_value::get_mapped() {
@@ -148,28 +219,8 @@ fattribute attribute_value::get_mapped() {
 }
 
 
-std::string& attribute_value::get_value() {
-  std::stringstream ss;
-  boost::archive::text_oarchive oa(ss);
-
-  oa << fattribute_;
-  value_ = ss.str();
-
-  return value_;
-}
-
-
-void attribute_value::set_value(const std::string& value) {
-  std::stringstream oss(value);
-  boost::archive::text_iarchive ia(oss);
-
-  ia >> fattribute_;
-  value_ = value;
-}
 
 attribute_value::~attribute_value() {}
-
-const char* attribute_value::_instruction_ = "fs";
 
 
 } }

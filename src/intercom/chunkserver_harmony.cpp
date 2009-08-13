@@ -30,7 +30,7 @@ void chunkserver_harmony::init() {
 
   std::string                               hostname(boost::asio::ip::host_name());
   std::string                               swarm(parser_.get_swarm());
-  xmlrpc::chunkserver_value::list_t chunkservers;
+  xmlrpc::chunkserver_value::value_type     chunkservers;
 
   xmlrpc::chunkserver_value chunkserver_info(swarm, chunkservers);
 
