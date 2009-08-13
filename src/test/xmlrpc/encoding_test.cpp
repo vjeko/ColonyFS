@@ -52,25 +52,6 @@ BOOST_AUTO_TEST_CASE( encoding_xmlrpc ) {
 
   BOOST_TEST_MESSAGE( "\tTesting value encoding scheme." );
 
-  std::string encoding;
-  for (unsigned int i = 0; i < uledfs::xmlrpc::base_value::KEY_SIZE; i++) {
-	  encoding += "_";
-  }
 
-  std::string value;
-  for (unsigned int i = 0; i < uledfs::xmlrpc::base_value::INSTRUCTION_ARG_SIZE; i++) {
-	  value += "|";
-  }
-
-  try {
-
-	  uledfs::xmlrpc::base_value base(encoding, value);
-
-	  BOOST_REQUIRE(!encoding.compare(base.get_key()));
-	  BOOST_REQUIRE(!value.compare(base.get_value()));
-
-  } catch(uledfs::xmlrpc::size_error& e) {
-    BOOST_FAIL( "value max size exceeded" );;
-  }
 
 }

@@ -18,46 +18,55 @@
 
 #include "attribute.hpp"
 
-/**
- *
- * encoding type: fixed width
- * maximum size:  1024 bytes
- * value layout:
- *
- * | VALUE                            |
- * | 136 bytes            | 376 bytes |
- * | instruction encoding | value     |
- *
- * instruction encoding layout:
- *
- * | INSTRUCTION ENCODING |
- * | 8 bytes | 128 bytes  |
- * | type    | subtype    |
- *
- */
+
+
+
 namespace uledfs { namespace xmlrpc {
 
 typedef boost::error_info<struct tag_size, int>  value_size;
 
 class size_error : public boost::exception {};
 
-// TODO: Integrate this.
+
+enum instruction_enum {
+  NOOP,
+
+  CHUNKSERVER,
+  FILENAME,
+  CHUNK,
+  ATTRIBUTE
+};
+
+
 class instruction {
 
 public:
-  std::string type;
-  std::string subtype;
+
+  instruction(instruction_enum type = NOOP) :
+      type_(type) {}
+
+  instruction(instruction_enum type, std::string subtype) :
+      type_(type), subtype_(subtype) {}
+
+private:
+  friend class boost::serialization::access;
+
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version) {
+      ar & type_;
+      ar & subtype_;
+  }
+
+
+  instruction_enum  type_;
+  std::string       subtype_;
 };
 
 class base_value {
 public:
 
 	base_value();
-	base_value(
-	    const std::string intruction,
-	    const std::string instruction_type,
-	    const std::string value);
-
+	base_value(instruction_enum type, std::string subtype = "");
   base_value(const std::string key, const std::string value);
 	virtual ~base_value();
 
@@ -67,24 +76,11 @@ public:
 	virtual void       set_key(std::string&);
 	virtual void       set_value(std::string&);
 
-	static std::string get_signature(
-	    const std::string intruction,
-	    const std::string intruction_type);
-
-  static const unsigned int VALUE_SIZE;
-  static const unsigned int INSTRUCTION_SIZE;
-  static const unsigned int INSTRUCTION_ARG_SIZE;
-  static const unsigned int KEY_SIZE;
-  static const unsigned int KEY_VALUE_SIZE;
-
-  static const char* NO_ARG;
-
-  static const std::string FILL;
-
 protected:
 
   typedef const char*       signature_t;
 
+  instruction    instruction_;
 	std::string    key_;
 	std::string    value_;
 };
@@ -101,8 +97,6 @@ public:
 
   virtual std::string& get_value();
   virtual void         set_value(const std::string&);
-
-  static std::string get_signature(std::string swarm);
 
   // Derived specific functions.
   void append(std::string& hostname);
@@ -125,8 +119,6 @@ public:
   filename_value(const std::string& filename, const index_t);
   virtual ~filename_value();
 
-  static std::string get_signature(std::string filename);
-
   static signature_t _instruction_;
 };
 
@@ -142,9 +134,6 @@ public:
 	    const std::string& location);
 
 	virtual ~chunk_value();
-
-	static std::string get_signature(std::string key);
-	static std::string get_signature(std::string filename, index_t chunk_number);
 
   static signature_t _instruction_;
 };

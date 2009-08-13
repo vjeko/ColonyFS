@@ -25,62 +25,22 @@ namespace uledfs {
 
 namespace xmlrpc {
 
-const unsigned int base_value::INSTRUCTION_SIZE = 8;
-const unsigned int base_value::INSTRUCTION_ARG_SIZE = 32;
-const unsigned int base_value::KEY_SIZE = INSTRUCTION_SIZE + INSTRUCTION_ARG_SIZE;
-const unsigned int base_value::VALUE_SIZE = 376;
-const unsigned int base_value::KEY_VALUE_SIZE = KEY_SIZE + VALUE_SIZE;
-
-const char* base_value::NO_ARG = "";
-
-const std::string base_value::FILL("_");
-
 /* ++++++++++++++++++ BASE VALUE ++++++++++++++++++ */
+
+base_value::base_value() {}
+
+base_value::base_value(instruction_enum type, std::string subtype):
+  instruction_(type) {}
+
 
 base_value::base_value(const std::string key, const std::string value) {
 
-  if (value.size() > VALUE_SIZE)
+  if (value.size() > 376)
     throw size_error() << value_size(value.size());
 
   key_     = key;
   value_   = value;
 }
-
-base_value::base_value(
-    const std::string intruction,
-    const std::string type,
-    const std::string value) {
-
-  std::string key = get_signature(intruction, type);
-  base_value(key, value);
-
-}
-
-std::string base_value::get_signature(
-    const std::string instruction,
-    const std::string type) {
-
-  if (instruction.size() > INSTRUCTION_SIZE)
-    throw size_error() << value_size(instruction.size());
-
-  if (type.size() > INSTRUCTION_ARG_SIZE)
-    throw size_error() << value_size(type.size());
-
-  size_t ammount;
-  std::string result;
-
-  result += instruction;
-  ammount = INSTRUCTION_SIZE - instruction.size();
-  result.append(ammount, '_');
-
-  result += type;
-  ammount = INSTRUCTION_ARG_SIZE - type.size();
-  result.append(ammount, '_');
-
-  return result;
-}
-
-base_value::base_value() : key_(KEY_SIZE, '_') {}
 
 base_value::~base_value() {}
 
@@ -99,7 +59,7 @@ chunkserver_value::chunkserver_value(const std::string& key, const std::string& 
 chunkserver_value::chunkserver_value(
     const std::string& swarm,
     const list_t& chunkserver_list) :
-      base_value::base_value(get_signature(swarm), ""),
+      base_value(CHUNKSERVER),
       chunkservers_(chunkserver_list) {}
 
 std::string& chunkserver_value::get_value() {
@@ -117,10 +77,6 @@ void chunkserver_value::set_value(const std::string& value) {
   boost::archive::text_iarchive ia(oss);
   ia >> chunkservers_;
   value_ = value;
-}
-
-std::string chunkserver_value::get_signature(std::string swarm) {
-  return base_value::get_signature(_instruction_, swarm);
 }
 
 chunkserver_value::~chunkserver_value() { }
@@ -157,21 +113,11 @@ filename_value::filename_value(const std::string& key, const std::string& value)
 filename_value::filename_value(
     const std::string& filename,
     const index_t n) :
-
-      base_value(_instruction_,
-          filename,
-          boost::lexical_cast<std::string>(n)) {
+      base_value(FILENAME, filename){
 
 }
 
 filename_value::~filename_value() {}
-
-std::string filename_value::get_signature(std::string key) {
-  return base_value::get_signature(_instruction_, key);
-}
-
-
-const char* filename_value::_instruction_ = "f";
 
 /* ++++++++++++++++++ CHUNK VALUE ++++++++++++++++++ */
 
@@ -182,33 +128,17 @@ chunk_value::chunk_value(
     const std::string& filename,
     const index_t n,
     const std::string& value) :
-
-      base_value(_instruction_,
-          boost::lexical_cast<std::string>(n) + filename,
-          value) {
-
-}
+      base_value(CHUNK, boost::lexical_cast<std::string>(n) + filename) { }
 
 chunk_value::~chunk_value() {}
-
-std::string chunk_value::get_signature(std::string key) {
-  return base_value::get_signature(_instruction_, key);
-}
-
-std::string chunk_value::get_signature(std::string filename, index_t chunk_number) {
-  return chunk_value::get_signature(boost::lexical_cast<std::string>(chunk_number) + filename);
-}
-
-const char* chunk_value::_instruction_ = "c";
 
 
 /* ++++++++++++++++++ FILESYSTEM INTERFACE VALUE ++++++++++++++++++ */
 
-attribute_value::attribute_value(const std::string& key, const std::string& value) :
-  base_value::base_value(key, value) { }
+attribute_value::attribute_value(const std::string& key, const std::string& value) {}
 
 attribute_value::attribute_value(const std::string& filename, const fattribute& a)
-    : base_value( _instruction_, filename),
+    : base_value(ATTRIBUTE, filename),
       fattribute_(a){
 }
 

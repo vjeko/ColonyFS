@@ -14,6 +14,7 @@
 
 #include <string>
 #include <iostream>
+#include <sstream>
 
 namespace uledfs { namespace xmlrpc {
 
@@ -42,9 +43,22 @@ public:
    * appropriate action.
    */
   template <typename T>
-  T get_value (key_t argument) {
+  T get_value (xmlrpc::instruction instruction) {
 
-    key_t    key    = T::get_signature(argument);
+    std::stringstream ss;
+    boost::archive::text_oarchive oa(ss);
+
+    oa << instruction;
+
+    key_t    key    = ss.str();
+    value_t  value  = get(key);
+
+    return T(key, value);
+  }
+
+  template <typename T>
+  T get_value (std::string key) {
+
     value_t  value  = get(key);
 
     return T(key, value);
