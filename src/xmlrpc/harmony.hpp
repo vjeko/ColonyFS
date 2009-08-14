@@ -33,7 +33,6 @@ public:
   virtual ~harmony();
 
   bool put(const std::string&, const std::string&);
-  bool put(const xmlrpc::base_value value);
   std::string get(const std::string&);
 
   /*

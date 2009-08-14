@@ -15,6 +15,21 @@
 #include <sys/stat.h>
 
 #include <boost/exception.hpp>
+#include <boost/lexical_cast.hpp>
+
+
+#include <iostream>
+#include <sstream>
+#include <algorithm>
+
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/foreach.hpp>
+
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/vector.hpp>
 
 #include "attribute.hpp"
 
@@ -23,6 +38,9 @@
 
 namespace uledfs { namespace xmlrpc {
 
+
+
+typedef std::vector<std::string> chunkserver_list_t;
 
 
 
@@ -78,22 +96,50 @@ private:
 
 
 
-
-
+template<typename T>
 class base_value {
 public:
 
-  base_value();
-  base_value(const instruction_enum type, const std::string argument = "");
-  base_value(const std::string key, const std::string value);
-  virtual ~base_value();
+  typedef std::string key_type;
+  typedef T mapped_type;
+  typedef T value_type;
 
-  virtual std::string&     get_key();
-  virtual std::string&     get_value();
-  const instruction&       get_instruction();
+  base_value() {};
 
-  virtual void   set_key(const std::string&);
-  virtual void   set_value(const std::string&);
+  base_value(const instruction_enum type, const std::string argument = ""):
+      instruction_(type, argument) {};
+
+  base_value(const std::string& key, const std::string& value) {
+    set_key(key);
+    set_value(value);
+  };
+
+  virtual ~base_value() {};
+
+
+  std::string&     get_key() {
+    return base_value::serialize(instruction_, key_);
+  };
+
+  std::string&     get_value() {
+    return base_value::serialize(mapped_, value_);
+  }
+
+  mapped_type&             get_mapped() {
+    return mapped_;
+  }
+
+  const instruction&       get_instruction() {
+    return instruction_;
+  }
+
+  void   set_key(const std::string& key) {
+    deserialize(key, instruction_);
+  };
+
+  void   set_value(const std::string& value) {
+    deserialize(value, mapped_);
+  }
 
   template<typename Value, typename Destination>
   void deserialize(const Value& value, Destination& destionation) {
@@ -112,108 +158,79 @@ public:
     return destionation;
   }
 
-
-protected:
-
   instruction    instruction_;
   std::string    key_;
 
+  T              mapped_;
   std::string    value_;
 };
 
 
-
-
-class chunkserver_value : public base_value {
+class chunkserver_value : public base_value< chunkserver_list_t > {
 public:
+  chunkserver_value(const std::string& key, const std::string& value) :
+    base_value<chunkserver_list_t>(key, value) {};
 
-  typedef std::vector<std::string> chunkserver_list_t;
-  typedef chunkserver_list_t       value_type;
-  typedef chunkserver_list_t       mapped_type;
+  chunkserver_value(const std::string& swarm, const chunkserver_list_t& chunkservers) :
+      base_value< chunkserver_list_t >(CHUNKSERVER_INSTRUCTION, swarm) {
+    mapped_ = chunkservers;
+  };
 
-  chunkserver_value(const std::string& key, const std::string& value);
-  chunkserver_value(const std::string& swarm, const chunkserver_list_t& chunkservers);
-  virtual ~chunkserver_value();
+  virtual ~chunkserver_value() {};
+  void append(std::string& hostname) {};
+};
 
-  void append(std::string& hostname);
 
-  std::string& get_value();
-  mapped_type& get_mapped();
-  void set_value(const std::string& value);
 
-protected:
+class filename_value : public base_value<size_t> {
 
-  chunkserver_list_t chunkservers_;
+public:
+  filename_value(const std::string& key, const std::string& value) :
+    base_value<size_t>(key, value) {};
+
+  filename_value(const std::string& filename, const size_t chunk_num):
+      base_value<size_t>(FILENAME_INSTRUCTION, filename) {
+    mapped_ = chunk_num;
+  };
+
+  virtual ~filename_value() {};
+
 };
 
 
 
 
-class filename_value : public base_value {
-public:
-
-  typedef size_t mapped_type;
-
-  filename_value(const std::string& key, const std::string& value);
-  filename_value(const std::string& filename, const size_t chunk_num);
-  virtual ~filename_value();
-
-
-  std::string& get_value();
-  mapped_type& get_mapped();
-  void set_value(const std::string& value);
-
-protected:
-  size_t chunk_num_;
-};
-
-
-
-
-class chunk_value : public base_value {
+class chunk_value : public base_value<std::string> {
 
 public:
+  chunk_value(const std::string& key, const std::string& value) :
+    base_value<std::string>(key, value) {};
 
-  typedef std::string mapped_type;
-
-  chunk_value(const std::string& key, const std::string& value);
   chunk_value(
       const std::string& filename,
       const size_t chunk_num,
-      const std::string& location);
+      const std::string& location) :
+          base_value<std::string>(CHUNK_INSTRUCTION, boost::lexical_cast<std::string>(chunk_num) + filename) {
+    mapped_ = location;
+  };
 
-  virtual ~chunk_value();
-
-  std::string& get_value();
-  mapped_type& get_mapped();
-  void set_value(const std::string& value);
-
-protected:
-  std::string location_;
+  virtual ~chunk_value() {};
 };
 
 
 
 
-class attribute_value : public base_value {
+class attribute_value : public base_value<fattribute> {
 
 public:
+  attribute_value(const std::string& key, const std::string& value) :
+    base_value<fattribute>(key, value) {};
 
-  typedef std::string key_type;
-  typedef fattribute  value_type;
-  typedef fattribute  mapped_type;
-
-  attribute_value(const std::string& key, const std::string& value);
-  attribute_value(const std::string& filename, const fattribute& fattribute);
-  virtual ~attribute_value();
-
-  std::string& get_value();
-  mapped_type& get_mapped();
-  void set_value(const std::string& value);
-
-private:
-
-  fattribute fattribute_;
+  attribute_value(const std::string& filename, const fattribute& a) :
+      base_value<fattribute>(ATTRIBUTE_INSTRUCTION, filename) {
+    mapped_ = a;
+  }
+  virtual ~attribute_value() {};
 };
 
 } }
