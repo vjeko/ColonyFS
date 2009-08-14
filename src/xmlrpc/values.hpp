@@ -33,7 +33,7 @@ class size_error : public boost::exception {};
 
 
 enum instruction_enum {
-  NOOP,
+  NOOP_INSTRUCTION,
 
   CHUNKSERVER_INSTRUCTION,
   FILENAME_INSTRUCTION,
@@ -48,11 +48,10 @@ class instruction {
 
 public:
 
-  instruction(instruction_enum type = NOOP) :
-      type_(type) {}
-
-  instruction(instruction_enum type, std::string argument) :
-      type_(type), argument_(argument) {}
+  instruction(
+      instruction_enum type = NOOP_INSTRUCTION,
+      std::string argument = "") :
+        type_(type), argument_(argument) {}
 
 
   instruction_enum get_type() {
@@ -63,6 +62,7 @@ public:
     return argument_;
   }
 
+
 private:
   friend class boost::serialization::access;
 
@@ -71,7 +71,6 @@ private:
       ar & type_;
       ar & argument_;
   }
-
 
   instruction_enum  type_;
   std::string       argument_;
@@ -96,21 +95,21 @@ public:
   virtual void   set_key(const std::string&);
   virtual void   set_value(const std::string&);
 
-  template<typename Value, typename Where>
-  void deserialize(const Value& value, Where& where) {
+  template<typename Value, typename Destination>
+  void deserialize(const Value& value, Destination& destionation) {
     std::stringstream ss(value);
     boost::archive::text_iarchive ia(ss);
-    ia >> where;
+    ia >> destionation;
   }
 
-  template<typename Value>
-  std::string& serialize(Value& value) {
+  template<typename Value, typename Destination>
+  std::string& serialize(Value& value, Destination& destionation) {
     std::stringstream ss;
     boost::archive::text_oarchive oa(ss);
     oa << value;
 
-    value_ = ss.str();
-    return value_;
+    destionation = ss.str();
+    return destionation;
   }
 
 
@@ -130,6 +129,7 @@ public:
 
   typedef std::vector<std::string> chunkserver_list_t;
   typedef chunkserver_list_t       value_type;
+  typedef chunkserver_list_t       mapped_type;
 
   chunkserver_value(const std::string& key, const std::string& value);
   chunkserver_value(const std::string& swarm, const chunkserver_list_t& chunkservers);
@@ -138,9 +138,8 @@ public:
   void append(std::string& hostname);
 
   std::string& get_value();
+  mapped_type& get_mapped();
   void set_value(const std::string& value);
-
-  chunkserver_list_t& get_mapped();
 
 protected:
 
@@ -153,13 +152,16 @@ protected:
 class filename_value : public base_value {
 public:
 
+  typedef size_t mapped_type;
+
   filename_value(const std::string& key, const std::string& value);
   filename_value(const std::string& filename, const size_t chunk_num);
   virtual ~filename_value();
 
 
-  size_t get_mapped();
   std::string& get_value();
+  mapped_type& get_mapped();
+  void set_value(const std::string& value);
 
 protected:
   size_t chunk_num_;
@@ -172,6 +174,8 @@ class chunk_value : public base_value {
 
 public:
 
+  typedef std::string mapped_type;
+
   chunk_value(const std::string& key, const std::string& value);
   chunk_value(
       const std::string& filename,
@@ -180,7 +184,12 @@ public:
 
   virtual ~chunk_value();
 
-  std::string& get_mapped();
+  std::string& get_value();
+  mapped_type& get_mapped();
+  void set_value(const std::string& value);
+
+protected:
+  std::string location_;
 };
 
 
@@ -192,16 +201,15 @@ public:
 
   typedef std::string key_type;
   typedef fattribute  value_type;
+  typedef fattribute  mapped_type;
 
   attribute_value(const std::string& key, const std::string& value);
   attribute_value(const std::string& filename, const fattribute& fattribute);
   virtual ~attribute_value();
 
-  void         set_value(const std::string&);
-
-  fattribute get_mapped();
-
-  static std::string get_signature(std::string filename);
+  std::string& get_value();
+  mapped_type& get_mapped();
+  void set_value(const std::string& value);
 
 private:
 

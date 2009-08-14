@@ -48,12 +48,7 @@ base_value::~base_value() {}
 
 
 std::string& base_value::get_key() {
-  std::stringstream ss;
-  boost::archive::text_oarchive oa(ss);
-  oa << instruction_;
-
-  key_ = ss.str();
-  return key_;
+  return base_value::serialize(instruction_, key_);
 }
 
 
@@ -123,7 +118,7 @@ void chunkserver_value::append(std::string& hostname) {
 
 
 std::string& chunkserver_value::get_value() {
-  return base_value::serialize(chunkservers_);
+  return base_value::serialize(chunkservers_, value_);
 }
 
 
@@ -166,14 +161,20 @@ filename_value::~filename_value() {}
 
 
 
-size_t filename_value::get_mapped() {
-  return chunk_num_;
+std::string& filename_value::get_value() {
+  return base_value::serialize(chunk_num_, value_);
 }
 
 
 
-std::string& filename_value::get_value() {
-  return base_value::serialize(chunk_num_);
+void filename_value::set_value(const std::string& value) {
+  base_value::deserialize(value, chunk_num_);
+}
+
+
+
+filename_value::mapped_type& filename_value::get_mapped() {
+  return chunk_num_;
 }
 
 
@@ -184,8 +185,10 @@ std::string& filename_value::get_value() {
 
 
 
-chunk_value::chunk_value(const std::string& key, const std::string& value) :
-  base_value::base_value(key, value) {}
+chunk_value::chunk_value(const std::string& key, const std::string& value) {
+  set_key(key);
+  base_value::deserialize(value, location_);
+}
 
 
 
@@ -193,8 +196,8 @@ chunk_value::chunk_value(
     const std::string& filename,
     const size_t chunk_num,
     const std::string& location) :
-      base_value(CHUNK_INSTRUCTION, boost::lexical_cast<std::string>(chunk_num) + filename) {
-  set_value(location);
+      base_value(CHUNK_INSTRUCTION, boost::lexical_cast<std::string>(chunk_num) + filename),
+      location_(location) {
 }
 
 
@@ -203,8 +206,20 @@ chunk_value::~chunk_value() {}
 
 
 
+std::string& chunk_value::get_value() {
+  return base_value::serialize(location_, value_);
+}
+
+
+
+void chunk_value::set_value(const std::string& value) {
+  base_value::deserialize(value, location_);
+}
+
+
+
 std::string& chunk_value::get_mapped() {
-  return value_;
+  return location_;
 }
 
 
@@ -230,13 +245,19 @@ attribute_value::attribute_value(
 
 
 
+std::string& attribute_value::get_value() {
+  return base_value::serialize(fattribute_, value_);
+}
+
+
+
 void attribute_value::set_value(const std::string& value) {
   deserialize(value, fattribute_);
 }
 
 
 
-fattribute attribute_value::get_mapped() {
+attribute_value::mapped_type& attribute_value::get_mapped() {
   return fattribute_;
 }
 
