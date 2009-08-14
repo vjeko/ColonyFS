@@ -35,10 +35,13 @@ public:
 
     ar & stbuf.st_dev;
     ar & stbuf.st_ino;
+
     ar & stbuf.st_mode;
     ar & stbuf.st_size;
+
     ar & stbuf.st_mtim.tv_sec;
     ar & stbuf.st_mtim.tv_nsec;
+
     ar & stbuf.st_uid;
     ar & stbuf.st_gid;
 

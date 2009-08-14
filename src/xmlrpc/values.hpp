@@ -10,24 +10,18 @@
 
 #include <string>
 #include <vector>
-#include <list>
 
 #include <sys/stat.h>
 
 #include <boost/exception.hpp>
 #include <boost/lexical_cast.hpp>
 
-
 #include <iostream>
 #include <sstream>
-#include <algorithm>
-
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/foreach.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
 
@@ -141,15 +135,15 @@ public:
     deserialize(value, mapped_);
   }
 
-  template<typename Value, typename Destination>
-  void deserialize(const Value& value, Destination& destionation) {
+  template<typename Destination>
+  void deserialize(const std::string& value, Destination& destionation) {
     std::stringstream ss(value);
     boost::archive::text_iarchive ia(ss);
     ia >> destionation;
   }
 
-  template<typename Value, typename Destination>
-  std::string& serialize(Value& value, Destination& destionation) {
+  template<typename Value>
+  std::string& serialize(Value& value, std::string& destionation) {
     std::stringstream ss;
     boost::archive::text_oarchive oa(ss);
     oa << value;
@@ -166,8 +160,13 @@ public:
 };
 
 
+
+
+
 class chunkserver_value : public base_value< chunkserver_list_t > {
+
 public:
+
   chunkserver_value(const std::string& key, const std::string& value) :
     base_value<chunkserver_list_t>(key, value) {};
 
@@ -177,14 +176,18 @@ public:
   };
 
   virtual ~chunkserver_value() {};
+
   void append(std::string& hostname) {};
 };
+
+
 
 
 
 class filename_value : public base_value<size_t> {
 
 public:
+
   filename_value(const std::string& key, const std::string& value) :
     base_value<size_t>(key, value) {};
 
@@ -203,6 +206,7 @@ public:
 class chunk_value : public base_value<std::string> {
 
 public:
+
   chunk_value(const std::string& key, const std::string& value) :
     base_value<std::string>(key, value) {};
 
@@ -223,6 +227,7 @@ public:
 class attribute_value : public base_value<fattribute> {
 
 public:
+
   attribute_value(const std::string& key, const std::string& value) :
     base_value<fattribute>(key, value) {};
 
@@ -230,6 +235,7 @@ public:
       base_value<fattribute>(ATTRIBUTE_INSTRUCTION, filename) {
     mapped_ = a;
   }
+
   virtual ~attribute_value() {};
 };
 

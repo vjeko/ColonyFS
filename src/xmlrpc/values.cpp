@@ -10,7 +10,6 @@
 namespace uledfs {
 
 namespace xmlrpc {
-
 /* ++++++++++++++++++ BASE VALUE ++++++++++++++++++ */
 /* ++++++++++++++++++ CHUNKSERVER VALUE ++++++++++++++++++ */
 /* ++++++++++++++++++ FILENAME VALUE ++++++++++++++++++ */
