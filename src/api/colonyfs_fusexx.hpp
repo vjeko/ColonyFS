@@ -3,16 +3,22 @@
 #include "io_wrapper.hpp"
 #include "aggregator.hpp"
 #include "../xmlrpc/attribute.hpp"
+#include "../xmlrpc/values.hpp"
 #include "../debug.hpp"
 
 #include <string>
-#include "../xmlrpc/attribute.hpp"
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
 
 
-typedef colony::io_wrapper<std::string, fattribute>  metadata_map_t;
-typedef colony::io_wrapper<std::string, std::string>    data_map_t;
+
+
+//typedef colony::io_wrapper<std::string, fattribute>          metadata_map_t;
+typedef colony::aggregator<uledfs::xmlrpc::attribute_value>  metadata_map_t;
+typedef colony::io_wrapper<std::string, std::string>         data_map_t;
+
+
+
 
 class colonyfs_fusexx: public fusexx::fuse<colonyfs_fusexx> {
 public:

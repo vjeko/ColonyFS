@@ -94,9 +94,10 @@ template<typename T>
 class base_value {
 public:
 
-  typedef std::string key_type;
-  typedef T mapped_type;
-  typedef T value_type;
+  typedef std::string   key_type;
+  typedef T             value_type;
+  typedef T             mapped_type;
+
 
   base_value() {};
 
@@ -230,6 +231,10 @@ public:
 
   attribute_value(const std::string& key, const std::string& value) :
     base_value<fattribute>(key, value) {};
+
+  attribute_value(const std::string& filename) :
+      base_value<fattribute>(ATTRIBUTE_INSTRUCTION, filename) {
+  }
 
   attribute_value(const std::string& filename, const fattribute& a) :
       base_value<fattribute>(ATTRIBUTE_INSTRUCTION, filename) {

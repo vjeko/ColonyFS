@@ -9,14 +9,15 @@
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 
+
+
+
 metadata_map_t metadata_map_;
 data_map_t data_map_;
 
-typedef colony::aggregator<uledfs::xmlrpc::attribute_value> attribute_agg_t;
 
-attribute_agg_t g_attribute;
 
-// Constructor
+
 colonyfs_fusexx::colonyfs_fusexx() {
 
   fattribute metadata;
@@ -27,6 +28,9 @@ colonyfs_fusexx::colonyfs_fusexx() {
   clock_gettime(CLOCK_REALTIME, &metadata.stbuf.st_mtim);
   metadata_map_.commit("/", metadata);
 }
+
+
+
 
 int colonyfs_fusexx::symlink (const char* target, const char* link) {
 
@@ -41,7 +45,7 @@ int colonyfs_fusexx::symlink (const char* target, const char* link) {
   metadata.list.push_back(target); // Target..
 
 //  metadata_map_.commit(link, metadata);
-  g_attribute.commit(link, metadata);
+  metadata_map_.commit(link, metadata);
 
   boost::filesystem::path full(link);
   boost::filesystem::path branch = full.branch_path();
@@ -50,12 +54,15 @@ int colonyfs_fusexx::symlink (const char* target, const char* link) {
   // Register file creating with the parent.
 //  fattribute& pmetadata = metadata_map_[ branch.string() ];
 //  pmetadata.list.push_back(leaf.string());
-  attribute_agg_t::value_type_ptr pmetadata_ptr = g_attribute[ branch.string() ];
-  pmetadata_ptr->list.push_back(leaf.string());
-  g_attribute.commit(branch.string(), *pmetadata_ptr);
+  fattribute parent_metadata = metadata_map_[ branch.string() ];
+  parent_metadata.list.push_back(leaf.string());
+  metadata_map_.commit(branch.string(), parent_metadata);
 
   return 0;
 }
+
+
+
 
 int colonyfs_fusexx::readlink (const char *linkname, char *buffer, size_t size) {
 
@@ -70,6 +77,9 @@ int colonyfs_fusexx::readlink (const char *linkname, char *buffer, size_t size) 
   return 0;
 }
 
+
+
+
 int colonyfs_fusexx::truncate(const char* filename, off_t offset) {
 
   rLog(fuse_control_, "truncate: %s", filename);
@@ -82,6 +92,9 @@ int colonyfs_fusexx::truncate(const char* filename, off_t offset) {
 
   return 0;
 }
+
+
+
 
 int colonyfs_fusexx::rename(const char* oldname, const char* newname) {
 
@@ -111,9 +124,8 @@ int colonyfs_fusexx::rename(const char* oldname, const char* newname) {
   if (obranch != nbranch) {
 
     fattribute& pnmetadata = metadata_map_[ nbranch.string() ];
-    metadata_map_t::mapped_type::list_t& pnlist = pnmetadata.list;
-
-    pnlist.push_back(nleaf.string());
+    pnmetadata.list.push_back(nleaf.string());
+    metadata_map_.commit(nbranch.string(), pnmetadata);
 
   } else {
 
@@ -132,6 +144,9 @@ int colonyfs_fusexx::rename(const char* oldname, const char* newname) {
   return 0;
 }
 
+
+
+
 /*
  * NOTE:
  * access() is only  appropriate to use in setuid programs.
@@ -142,10 +157,15 @@ int colonyfs_fusexx::access(const char* filename, int mode) {
   return 0;
 }
 
+
+
+
 int colonyfs_fusexx::open(const char *filename, struct fuse_file_info *fi) {
   rLog(fuse_control_, "open: %s", filename);
   return 0;
 }
+
+
 
 
 int colonyfs_fusexx::readdir(
@@ -192,6 +212,9 @@ int colonyfs_fusexx::readdir(
   }
 }
 
+
+
+
 int colonyfs_fusexx::mkdir(const char* filename, mode_t mode) {
 
   boost::filesystem::path path(filename);
@@ -213,6 +236,7 @@ int colonyfs_fusexx::mkdir(const char* filename, mode_t mode) {
 
   fattribute& pmetadata = metadata_map_[ branch.string() ];
   pmetadata.list.push_back(leaf.string());
+  metadata_map_.commit(branch.string(), pmetadata);
 
   return 0;
 }
@@ -319,6 +343,7 @@ int colonyfs_fusexx::create(
   // Register a new file with the parent.
   fattribute& pmetadata = metadata_map_[ branch.string() ];
   pmetadata.list.push_back(leaf.string());
+  metadata_map_.commit(branch.string(), pmetadata);
 
   std::string data;
   data_map_.commit(filename, data);
@@ -346,6 +371,7 @@ int colonyfs_fusexx::write (
   // Adjust the file size attribute.
   fattribute& metadata = metadata_map_[ filename ];
   metadata.stbuf.st_size = data.size();
+  metadata_map_.commit(filename, metadata);
 
   rLog(fuse_control_, "write: (%lu) %s", size, filename);
 
@@ -364,6 +390,7 @@ int colonyfs_fusexx::unlink(const char* filename) {
   fattribute& metadata = metadata_map_[ branch.string() ];
   fattribute::list_t& content = metadata.list;
   content.remove(leaf.string());
+  metadata_map_.commit(branch.string(), metadata);
 
   // Delete the binary data.
   data_map_.erase(filename);
@@ -390,6 +417,8 @@ int colonyfs_fusexx::chmod(const char* filename, mode_t mode) {
     status = 0;
   } else
     status = -EACCES;
+
+  metadata_map_.commit(filename, metadata);
 
   return status;
 }
@@ -418,6 +447,9 @@ int colonyfs_fusexx::rmdir(const char* filename) {
 
     // Examine the durectory content and remove the entry.
     pmetadata.list.remove(leaf.string());
+
+    // Commit the change.
+    metadata_map_.commit(leaf.string(), pmetadata);
 
     return 0;
   } catch (colony::lookup_e& e) {

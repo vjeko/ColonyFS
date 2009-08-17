@@ -9,6 +9,7 @@
 #define DEBUG_HPP_
 
 #include <boost/type_traits.hpp>
+#include <boost/make_shared.hpp>
 
 #include <rlog/rlog.h>
 #include <rlog/RLogChannel.h>
@@ -23,5 +24,7 @@
 #include <boost/foreach.hpp>
 
 #define foreach BOOST_FOREACH
+
+using boost::make_shared;
 
 #endif /* DEBUG_HPP_ */

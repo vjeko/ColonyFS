@@ -10,6 +10,7 @@
 
 #include "../xmlrpc/values.hpp"
 #include "../xmlrpc/attribute.hpp"
+#include "aggregator.hpp"
 
 #include <sys/stat.h>
 
@@ -17,10 +18,13 @@
 #include <boost/unordered_map.hpp>
 #include <boost/exception.hpp>
 
+
+
+
 namespace colony {
 
-typedef boost::error_info<struct metadata_error, std::string> key_info_t;
-class lookup_e : public boost::exception {};
+
+
 
 template<typename Key,typename T>
 class io_wrapper {
@@ -49,7 +53,7 @@ public:
     typename implementation_type::iterator it = implementation_.find(key);
 
     if(it == implementation_.end())
-      throw lookup_e() << key_info_t(key);
+      throw lookup_e();
 
     mapped_type& value = it->second;
     return value;
@@ -70,7 +74,7 @@ public:
   }
 
   inline void erase(const key_type& key) {
-      implementation_.erase(key);
+    implementation_.erase(key);
   }
 
 };
