@@ -84,7 +84,6 @@ BOOST_AUTO_TEST_CASE( value_chunkserver ) {
   std::string value = original.get_value();
 
   chunkserver_value reconstructed(key, value);
-
   instruction instruction = reconstructed.get_instruction();
 
   BOOST_CHECK_EQUAL(CHUNKSERVER_INSTRUCTION, instruction.get_type());

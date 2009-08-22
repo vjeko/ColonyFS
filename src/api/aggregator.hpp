@@ -38,7 +38,6 @@ public:
   typedef typename T::key_type           key_type;
   typedef typename T::value_type         value_type;
   typedef typename T::mapped_type        mapped_type;
-  typedef boost::shared_ptr<value_type>  mapped_type_ptr;
 
   typedef boost::unordered_map<std::string, mapped_type>  cache_type;
   typedef boost::unordered_map<std::string, std::string>  implementation_type;
@@ -46,32 +45,72 @@ public:
   typedef typename implementation_type::iterator          iterator;
   typedef typename implementation_type::const_iterator    const_iterator;
 
+
+
+
   aggregator() {};
+
+
+
 
   virtual ~aggregator() {};
 
+
+
+
   inline mapped_type& operator[](const key_type& key) {
-    typename implementation_type::iterator it = implementation_.find(key);
+    T object(key);
+    typename implementation_type::iterator it = implementation_.find(object.get_key());
 
     if(it == implementation_.end())
       throw lookup_e() << key_info_t(key);
 
-    T object(key);
     object.set_value(it->second);
     cache_[key] = object.get_mapped();
 
     return cache_[key];
   }
 
+
+
+
   inline void commit(const key_type& key, const value_type& value) {
     T object(key, value);
-    implementation_[key] = object.get_value();
+    implementation_[object.get_key()] = object.get_value();
   }
+
+
+
+
+  inline shared_ptr<T> operator()(const key_type& key) {
+    shared_ptr<T> pair = make_shared<T>(key);
+    typename implementation_type::iterator it = implementation_.find(pair->get_key());
+
+    if(it == implementation_.end())
+      throw lookup_e() << key_info_t(pair->get_key());
+
+    pair->set_value(it->second);
+
+    return pair;
+  }
+
+
+
+
+  inline void commit(shared_ptr<T> pair) {
+    implementation_[pair->get_key()] = pair->get_value();
+  }
+
+
+
 
   inline void erase(const key_type& key) {
       implementation_.erase(key);
       cache_.erase(key);
   }
+
+
+
 
 private:
 

@@ -19,8 +19,8 @@
 #include <iostream>
 #include <sstream>
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
@@ -98,11 +98,13 @@ public:
   typedef T             value_type;
   typedef T             mapped_type;
 
+  typedef boost::archive::binary_oarchive oarchive_type;
+  typedef boost::archive::binary_iarchive iarchive_type;
 
   base_value() {};
 
   base_value(const instruction_enum type, const std::string argument = ""):
-      instruction_(type, argument) {};
+    instruction_(type, argument) {};
 
   base_value(const std::string& key, const std::string& value) {
     set_key(key);
@@ -139,14 +141,14 @@ public:
   template<typename Destination>
   void deserialize(const std::string& value, Destination& destionation) {
     std::stringstream ss(value);
-    boost::archive::text_iarchive ia(ss);
+    iarchive_type ia(ss);
     ia >> destionation;
   }
 
   template<typename Value>
   std::string& serialize(Value& value, std::string& destionation) {
     std::stringstream ss;
-    boost::archive::text_oarchive oa(ss);
+    oarchive_type oa(ss);
     oa << value;
 
     destionation = ss.str();

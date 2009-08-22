@@ -10,6 +10,7 @@
 
 #include <boost/type_traits.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <rlog/rlog.h>
 #include <rlog/RLogChannel.h>
@@ -26,5 +27,6 @@
 #define foreach BOOST_FOREACH
 
 using boost::make_shared;
+using boost::shared_ptr;
 
 #endif /* DEBUG_HPP_ */

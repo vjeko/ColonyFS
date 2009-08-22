@@ -1,5 +1,6 @@
 // hello.cpp
 #include "colonyfs_fusexx.hpp"
+#include "../debug.hpp"
 
 #include <string>
 #include <cstring>
@@ -19,25 +20,30 @@ data_map_t data_map_;
 
 
 colonyfs_fusexx::colonyfs_fusexx() {
+  using namespace uledfs::xmlrpc;
 
-  fattribute metadata;
+  const std::string path("/");
+
+  shared_ptr<attribute_value> pair = make_shared<attribute_value>(path);
+  fattribute& metadata = pair->get_mapped();
 
   metadata.stbuf.st_mode = S_IFDIR | 0777;
   metadata.stbuf.st_nlink = 1;
 
   clock_gettime(CLOCK_REALTIME, &metadata.stbuf.st_mtim);
-  metadata_map_.commit("/", metadata);
+  metadata_map_.commit(pair);
 }
 
 
 
 
 int colonyfs_fusexx::symlink (const char* target, const char* link) {
+  using namespace uledfs::xmlrpc;
 
   rLog(fuse_control_, "symlink: %s -> %s", target, link);
 
-  // Create metadata for that filename.
-  fattribute metadata;
+  shared_ptr<attribute_value> pair = make_shared<attribute_value>(link);
+  fattribute& metadata = pair->get_mapped();
 
   // Set the attributes.
   metadata.stbuf.st_mode = S_IFLNK | 0777; // File flags.
@@ -45,18 +51,16 @@ int colonyfs_fusexx::symlink (const char* target, const char* link) {
   metadata.list.push_back(target); // Target..
 
 //  metadata_map_.commit(link, metadata);
-  metadata_map_.commit(link, metadata);
+  metadata_map_.commit(pair);
 
   boost::filesystem::path full(link);
   boost::filesystem::path branch = full.branch_path();
   boost::filesystem::path leaf = full.leaf();
 
-  // Register file creating with the parent.
-//  fattribute& pmetadata = metadata_map_[ branch.string() ];
-//  pmetadata.list.push_back(leaf.string());
-  fattribute parent_metadata = metadata_map_[ branch.string() ];
+  shared_ptr<attribute_value> parent_pair = metadata_map_( branch.string() );
+  fattribute& parent_metadata = parent_pair->get_mapped();
   parent_metadata.list.push_back(leaf.string());
-  metadata_map_.commit(branch.string(), parent_metadata);
+  metadata_map_.commit(parent_pair);
 
   return 0;
 }
