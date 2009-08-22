@@ -14,6 +14,6 @@
 int main() {
 
 	boost::filesystem::path cfg("conf/masternode.conf");
-	uledfs::parser::chunkserver_parser parser(cfg);
+	colony::parser::chunkserver_parser parser(cfg);
 
 }

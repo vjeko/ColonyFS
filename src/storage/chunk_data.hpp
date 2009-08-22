@@ -18,7 +18,7 @@
 
 #include "chunk_metadata.hpp"
 
-namespace uledfs {
+namespace colony {
 
 namespace storage {
 

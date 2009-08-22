@@ -20,7 +20,7 @@
 
 #include <rlog/StdioNode.h>
 
-namespace uledfs {
+namespace colony {
 
 class chunkserver_api {
 public:
@@ -31,8 +31,8 @@ public:
 
 private:
   boost::asio::io_service                io_service_;
-  uledfs::parser::chunkserver_parser     parser_;
-  uledfs::intercom::chunkserver_harmony  chunkserver_;
+  colony::parser::chunkserver_parser     parser_;
+  colony::intercom::chunkserver_harmony  chunkserver_;
 };
 
 }

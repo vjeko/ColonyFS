@@ -15,7 +15,7 @@
 #include <boost/exception.hpp>
 #include <boost/filesystem.hpp>
 
-namespace uledfs { namespace parser {
+namespace colony { namespace parser {
 
 typedef boost::error_info<struct tag_filename, std::string> filename_info;
 class file_open_error: public boost::exception { };

@@ -27,18 +27,18 @@ int main(int argc, char* argv[]) {
   stdLog.subscribeTo( RLOG_CHANNEL("debug") );
   stdLog.subscribeTo( RLOG_CHANNEL("storage/util/detail") );
 
-  boost::shared_ptr< std::vector< uledfs::storage::chunk_data > > chunk_nptr;
+  boost::shared_ptr< std::vector< colony::storage::chunk_data > > chunk_nptr;
 
   if (argc < 2)
     throw std::runtime_error("unspecified file");
 
   boost::filesystem::path sample_file(argv[1]);
-  chunk_nptr = uledfs::storage::chunk_file(sample_file);
+  chunk_nptr = colony::storage::chunk_file(sample_file);
 
   rDebug("Created %d chunks.", (int) chunk_nptr->size());
-  uledfs::storage::db db;
+  colony::storage::db db;
 
-  BOOST_FOREACH(uledfs::storage::chunk_data& chunk, *chunk_nptr) {
+  BOOST_FOREACH(colony::storage::chunk_data& chunk, *chunk_nptr) {
 
     std::ostringstream file_name;
     file_name << chunk.uid_ << "-" << chunk.cuid_;
@@ -48,17 +48,17 @@ int main(int argc, char* argv[]) {
     rDebug("RS-Hash Function Value: %u",
     JSHash( std::string( &chunk.data_ptr_->front() ) ) );
 
-   uledfs::storage::deposit_chunk(chunk, file_name.str());
+   colony::storage::deposit_chunk(chunk, file_name.str());
   }
 
-  uledfs::storage::db::representation_type file_name;
+  colony::storage::db::representation_type file_name;
 
-  BOOST_FOREACH(uledfs::storage::chunk_metadata& metadata, *chunk_nptr) {
+  BOOST_FOREACH(colony::storage::chunk_metadata& metadata, *chunk_nptr) {
 
     file_name = metadata.uid_;
 
-    boost::shared_ptr<uledfs::storage::chunk_data> chunk =
-      uledfs::storage::retrieve_chunk(metadata, db);
+    boost::shared_ptr<colony::storage::chunk_data> chunk =
+      colony::storage::retrieve_chunk(metadata, db);
 
     rDebug("RS-Hash Function Value: %u",
     JSHash( std::string( &chunk->data_ptr_->front() ) ) );
@@ -68,6 +68,6 @@ int main(int argc, char* argv[]) {
   boost::filesystem::ofstream
   stream(write_path, std::ios::out | std::ios::binary);;
 
-  uledfs::storage::async_assemble_chunks(file_name, db, stream);
+  colony::storage::async_assemble_chunks(file_name, db, stream);
 
 }

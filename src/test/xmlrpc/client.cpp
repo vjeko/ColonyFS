@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE( harmony_xmlrpc_storage ) {
 
   try {
     std::string const url("http://tricycle.cs.washington.edu:1212/RPC2");
-    uledfs::xmlrpc::harmony harmony(url);
+    colony::xmlrpc::harmony harmony(url);
 
     std::ostringstream stream;
 
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE( harmony_xmlrpc_storage ) {
       BOOST_CHECK(!value.compare(return_value));
     }
 
-  } catch(uledfs::xmlrpc::key_missing_error& e) {
+  } catch(colony::xmlrpc::key_missing_error& e) {
     BOOST_FAIL( "Key not found." );
   } catch (girerr::error& e) {
     BOOST_FAIL( "Harmony error: " << std::string(e.what()) );

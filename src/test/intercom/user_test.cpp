@@ -34,8 +34,8 @@ int main(int argc, char* argv[]) {
 	client_log.subscribeTo( RLOG_CHANNEL("intercom/client_mt/control") ) ;
 
   boost::filesystem::path config_path("conf/user.conf");
-  uledfs::parser::user_parser parser(config_path);
-  uledfs::user_api client(parser);
+  colony::parser::user_parser parser(config_path);
+  colony::user_api client(parser);
 
   /*
    * Program options.

@@ -10,7 +10,7 @@
 
 #include <string>
 
-namespace uledfs { namespace storage {
+namespace colony { namespace storage {
 
 struct basic_metadata {
 

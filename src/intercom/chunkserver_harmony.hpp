@@ -17,7 +17,7 @@
 #include <boost/function.hpp>
 #include <boost/any.hpp>
 
-namespace uledfs {
+namespace colony {
 
 namespace intercom {
 
@@ -26,7 +26,7 @@ public:
 
   chunkserver_harmony(
 			boost::asio::io_service&,
-			uledfs::parser::chunkserver_parser&
+			colony::parser::chunkserver_parser&
 			);
 
   void init();
@@ -42,7 +42,7 @@ public:
 
   void display_data(
       const boost::system::error_code&,
-      const boost::shared_ptr<uledfs::storage::chunk_data>,
+      const boost::shared_ptr<colony::storage::chunk_data>,
       connection_ptr_t);
 
   void retrieve_chunk(
@@ -51,7 +51,7 @@ public:
   void send_data(
       const boost::system::error_code&,
       connection_ptr_t,
-      const boost::shared_ptr<uledfs::storage::basic_metadata>);
+      const boost::shared_ptr<colony::storage::basic_metadata>);
 
   void handle_write(
       const boost::system::error_code& e,
@@ -64,14 +64,14 @@ private:
   void end(const boost::system::error_code&, connection_ptr_t);
 
 	/* Variable Declarations */
-  uledfs::storage::db                 database_;
-  uledfs::parser::chunkserver_parser& parser_;
-  uledfs::xmlrpc::harmony             dht_;
+  colony::storage::db                 database_;
+  colony::parser::chunkserver_parser& parser_;
+  colony::xmlrpc::harmony             dht_;
 
 };
 
 } // namespace intercom
 
-} // namespace uledfs
+} // namespace colony
 
 #endif /* CHUNKSERVER_H_ */

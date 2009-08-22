@@ -14,7 +14,7 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/foreach.hpp>
 
-namespace uledfs { namespace parser {
+namespace colony { namespace parser {
 
 user_parser::user_parser(
 		boost::filesystem::path& config_path) :

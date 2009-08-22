@@ -30,7 +30,7 @@
 
 
 
-namespace uledfs { namespace xmlrpc {
+namespace colony { namespace xmlrpc {
 
 
 

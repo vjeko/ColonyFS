@@ -66,12 +66,12 @@ typedef boost::fusion::result_of::make_map<
 
 typedef boost::fusion::pair<
   boost::mpl::int_<DEPOSIT_CHUNK>,
-  boost::function<void (uledfs::storage::chunk_data)>
+  boost::function<void (colony::storage::chunk_data)>
 > masternode_deposit_chunk_callback_t;
 
 typedef boost::fusion::pair<
   boost::mpl::int_<RETRIEVE_CHUNK>,
-  boost::function<void (uledfs::storage::chunk_metadata)>
+  boost::function<void (colony::storage::chunk_metadata)>
 > masternode_retrieve_chunk_callback_t;
 
 typedef boost::fusion::result_of::make_map<

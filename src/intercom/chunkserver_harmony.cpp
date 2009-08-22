@@ -11,13 +11,13 @@
 #include "../storage/chunk_data.hpp"
 #include "../storage/util.hpp"
 
-namespace uledfs {
+namespace colony {
 
 namespace intercom {
 
 chunkserver_harmony::chunkserver_harmony(
     boost::asio::io_service& io_service,
-    uledfs::parser::chunkserver_parser& parser) :
+    colony::parser::chunkserver_parser& parser) :
       server::server(io_service, CHUNK_SERVER_PORT),
       parser_(parser),
       dht_( parser_.get_dht_url() ) {
@@ -37,7 +37,7 @@ void chunkserver_harmony::init() {
   try {
     // See if the swarm exists. If so, a proper key is returned.
     chunkserver_info = dht_.get_value<xmlrpc::chunkserver_value>(swarm);
-  } catch (uledfs::xmlrpc::key_missing_error& e) {
+  } catch (colony::xmlrpc::key_missing_error& e) {
     // If the swarm is missing, this implies we are the first one joining.
     rInfo("swarm seems to be empty... joining");
   }
@@ -52,7 +52,7 @@ void chunkserver_harmony::init() {
 
   // Set the prefix for storing data.
   boost::filesystem::path path(parser_.get_path()[0]);
-  uledfs::storage::set_prefix(path);
+  colony::storage::set_prefix(path);
 
 }
 
@@ -86,8 +86,8 @@ void chunkserver_harmony::process_cmd(
 
 void chunkserver_harmony::deposit_chunk(connection_ptr_t conn) {
 
-  boost::shared_ptr<uledfs::storage::chunk_data>
-  chunk_ptr(new uledfs::storage::chunk_data);
+  boost::shared_ptr<colony::storage::chunk_data>
+  chunk_ptr(new colony::storage::chunk_data);
 
   conn->async_read(
       *chunk_ptr,
@@ -103,11 +103,11 @@ void chunkserver_harmony::deposit_chunk(connection_ptr_t conn) {
 
 void chunkserver_harmony::display_data(
     const boost::system::error_code& e,
-    const boost::shared_ptr<uledfs::storage::chunk_data> chunk_ptr,
+    const boost::shared_ptr<colony::storage::chunk_data> chunk_ptr,
     connection_ptr_t conn) {
   if (!e) {
 
-    uledfs::storage::deposit_chunk(chunk_ptr, database_);
+    colony::storage::deposit_chunk(chunk_ptr, database_);
 
     rLog(com_chunkserver_harmony_control_, "... (%s)(%d)(...)",
         chunk_ptr->uid_.c_str(), chunk_ptr->cuid_);
@@ -120,8 +120,8 @@ void chunkserver_harmony::display_data(
 void chunkserver_harmony::retrieve_chunk(
     connection_ptr_t conn) {
 
-  boost::shared_ptr<uledfs::storage::basic_metadata>
-  basic_metadata_ptr(new uledfs::storage::chunk_metadata );
+  boost::shared_ptr<colony::storage::basic_metadata>
+  basic_metadata_ptr(new colony::storage::chunk_metadata );
 
   conn->async_read(
       *basic_metadata_ptr,
@@ -137,15 +137,15 @@ void chunkserver_harmony::retrieve_chunk(
 void chunkserver_harmony::send_data(
     const boost::system::error_code& e,
     connection_ptr_t conn,
-    const boost::shared_ptr<uledfs::storage::basic_metadata> metadata_ptr) {
+    const boost::shared_ptr<colony::storage::basic_metadata> metadata_ptr) {
 
   if (!e) {
 
     rLog(com_chunkserver_harmony_control_, "... done: (%s)(%d)",
         metadata_ptr->uid_.c_str(), metadata_ptr->cuid_);
 
-    boost::shared_ptr<uledfs::storage::chunk_data> chunk_ptr;
-    chunk_ptr = uledfs::storage::retrieve_chunk(metadata_ptr, database_);
+    boost::shared_ptr<colony::storage::chunk_data> chunk_ptr;
+    chunk_ptr = colony::storage::retrieve_chunk(metadata_ptr, database_);
 
     conn->async_write(*chunk_ptr,
         boost::bind(&chunkserver_harmony::end, this,

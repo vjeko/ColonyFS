@@ -11,7 +11,7 @@
 
 #include <boost/filesystem/fstream.hpp>
 
-namespace uledfs { namespace parser {
+namespace colony { namespace parser {
 
 parser::parser(boost::filesystem::path& config_path) :
 	config_("Configuration"),

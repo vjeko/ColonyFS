@@ -18,7 +18,7 @@
 
 #include <utility>
 
-namespace uledfs { namespace storage {
+namespace colony { namespace storage {
 
 db::db() :
       file_(file("UNSPECIFIED")) {}

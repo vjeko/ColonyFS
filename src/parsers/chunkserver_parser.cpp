@@ -14,7 +14,7 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/foreach.hpp>
 
-namespace uledfs { namespace parser {
+namespace colony { namespace parser {
 
 chunkserver_parser::chunkserver_parser(
 		boost::filesystem::path& config_path) :

@@ -16,7 +16,7 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/filesystem/path.hpp>
 
-namespace uledfs {
+namespace colony {
 
 /**
  * Client's Public API.
@@ -32,7 +32,7 @@ namespace uledfs {
 class user_api {
 public:
 
-  typedef uledfs::parser::user_parser parser_t;
+  typedef colony::parser::user_parser parser_t;
 
   user_api(
       parser_t& parser);
@@ -49,8 +49,8 @@ private:
 
   boost::asio::io_service         io_service_;
   parser_t                       &parser_;
-  uledfs::xmlrpc::harmony         dht_;
-  uledfs::intercom::user_harmony  intercom_;
+  colony::xmlrpc::harmony         dht_;
+  colony::intercom::user_harmony  intercom_;
   rlog::RLogChannel*              user_log_;
 };
 

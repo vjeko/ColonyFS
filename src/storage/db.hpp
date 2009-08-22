@@ -14,7 +14,7 @@
 #include <map>
 #include <string>
 
-namespace uledfs { namespace storage {
+namespace colony { namespace storage {
 
 class db {
 public:

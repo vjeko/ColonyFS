@@ -18,7 +18,7 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/serialization/utility.hpp>
 
-namespace uledfs { namespace storage {
+namespace colony { namespace storage {
 
   void set_prefix(boost::filesystem::path path);
 
@@ -45,7 +45,7 @@ namespace uledfs { namespace storage {
 
   void async_assemble_chunks(
       const boost::filesystem::path& out,
-      std::vector<boost::shared_ptr<uledfs::storage::chunk_data> > data_ptr_pool) ;
+      std::vector<boost::shared_ptr<colony::storage::chunk_data> > data_ptr_pool) ;
 
 } } // namespace
 

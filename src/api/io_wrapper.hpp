@@ -53,7 +53,7 @@ public:
     typename implementation_type::iterator it = implementation_.find(key);
 
     if(it == implementation_.end())
-      throw lookup_e();
+      throw std::runtime_error(key);
 
     mapped_type& value = it->second;
     return value;

@@ -18,7 +18,7 @@
 #include "../storage/network_metadata.hpp"
 #include "../parsers/user_parser.hpp"
 
-namespace uledfs {
+namespace colony {
 
 namespace intercom {
 
@@ -28,16 +28,16 @@ public:
 
   user_harmony(
       boost::asio::io_service& io_service,
-      uledfs::parser::user_parser& parser,
-      uledfs::xmlrpc::harmony& dht);
+      colony::parser::user_parser& parser,
+      colony::xmlrpc::harmony& dht);
 
   virtual ~user_harmony();
 
   void retrieve_chunk(
-      boost::shared_ptr<uledfs::storage::chunk_data>) ;
+      boost::shared_ptr<colony::storage::chunk_data>) ;
 
   void deposit_chunk(
-      boost::shared_ptr<uledfs::storage::chunk_data const>);
+      boost::shared_ptr<colony::storage::chunk_data const>);
 
   /*
    * Retrieve a random value from a container.
@@ -87,33 +87,33 @@ private:
   /* void retrieve_chunk(...); */
 
   void request_read(
-      boost::shared_ptr<uledfs::storage::chunk_data>);
+      boost::shared_ptr<colony::storage::chunk_data>);
 
   void read_from_chunkserver(
-      boost::shared_ptr<uledfs::storage::network_metadata>,
-      boost::shared_ptr<uledfs::storage::chunk_data>);
+      boost::shared_ptr<colony::storage::network_metadata>,
+      boost::shared_ptr<colony::storage::chunk_data>);
 
   void send_metadata(
       connection_ptr_t,
-      boost::shared_ptr<uledfs::storage::basic_metadata>,
-      boost::shared_ptr<uledfs::storage::chunk_data>);
+      boost::shared_ptr<colony::storage::basic_metadata>,
+      boost::shared_ptr<colony::storage::chunk_data>);
 
   void receive_data(
       connection_ptr_t,
-      boost::shared_ptr<uledfs::storage::chunk_data>);
+      boost::shared_ptr<colony::storage::chunk_data>);
 
   /* void deposti_chunk(...) */
 
   void get_metadata(
-      boost::shared_ptr<uledfs::storage::chunk_data const>);
+      boost::shared_ptr<colony::storage::chunk_data const>);
 
   void write_to_chunkserver(
       const std::string& hostname,
-      boost::shared_ptr<uledfs::storage::chunk_data const>);
+      boost::shared_ptr<colony::storage::chunk_data const>);
 
   void send_data(
       connection_ptr_t,
-      boost::shared_ptr<uledfs::storage::chunk_data const>);
+      boost::shared_ptr<colony::storage::chunk_data const>);
 
   void end(
       const boost::system::error_code& e,
@@ -121,11 +121,11 @@ private:
 
   void end(
       const boost::system::error_code& e,
-      const boost::shared_ptr<uledfs::storage::chunk_data const> data_ptr,
+      const boost::shared_ptr<colony::storage::chunk_data const> data_ptr,
       connection_ptr_t connection_ptr);
 
-  uledfs::parser::user_parser        &parser_;
-  uledfs::xmlrpc::harmony            &dht_;
+  colony::parser::user_parser        &parser_;
+  colony::xmlrpc::harmony            &dht_;
   rlog::RLogChannel                  *user_harmony_control_;
 
   rng_type                                  rng_;

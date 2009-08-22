@@ -21,7 +21,7 @@
 const int CHUNK_SIZE = 1024*1024*10;
 typedef boost::array< char, CHUNK_SIZE > chunk_t;
 
-namespace uledfs { namespace storage {
+namespace colony { namespace storage {
 
 class chunk_metadata : public basic_metadata {
 

@@ -1,6 +1,6 @@
 #include "client_mt.hpp"
 
-namespace uledfs {
+namespace colony {
 
 namespace intercom {
 

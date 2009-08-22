@@ -10,8 +10,8 @@
 
 int main(int argc, char* argv[]) {
 
-  using uledfs::storage::network_metadata;
-  using uledfs::db::network_db;
+  using colony::storage::network_metadata;
+  using colony::db::network_db;
 
   network_db _db;
 

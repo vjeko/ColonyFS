@@ -14,7 +14,7 @@
 
 
 //typedef colony::io_wrapper<std::string, fattribute>          metadata_map_t;
-typedef colony::aggregator<uledfs::xmlrpc::attribute_value>  metadata_map_t;
+typedef colony::aggregator<colony::xmlrpc::attribute_value>  metadata_map_t;
 typedef colony::io_wrapper<std::string, std::string>         data_map_t;
 
 

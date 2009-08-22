@@ -14,7 +14,7 @@
 
 #include <boost/foreach.hpp>
 
-namespace uledfs { namespace storage {
+namespace colony { namespace storage {
 
 /** GLobal Variables **/
 
@@ -39,7 +39,7 @@ void set_prefix(boost::filesystem::path path) {
 
 void async_assemble_chunks(
     const boost::filesystem::path& out,
-    std::vector<boost::shared_ptr<uledfs::storage::chunk_data> > data_ptr_pool) {
+    std::vector<boost::shared_ptr<colony::storage::chunk_data> > data_ptr_pool) {
 
   boost::filesystem::ofstream stream(out);
 
@@ -52,7 +52,7 @@ void async_assemble_chunks(
   /*
    * TODO: Replace above statement with:
    *
-   * BOOST_FOREACH(uledfs::storage::chunk_data& data, *data_pool_ptr) {
+   * BOOST_FOREACH(colony::storage::chunk_data& data, *data_pool_ptr) {
    *    stream.write(&data.data_ptr_->front(), data.data_ptr_->size());
    * }
    *

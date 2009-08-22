@@ -21,7 +21,7 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/variant.hpp>
 
-namespace uledfs {
+namespace colony {
 
 namespace intercom {
 

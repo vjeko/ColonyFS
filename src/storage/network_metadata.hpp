@@ -14,7 +14,7 @@
 
 #include <boost/serialization/base_object.hpp>
 
-namespace uledfs { namespace storage {
+namespace colony { namespace storage {
 
 struct network_metadata : basic_metadata {
 

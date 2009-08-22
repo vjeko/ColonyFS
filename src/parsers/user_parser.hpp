@@ -16,7 +16,7 @@
 #include <boost/exception.hpp>
 #include <boost/filesystem.hpp>
 
-namespace uledfs { namespace parser {
+namespace colony { namespace parser {
 
 class user_parser : public parser {
 public:

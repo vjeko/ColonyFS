@@ -7,7 +7,7 @@
 
 #include "chunk_data.hpp"
 
-namespace uledfs {
+namespace colony {
 
 namespace storage {
 
@@ -70,4 +70,4 @@ chunk_data::~chunk_data() {
 
 } // namespace storage
 
-} // namespace uledfs
+} // namespace colony

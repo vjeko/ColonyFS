@@ -10,7 +10,7 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/program_options.hpp>
 
-namespace uledfs { namespace parser {
+namespace colony { namespace parser {
 
 masternode_parser::masternode_parser(
 		boost::filesystem::path& config_path) : parser(config_path) {

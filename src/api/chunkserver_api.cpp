@@ -7,7 +7,7 @@
 
 #include "chunkserver_api.hpp"
 
-namespace uledfs {
+namespace colony {
 
 chunkserver_api::chunkserver_api(
     boost::filesystem::path& config_path) :

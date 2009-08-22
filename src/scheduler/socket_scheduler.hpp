@@ -12,7 +12,7 @@
 
 #include "../boost/threadpool.hpp"
 
-namespace uledfs { namespace scheduler {
+namespace colony { namespace scheduler {
 
 //template<typename F>
 class socket_scheduler {

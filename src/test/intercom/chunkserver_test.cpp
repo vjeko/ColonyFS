@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
   chunkserver_log.subscribeTo(RLOG_CHANNEL("parser/control"));
 
   boost::filesystem::path config_path("conf/chunkserver.conf");
-  uledfs::chunkserver_api chunkserver(config_path);
+  colony::chunkserver_api chunkserver(config_path);
 
   chunkserver.run();
 }

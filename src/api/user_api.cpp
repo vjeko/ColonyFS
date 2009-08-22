@@ -7,6 +7,7 @@
 
 #include "user_api.hpp"
 
+#include "../debug.hpp"
 #include "../storage/chunk_data.hpp"
 #include "../storage/util.hpp"
 #include "../xmlrpc/values.hpp"
@@ -20,7 +21,7 @@
 #include <boost/ref.hpp>
 #include <boost/function.hpp>
 
-namespace uledfs {
+namespace colony {
 
 user_api::user_api(
     parser_t& parser) :
@@ -40,7 +41,7 @@ void user_api::read(
     boost::filesystem::path& in,
     boost::filesystem::path& out) {
 
-  using namespace uledfs::xmlrpc;
+  using namespace colony::xmlrpc;
 
   rLog(user_log_, "retrieving filename <%s>...", in.leaf().c_str() );
 
@@ -51,7 +52,7 @@ void user_api::read(
 
   rLog(user_log_, "... total number of chunks is %d\n", number );
 
-  std::vector<boost::shared_ptr<uledfs::storage::chunk_data> > data_ptr_pool;
+  std::vector<boost::shared_ptr<colony::storage::chunk_data> > data_ptr_pool;
 
   // Retrieve each of the chunks and add them to the collection.
   for (size_t i = 0; i < number; i++) {
@@ -59,7 +60,7 @@ void user_api::read(
     data_ptr_pool.push_back(data_ptr);
 
     io_service_.post(
-        boost::bind(&uledfs::intercom::user_harmony::retrieve_chunk, &intercom_, data_ptr)
+        boost::bind(&colony::intercom::user_harmony::retrieve_chunk, &intercom_, data_ptr)
     );
 
     usleep(10000);
@@ -70,18 +71,18 @@ void user_api::read(
 
   io_service_.run();
 
-  uledfs::storage::async_assemble_chunks(out, data_ptr_pool);
+  colony::storage::async_assemble_chunks(out, data_ptr_pool);
 
 }
 
 void user_api::write(boost::filesystem::path& in) {
 
   // Define the collection of chunks.
-  boost::shared_ptr<std::vector<uledfs::storage::chunk_data> > data_pool_ptr(
-      new std::vector<uledfs::storage::chunk_data>);
+  boost::shared_ptr<std::vector<colony::storage::chunk_data> > data_pool_ptr(
+      new std::vector<colony::storage::chunk_data>);
 
   // Chunk the designated file and populate the container.
-  data_pool_ptr = uledfs::storage::chunk_file(in);
+  data_pool_ptr = colony::storage::chunk_file(in);
 
   // Deposit filename information.
   //xmlrpc::value_t value(boost::lexical_cast<xmlrpc::value_t>(data_pool_ptr->size()));
@@ -91,13 +92,13 @@ void user_api::write(boost::filesystem::path& in) {
   dht_.set_pair<xmlrpc::filename_value>(v);
   rLog(user_log_, "depositing file metadata <%s><%s>", in.leaf().c_str(), v.get_value().c_str() );
 
-  foreach(uledfs::storage::chunk_data& chunk, *data_pool_ptr) {
+  foreach(colony::storage::chunk_data& chunk, *data_pool_ptr) {
 
-    boost::shared_ptr<uledfs::storage::chunk_data> chunk_ptr(new uledfs::storage::chunk_data);
+    boost::shared_ptr<colony::storage::chunk_data> chunk_ptr(new colony::storage::chunk_data);
     *chunk_ptr = chunk;
 
     io_service_.post(
-        boost::bind(&uledfs::intercom::user_harmony::deposit_chunk, &intercom_, chunk_ptr)
+        boost::bind(&colony::intercom::user_harmony::deposit_chunk, &intercom_, chunk_ptr)
     );
 
     usleep(10000);

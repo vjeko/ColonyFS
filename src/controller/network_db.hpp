@@ -19,7 +19,7 @@
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/composite_key.hpp>
 
-namespace uledfs { namespace db {
+namespace colony { namespace db {
 
 namespace {
 
@@ -31,21 +31,21 @@ struct basic_metadata_tag{};
 struct host_tag{};
 
 typedef boost::multi_index_container<
-  uledfs::storage::network_metadata,
+  colony::storage::network_metadata,
   indexed_by<
     ordered_non_unique<
       tag<basic_metadata_tag>,
       composite_key<
-        uledfs::storage::network_metadata,
-        BOOST_MULTI_INDEX_MEMBER(uledfs::storage::basic_metadata, std::string, uid_ ),
-        BOOST_MULTI_INDEX_MEMBER(uledfs::storage::basic_metadata,         int, cuid_)
+        colony::storage::network_metadata,
+        BOOST_MULTI_INDEX_MEMBER(colony::storage::basic_metadata, std::string, uid_ ),
+        BOOST_MULTI_INDEX_MEMBER(colony::storage::basic_metadata,         int, cuid_)
       >
     >,
     ordered_non_unique<
       tag<host_tag>,
       member<
-        uledfs::storage::network_metadata,
-        std::string, &uledfs::storage::network_metadata::host_
+        colony::storage::network_metadata,
+        std::string, &colony::storage::network_metadata::host_
       >
     >
   >
@@ -71,20 +71,20 @@ public:
 
   network_db();
 
-  void insert(uledfs::storage::network_metadata&);
+  void insert(colony::storage::network_metadata&);
 
   void insert(
-      uledfs::storage::network_metadata::uid_type&,
-      uledfs::storage::network_metadata::cuid_type,
-      uledfs::storage::network_metadata::host_type&);
+      colony::storage::network_metadata::uid_type&,
+      colony::storage::network_metadata::cuid_type,
+      colony::storage::network_metadata::host_type&);
 
-  void invalidate_host(uledfs::storage::network_metadata::host_type);
+  void invalidate_host(colony::storage::network_metadata::host_type);
 
   range_iterator find_chunk(
-    uledfs::storage::network_metadata::uid_type&,
-    uledfs::storage::network_metadata::cuid_type);
+    colony::storage::network_metadata::uid_type&,
+    colony::storage::network_metadata::cuid_type);
 
-  range_iterator find_chunk(uledfs::storage::basic_metadata&);
+  range_iterator find_chunk(colony::storage::basic_metadata&);
 
   void print();
 

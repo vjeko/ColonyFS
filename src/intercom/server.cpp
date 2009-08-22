@@ -2,7 +2,7 @@
 
 #include <boost/thread.hpp>
 
-namespace uledfs {
+namespace colony {
 
 namespace intercom {
 

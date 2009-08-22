@@ -18,7 +18,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/thread.hpp>
 
-namespace uledfs {
+namespace colony {
 
 namespace intercom {
 

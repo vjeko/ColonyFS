@@ -14,7 +14,7 @@
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/client_simple.hpp>
 
-namespace uledfs { namespace xmlrpc {
+namespace colony { namespace xmlrpc {
 
 harmony::harmony(std::string url) :
     url_(url) {

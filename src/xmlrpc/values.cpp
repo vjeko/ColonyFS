@@ -7,7 +7,7 @@
 
 #include "values.hpp"
 
-namespace uledfs {
+namespace colony {
 
 namespace xmlrpc {
 /* ++++++++++++++++++ BASE VALUE ++++++++++++++++++ */

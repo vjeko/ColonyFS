@@ -12,7 +12,7 @@
 
 #include <map>
 
-namespace uledfs { namespace storage {
+namespace colony { namespace storage {
 
 class file {
 

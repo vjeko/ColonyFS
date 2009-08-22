@@ -20,7 +20,7 @@ data_map_t data_map_;
 
 
 colonyfs_fusexx::colonyfs_fusexx() {
-  using namespace uledfs::xmlrpc;
+  using namespace colony::xmlrpc;
 
   const std::string path("/");
 
@@ -38,7 +38,8 @@ colonyfs_fusexx::colonyfs_fusexx() {
 
 
 int colonyfs_fusexx::symlink (const char* target, const char* link) {
-  using namespace uledfs::xmlrpc;
+
+  using namespace colony::xmlrpc;
 
   rLog(fuse_control_, "symlink: %s -> %s", target, link);
 
@@ -70,8 +71,12 @@ int colonyfs_fusexx::symlink (const char* target, const char* link) {
 
 int colonyfs_fusexx::readlink (const char *linkname, char *buffer, size_t size) {
 
-  fattribute metadata = metadata_map_[ linkname ];
-  std::string targetname = metadata.list.front();
+  using namespace colony::xmlrpc;
+
+  shared_ptr<attribute_value> pair = metadata_map_( linkname );
+  fattribute& metadata = pair->get_mapped();
+
+  const std::string targetname = metadata.list.front();
 
   rLog(fuse_control_, "readlink: %s -> %s", linkname, targetname.c_str());
 
@@ -102,17 +107,20 @@ int colonyfs_fusexx::truncate(const char* filename, off_t offset) {
 
 int colonyfs_fusexx::rename(const char* oldname, const char* newname) {
 
+  using namespace colony::xmlrpc;
+
   rLog(fuse_control_, "rename: %s -> %s", oldname, newname);
 
-  boost::filesystem::path ofull(oldname);
-  boost::filesystem::path obranch = ofull.branch_path();
-  boost::filesystem::path oleaf = ofull.leaf();
+  const boost::filesystem::path ofull(oldname);
+  const boost::filesystem::path obranch = ofull.branch_path();
+  const boost::filesystem::path oleaf = ofull.leaf();
 
-  boost::filesystem::path nfull(newname);
-  boost::filesystem::path nbranch = nfull.branch_path();
-  boost::filesystem::path nleaf = nfull.leaf();
+  const boost::filesystem::path nfull(newname);
+  const boost::filesystem::path nbranch = nfull.branch_path();
+  const boost::filesystem::path nleaf = nfull.leaf();
 
-  fattribute& pometadata = metadata_map_[ obranch.string() ];
+  shared_ptr<attribute_value> popair = metadata_map_( obranch.string() );
+  fattribute& pometadata = popair->get_mapped();
   metadata_map_t::mapped_type::list_t& polist = pometadata.list;
 
   metadata_map_t::mapped_type::list_t::iterator poiterator = std::find(
@@ -127,9 +135,11 @@ int colonyfs_fusexx::rename(const char* oldname, const char* newname) {
    */
   if (obranch != nbranch) {
 
-    fattribute& pnmetadata = metadata_map_[ nbranch.string() ];
+    shared_ptr<attribute_value> pnpair = metadata_map_( nbranch.string() );
+    fattribute& pnmetadata = pnpair->get_mapped();
+
     pnmetadata.list.push_back(nleaf.string());
-    metadata_map_.commit(nbranch.string(), pnmetadata);
+    metadata_map_.commit(pnpair);
 
   } else {
 
@@ -137,7 +147,8 @@ int colonyfs_fusexx::rename(const char* oldname, const char* newname) {
 
   }
 
-  fattribute& ometadata = metadata_map_[ ofull.string() ];;
+  shared_ptr<attribute_value> opair = metadata_map_( ofull.string() );
+  fattribute& ometadata = opair->get_mapped();
   metadata_map_.commit( nfull.string(), ometadata );
   metadata_map_.erase(ofull.string());
 
@@ -177,6 +188,8 @@ int colonyfs_fusexx::readdir(
     fuse_fill_dir_t filler, off_t offset,
     struct fuse_file_info* fi) {
 
+  using namespace colony::xmlrpc;
+
   rLog(fuse_control_, "readdir: %s", filename);
 
   boost::filesystem::path full(filename);
@@ -191,7 +204,8 @@ int colonyfs_fusexx::readdir(
 
   try {
     // Retrieve the metadata for our file.
-    fattribute& metadata = metadata_map_[filename];
+    shared_ptr<attribute_value> pair = metadata_map_( filename );
+    fattribute& metadata = pair->get_mapped();
 
     // Fill the buffer with the directory content.
     // Standard dot dot dot.
@@ -221,11 +235,14 @@ int colonyfs_fusexx::readdir(
 
 int colonyfs_fusexx::mkdir(const char* filename, mode_t mode) {
 
-  boost::filesystem::path path(filename);
-  boost::filesystem::path branch = path.branch_path();
-  boost::filesystem::path leaf = path.leaf();
+  using namespace colony::xmlrpc;
 
-  fattribute metadata;
+  const boost::filesystem::path path(filename);
+  const boost::filesystem::path branch = path.branch_path();
+  const boost::filesystem::path leaf = path.leaf();
+
+  shared_ptr<attribute_value> pair = make_shared<attribute_value>( filename );
+  fattribute& metadata = pair->get_mapped();
 
   memset(&metadata.stbuf, 0, sizeof(struct stat));
   metadata.stbuf.st_mode = S_IFDIR | mode;
@@ -234,13 +251,14 @@ int colonyfs_fusexx::mkdir(const char* filename, mode_t mode) {
   metadata.stbuf.st_gid = getgid();
   clock_gettime(CLOCK_REALTIME, &metadata.stbuf.st_mtim);
 
-  metadata_map_.commit(filename, metadata);
+  metadata_map_.commit(pair);
 
   rLog(fuse_control_, "mkdir: %s", filename);
 
-  fattribute& pmetadata = metadata_map_[ branch.string() ];
+  shared_ptr<attribute_value> ppair = metadata_map_( branch.string() );
+  fattribute& pmetadata = ppair->get_mapped();
   pmetadata.list.push_back(leaf.string());
-  metadata_map_.commit(branch.string(), pmetadata);
+  metadata_map_.commit(ppair);
 
   return 0;
 }
@@ -249,11 +267,14 @@ int colonyfs_fusexx::read(
     const char *filename, char *buffer,
     size_t size, off_t offset, struct fuse_file_info *fi) {
 
+  using namespace colony::xmlrpc;
+
   rLog(fuse_control_, "read: %s", filename);
 
   (void) fi;
 
-  fattribute& metadata = metadata_map_[ filename ];
+  shared_ptr<attribute_value> pair = metadata_map_( filename );
+  fattribute& metadata = pair->get_mapped();
   std::string& data = data_map_[ filename ];
 
   size_t length = metadata.stbuf.st_size;
@@ -274,10 +295,12 @@ int colonyfs_fusexx::read(
 
 int colonyfs_fusexx::getattr(const char *filename, struct stat *stat) {
 
+  using namespace colony::xmlrpc;
+
   try {
 
-    const metadata_map_t::mapped_type& metadata =
-        metadata_map_[filename]; // Retrieve metadata for our file.
+    shared_ptr<attribute_value> pair = metadata_map_( filename );
+    const fattribute& metadata = pair->get_mapped();
 
     memset(stat, 0, sizeof(struct stat)); // Zero out the file stat buffer
     memcpy(stat, &metadata.stbuf, sizeof(struct stat)); // Copy metadata info to a given buffer.
@@ -288,14 +311,18 @@ int colonyfs_fusexx::getattr(const char *filename, struct stat *stat) {
 
   } catch (colony::lookup_e& e) {
     rLog(fuse_control_, "getattr: (-) %s", filename);
-    return-ENOENT;
+    return -ENOENT;
   }
 }
 
 int colonyfs_fusexx::fgetattr (const char* filename, struct stat* stbuf, struct fuse_file_info* fi) {
 
+  using namespace colony::xmlrpc;
+
   try {
-    const metadata_map_t::mapped_type& metadata = metadata_map_[filename];
+
+    shared_ptr<attribute_value> pair = metadata_map_( filename );
+    const fattribute& metadata = pair->get_mapped();
 
     // Zero out the file stat buffer
     memset(stbuf, 0, sizeof(struct stat));
@@ -313,9 +340,12 @@ int colonyfs_fusexx::fgetattr (const char* filename, struct stat* stbuf, struct 
 
 int colonyfs_fusexx::utime(const char* filename,  struct utimbuf* time) {
 
+  using namespace colony::xmlrpc;
+
   rLog(fuse_control_, "utime: %s", filename);
 
-  fattribute& metadata = metadata_map_[ filename ];
+  shared_ptr<attribute_value> pair = metadata_map_( filename );
+  fattribute& metadata = pair->get_mapped();
 
   metadata.stbuf.st_atim.tv_sec = time->actime;
   metadata.stbuf.st_mtim.tv_sec = time->modtime;
@@ -326,12 +356,15 @@ int colonyfs_fusexx::utime(const char* filename,  struct utimbuf* time) {
 int colonyfs_fusexx::create(
     const char* filename, mode_t mode, struct fuse_file_info* fi) {
 
-  boost::filesystem::path full(filename);
-  boost::filesystem::path branch = full.branch_path();
-  boost::filesystem::path leaf = full.leaf();
+  using namespace colony::xmlrpc;
+
+  const boost::filesystem::path full(filename);
+  const boost::filesystem::path branch = full.branch_path();
+  const boost::filesystem::path leaf = full.leaf();
 
   // Create metadata for that filename.
-  fattribute metadata;
+  shared_ptr<attribute_value> pair = make_shared<attribute_value>( filename );
+  fattribute& metadata = pair->get_mapped();
 
   // Set the attributes.
   metadata.stbuf.st_mode = S_IFREG | mode; // File flags.
@@ -340,14 +373,15 @@ int colonyfs_fusexx::create(
   metadata.stbuf.st_gid = getgid();
   clock_gettime(CLOCK_REALTIME, &metadata.stbuf.st_mtim); // Modification time.
 
-  metadata_map_.commit(filename, metadata);
+  metadata_map_.commit(pair);
 
   rLog(fuse_control_, "create: %s", filename);
 
   // Register a new file with the parent.
-  fattribute& pmetadata = metadata_map_[ branch.string() ];
+  shared_ptr<attribute_value> ppair = metadata_map_( branch.string() );
+  fattribute& pmetadata = ppair->get_mapped();
   pmetadata.list.push_back(leaf.string());
-  metadata_map_.commit(branch.string(), pmetadata);
+  metadata_map_.commit(ppair);
 
   std::string data;
   data_map_.commit(filename, data);
@@ -358,6 +392,8 @@ int colonyfs_fusexx::create(
 int colonyfs_fusexx::write (
     const char* filename, const char* buffer,
     size_t size, off_t offset, struct fuse_file_info* fi) {
+
+  using namespace colony::xmlrpc;
 
   // Write size.
   size_t length = offset + size;
@@ -373,9 +409,10 @@ int colonyfs_fusexx::write (
   memcpy(&data[offset], buffer, size);
 
   // Adjust the file size attribute.
-  fattribute& metadata = metadata_map_[ filename ];
+  shared_ptr<attribute_value> pair = metadata_map_( filename );
+  fattribute& metadata = pair->get_mapped();
   metadata.stbuf.st_size = data.size();
-  metadata_map_.commit(filename, metadata);
+  metadata_map_.commit(pair);
 
   rLog(fuse_control_, "write: (%lu) %s", size, filename);
 
@@ -384,17 +421,22 @@ int colonyfs_fusexx::write (
 
 int colonyfs_fusexx::unlink(const char* filename) {
 
+  using namespace colony::xmlrpc;
+
   rLog(fuse_control_, "unlink: %s", filename);
 
-  boost::filesystem::path path(filename);
-  boost::filesystem::path branch = path.branch_path();
-  boost::filesystem::path leaf = path.leaf();
+  const boost::filesystem::path path(filename);
+  const boost::filesystem::path branch = path.branch_path();
+  const boost::filesystem::path leaf = path.leaf();
 
   // Remove the node from the parent.
-  fattribute& metadata = metadata_map_[ branch.string() ];
+  shared_ptr<attribute_value> pair = metadata_map_( branch.string() );
+  fattribute& metadata = pair->get_mapped();
+
   fattribute::list_t& content = metadata.list;
   content.remove(leaf.string());
-  metadata_map_.commit(branch.string(), metadata);
+
+  metadata_map_.commit(pair);
 
   // Delete the binary data.
   data_map_.erase(filename);
@@ -407,12 +449,15 @@ int colonyfs_fusexx::unlink(const char* filename) {
 
 int colonyfs_fusexx::chmod(const char* filename, mode_t mode) {
 
+  using namespace colony::xmlrpc;
+
   rLog(fuse_control_, "chmod: %s", filename);
 
   int status;
 
   // What are the ownership flags for this file?
-  fattribute& metadata = metadata_map_[ filename ];
+  shared_ptr<attribute_value> pair = metadata_map_( filename );
+  fattribute& metadata = pair->get_mapped();
   mode_t file_mode = metadata.stbuf.st_mode;
 
   // See if we are allowed to mess with the file.
@@ -422,7 +467,7 @@ int colonyfs_fusexx::chmod(const char* filename, mode_t mode) {
   } else
     status = -EACCES;
 
-  metadata_map_.commit(filename, metadata);
+  metadata_map_.commit(pair);
 
   return status;
 }
@@ -436,24 +481,27 @@ int colonyfs_fusexx::opendir (const char* filename, struct fuse_file_info* fi) {
 
 int colonyfs_fusexx::rmdir(const char* filename) {
 
+  using namespace colony::xmlrpc;
+
   rLog(fuse_control_, "rmdir: %s", filename);
 
-  boost::filesystem::path path(filename);
-  boost::filesystem::path branch = path.branch_path();
-  boost::filesystem::path leaf = path.leaf();
+  const boost::filesystem::path path(filename);
+  const boost::filesystem::path branch = path.branch_path();
+  const boost::filesystem::path leaf = path.leaf();
 
   // Remove metadata for the given file.
   metadata_map_.erase(filename);
 
   try {
     // Get the directory content of the parent.
-    metadata_map_t::mapped_type& pmetadata = metadata_map_[branch.string()];
+    shared_ptr<attribute_value> ppair = metadata_map_( branch.string() );
+    fattribute& pmetadata = ppair->get_mapped();
 
     // Examine the durectory content and remove the entry.
     pmetadata.list.remove(leaf.string());
 
     // Commit the change.
-    metadata_map_.commit(leaf.string(), pmetadata);
+    metadata_map_.commit(ppair);
 
     return 0;
   } catch (colony::lookup_e& e) {

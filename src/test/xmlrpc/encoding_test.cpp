@@ -32,7 +32,7 @@ size_t g_chunk_num = 20;
 
 BOOST_AUTO_TEST_CASE( value_filename ) {
 
-  using namespace uledfs::xmlrpc;
+  using namespace colony::xmlrpc;
 
   filename_value original(g_filename, g_chunk_num);
 
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE( value_filename ) {
 
 BOOST_AUTO_TEST_CASE( value_chunk ) {
 
-  using namespace uledfs::xmlrpc;
+  using namespace colony::xmlrpc;
 
   chunk_value original(g_filename, g_chunk_num, g_hostname);
   std::string key = original.get_key();
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE( value_chunk ) {
 
 BOOST_AUTO_TEST_CASE( value_chunkserver ) {
 
-  using namespace uledfs::xmlrpc;
+  using namespace colony::xmlrpc;
 
   chunkserver_value::value_type chunkservers;
   chunkservers.push_back("hostname1");

@@ -9,7 +9,7 @@
 
 #include <boost/thread.hpp>
 
-namespace uledfs {
+namespace colony {
 namespace scheduler {
 
 socket_scheduler::socket_scheduler(size_t max_concurency) :

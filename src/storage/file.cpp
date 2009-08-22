@@ -7,7 +7,7 @@
 
 #include "file.hpp"
 
-namespace uledfs { namespace storage {
+namespace colony { namespace storage {
 
 file::file() :
       uid_("UNSPECIFIED"),

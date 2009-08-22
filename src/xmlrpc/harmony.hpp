@@ -16,7 +16,7 @@
 #include <iostream>
 #include <sstream>
 
-namespace uledfs { namespace xmlrpc {
+namespace colony { namespace xmlrpc {
 
 typedef boost::error_info<struct tag_key, std::string> key_info;
 

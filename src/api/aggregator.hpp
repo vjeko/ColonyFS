@@ -39,9 +39,7 @@ public:
   typedef typename T::value_type         value_type;
   typedef typename T::mapped_type        mapped_type;
 
-  typedef boost::unordered_map<std::string, mapped_type>  cache_type;
   typedef boost::unordered_map<std::string, std::string>  implementation_type;
-
   typedef typename implementation_type::iterator          iterator;
   typedef typename implementation_type::const_iterator    const_iterator;
 
@@ -54,30 +52,6 @@ public:
 
 
   virtual ~aggregator() {};
-
-
-
-
-  inline mapped_type& operator[](const key_type& key) {
-    T object(key);
-    typename implementation_type::iterator it = implementation_.find(object.get_key());
-
-    if(it == implementation_.end())
-      throw lookup_e() << key_info_t(key);
-
-    object.set_value(it->second);
-    cache_[key] = object.get_mapped();
-
-    return cache_[key];
-  }
-
-
-
-
-  inline void commit(const key_type& key, const value_type& value) {
-    T object(key, value);
-    implementation_[object.get_key()] = object.get_value();
-  }
 
 
 
@@ -104,9 +78,17 @@ public:
 
 
 
+  inline void commit(const key_type& key, const value_type& value) {
+    T object(key, value);
+    implementation_[object.get_key()] = object.get_value();
+  }
+
+
+
+
   inline void erase(const key_type& key) {
-      implementation_.erase(key);
-      cache_.erase(key);
+    T object(key);
+    implementation_.erase(object.get_key());
   }
 
 
@@ -114,7 +96,6 @@ public:
 
 private:
 
-  cache_type          cache_;
   implementation_type implementation_;
 };
 

@@ -10,7 +10,7 @@
 
 #include "parser.hpp"
 
-namespace uledfs { namespace parser {
+namespace colony { namespace parser {
 
 class masternode_parser : public parser {
 public:
