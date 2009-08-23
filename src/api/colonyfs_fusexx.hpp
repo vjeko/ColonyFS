@@ -26,13 +26,16 @@ public:
 
   colonyfs_fusexx(); // Constructor
 
+
+
+
   /**
    * Check file access permissions
    *
    * This will be called for the access() system call.  If the
    * 'default_permissions' mount option is given, this method is not
    * called.
-   *#include "../xmlrpc/attribute.hpp"
+   *
    * This method is not called under Linux kernel versions 2.4.x
    *
    * Introduced in version 2.5
@@ -65,6 +68,9 @@ public:
    */
   static int access(const char* filename, int mode);
 
+
+
+
   /** Get file attributes.
    *
    * Similar to stat().  The 'st_dev' and 'st_blksize' fields are
@@ -73,12 +79,30 @@ public:
    */
   static int getattr(const char* filename, struct stat* stat);
 
+
+
+
   /** Change the access and/or modification times of a file
    *
    * Deprecated, use utimens() instead.
    */
   static int utime(const char* filename, struct utimbuf* time);
 
+  /**
+   * The normal return value from symlink is 0. A return value of -1
+   * indicates an error. In addition to the usual file name syntax
+   * errors (see File Name Errors), the following errno error conditions
+   * are defined for this function:
+   *
+   * EEXIST
+   *  There is already an existing file named newname.
+   * EROFS
+   *  The file newname would exist on a read-only file system.
+   * ENOSPC
+   *  The directory or file system cannot be extended to make the new link.
+   * EIO
+   *  A hardware error occurred while reading or writing data on the disk.
+   */
   static int symlink(const char* src, const char* dst);
 
   static int rename(const char* oldname, const char* newname);
@@ -247,5 +271,5 @@ public:
 
 private:
 
-  static rlog::RLogChannel                  *fuse_control_;
+  static rlog::RLogChannel        *fuse_control_;
 };

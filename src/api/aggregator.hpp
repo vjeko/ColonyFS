@@ -12,6 +12,7 @@
 #include "../xmlrpc/values.hpp"
 #include "../xmlrpc/attribute.hpp"
 
+#include <iostream>
 #include <sys/stat.h>
 
 #include <boost/unordered_map.hpp>
@@ -72,6 +73,8 @@ public:
 
 
   inline void commit(shared_ptr<T> pair) {
+    num_++;
+    std::cout << "+++++++\t" << num_ << std::endl;;
     implementation_[pair->get_key()] = pair->get_value();
   }
 
@@ -96,6 +99,7 @@ public:
 
 private:
 
+  size_t              num_;
   implementation_type implementation_;
 };
 

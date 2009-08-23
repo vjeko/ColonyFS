@@ -1,6 +1,6 @@
-// hello.cpp
-#include "colonyfs_fusexx.hpp"
+
 #include "../debug.hpp"
+#include "colonyfs_fusexx.hpp"
 
 #include <string>
 #include <cstring>
@@ -20,17 +20,27 @@ data_map_t data_map_;
 
 
 colonyfs_fusexx::colonyfs_fusexx() {
+
   using namespace colony::xmlrpc;
 
-  const std::string path("/");
+  const std::string root_path("/");
 
-  shared_ptr<attribute_value> pair = make_shared<attribute_value>(path);
-  fattribute& metadata = pair->get_mapped();
+  // Create the attribute associated with the root directory.
+  shared_ptr<attribute_value> pair = make_shared<attribute_value>(root_path);
+  fattribute& attribute = pair->get_mapped();
 
-  metadata.stbuf.st_mode = S_IFDIR | 0777;
-  metadata.stbuf.st_nlink = 1;
 
-  clock_gettime(CLOCK_REALTIME, &metadata.stbuf.st_mtim);
+  // What is the access mode?
+  attribute.stbuf.st_mode = S_IFDIR | 0777;
+
+  // What is the total number of entries within the directory?
+  attribute.stbuf.st_nlink = 1;
+
+  // Time of last modification?
+  clock_gettime(CLOCK_REALTIME, &attribute.stbuf.st_mtim);
+
+
+  // Commit.
   metadata_map_.commit(pair);
 }
 
@@ -43,24 +53,41 @@ int colonyfs_fusexx::symlink (const char* target, const char* link) {
 
   rLog(fuse_control_, "symlink: %s -> %s", target, link);
 
+  // Create the attribute what that be associated with the new link.
   shared_ptr<attribute_value> pair = make_shared<attribute_value>(link);
-  fattribute& metadata = pair->get_mapped();
+  fattribute& attribute = pair->get_mapped();
 
-  // Set the attributes.
-  metadata.stbuf.st_mode = S_IFLNK | 0777; // File flags.
-  clock_gettime(CLOCK_REALTIME, &metadata.stbuf.st_mtim); // Modification time.
-  metadata.list.push_back(target); // Target..
 
-//  metadata_map_.commit(link, metadata);
+  // Set the file mode for the new link.
+  attribute.stbuf.st_mode = S_IFLNK | 0777;
+
+  // What is the actual target for this link?
+  attribute.list.push_back(target);
+
+  // Set the modification time.
+  clock_gettime(CLOCK_REALTIME, &attribute.stbuf.st_mtim); // Modification time.
+
+
+  // Commit.
   metadata_map_.commit(pair);
 
-  boost::filesystem::path full(link);
-  boost::filesystem::path branch = full.branch_path();
-  boost::filesystem::path leaf = full.leaf();
 
+  /* Register the link with its parent directory */
+
+  const boost::filesystem::path full(link);
+  const boost::filesystem::path branch = full.branch_path();
+  const boost::filesystem::path leaf = full.leaf();
+
+  // Retrieve the attribute associated with link's parent directory.
   shared_ptr<attribute_value> parent_pair = metadata_map_( branch.string() );
-  fattribute& parent_metadata = parent_pair->get_mapped();
-  parent_metadata.list.push_back(leaf.string());
+  fattribute& parent_attribute = parent_pair->get_mapped();
+
+
+  // Register the new link with the parent directory.
+  parent_attribute.list.push_back(leaf.string());
+
+
+  // Commit.
   metadata_map_.commit(parent_pair);
 
   return 0;
