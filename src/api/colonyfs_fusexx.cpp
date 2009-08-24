@@ -6,6 +6,7 @@
 #include <cstring>
 #include <iostream>
 #include <assert.h>
+#include <string.h>
 
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
@@ -100,15 +101,23 @@ int colonyfs_fusexx::readlink (const char *linkname, char *buffer, size_t size) 
 
   using namespace colony::xmlrpc;
 
+  // Retrieve the attribute associated with the link.
   shared_ptr<attribute_value> pair = metadata_map_( linkname );
-  fattribute& metadata = pair->get_mapped();
+  fattribute& attribute = pair->get_mapped();
 
-  const std::string targetname = metadata.list.front();
 
-  rLog(fuse_control_, "readlink: %s -> %s", linkname, targetname.c_str());
+  // Is the file is a symbolic link?
+  if (S_ISLNK(attribute.stbuf.st_mode)) return -EINVAL;
+
+  // Read the target where the link points to.
+  const std::string targetpath = attribute.list.front();
+
+  rLog(fuse_control_, "readlink: %s -> %s", linkname, targetpath.c_str());
 
   // We have to null-terminate the buffer!
-  memcpy(buffer, targetname.c_str(), targetname.size() + 1);
+  memset(buffer, NULL, size);
+  memcpy(buffer, targetpath.c_str(), targetpath.size() + 1);
+  // TODO: What if the linkname is too long to fit in the buffer?
 
   return 0;
 }
@@ -116,15 +125,16 @@ int colonyfs_fusexx::readlink (const char *linkname, char *buffer, size_t size) 
 
 
 
-int colonyfs_fusexx::truncate(const char* filename, off_t offset) {
+int colonyfs_fusexx::truncate(const char* filename, off_t length) {
 
   rLog(fuse_control_, "truncate: %s", filename);
 
-  if (offset < 0)
-    return EINVAL;
+  // Is length negative?
+  if (length < 0) return -EINVAL;
 
+  // Acquire the data, and resize.
   std::string& data = data_map_[ filename ];
-  data.resize(offset);
+  data.resize(length);
 
   return 0;
 }
@@ -132,56 +142,69 @@ int colonyfs_fusexx::truncate(const char* filename, off_t offset) {
 
 
 
-int colonyfs_fusexx::rename(const char* oldname, const char* newname) {
+int colonyfs_fusexx::rename(const char* oldpath, const char* newpath) {
+
+  // TODO: Input validation checking. See glibc manual.
 
   using namespace colony::xmlrpc;
 
-  rLog(fuse_control_, "rename: %s -> %s", oldname, newname);
+  rLog(fuse_control_, "rename: %s -> %s", oldpath, newpath);
 
-  const boost::filesystem::path ofull(oldname);
-  const boost::filesystem::path obranch = ofull.branch_path();
-  const boost::filesystem::path oleaf = ofull.leaf();
+  const boost::filesystem::path oldfull(oldpath);
+  const boost::filesystem::path oldbranch = oldfull.branch_path();
+  const boost::filesystem::path oldleaf = oldfull.leaf();
 
-  const boost::filesystem::path nfull(newname);
-  const boost::filesystem::path nbranch = nfull.branch_path();
-  const boost::filesystem::path nleaf = nfull.leaf();
-
-  shared_ptr<attribute_value> popair = metadata_map_( obranch.string() );
-  fattribute& pometadata = popair->get_mapped();
-  metadata_map_t::mapped_type::list_t& polist = pometadata.list;
-
-  metadata_map_t::mapped_type::list_t::iterator poiterator = std::find(
-      polist.begin(), polist.end(), oleaf.string());
+  const boost::filesystem::path newfull(newpath);
+  const boost::filesystem::path newbranch = newfull.branch_path();
+  const boost::filesystem::path newleaf = newfull.leaf();
 
 
-  polist.erase(poiterator);
+  // Retrieve the attribute for the old branch path.
+  shared_ptr<attribute_value> oldbranch_pair = metadata_map_( oldbranch.string() );
+  fattribute& oldbranch_attribute = oldbranch_pair->get_mapped();
 
-  /*
-   * In the case that a new filename is not in the same directory,
-   * add it to a new directory (parent).
-   */
-  if (obranch != nbranch) {
 
-    shared_ptr<attribute_value> pnpair = metadata_map_( nbranch.string() );
-    fattribute& pnmetadata = pnpair->get_mapped();
+  // Find the old leaf.
+  metadata_map_t::mapped_type::list_t::iterator oldbranch_iterator = std::find(
+      oldbranch_attribute.list.begin(),
+      oldbranch_attribute.list.end(),
+      oldleaf.string()
+      );
 
-    pnmetadata.list.push_back(nleaf.string());
-    metadata_map_.commit(pnpair);
+  // And erase it.
+  oldbranch_attribute.list.erase(oldbranch_iterator);
 
-  } else {
 
-    polist.push_back(nleaf.string());
+  // Commit.
+  metadata_map_.commit(oldbranch_pair);
 
-  }
 
-  shared_ptr<attribute_value> opair = metadata_map_( ofull.string() );
-  fattribute& ometadata = opair->get_mapped();
-  metadata_map_.commit( nfull.string(), ometadata );
-  metadata_map_.erase(ofull.string());
+  // Retrieve the attribute for the new branch path.
+  shared_ptr<attribute_value> newbranch_pair = metadata_map_( newbranch.string() );
+  fattribute& newbranch_attribute = newbranch_pair->get_mapped();
 
-  std::string odata = data_map_[ ofull.string() ];
-  data_map_.commit( nfull.string(), odata);
-  data_map_.erase(ofull.string());
+  newbranch_attribute.list.push_back(newleaf.string());
+
+  // Commit.
+  metadata_map_.commit(newbranch_pair);
+
+
+  // Retrieve the attribute for the new path.
+  shared_ptr<attribute_value> oldfull_pair =
+      metadata_map_( oldfull.string() );
+
+  // Associate the old attribute with the new path.
+  shared_ptr<attribute_value> newfull_pair =
+      make_shared<attribute_value>( newfull.string(), oldfull_pair->get_mapped() );
+
+
+  // Erase and commit.
+  metadata_map_.commit( newfull_pair );
+  metadata_map_.erase( oldfull_pair );
+
+  std::string oldfull_data = data_map_[ oldfull.string() ];
+  data_map_.commit( newfull.string(), oldfull_data);
+  data_map_.erase(oldfull.string());
 
   return 0;
 }

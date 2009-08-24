@@ -107,7 +107,8 @@ public:
 
   static int rename(const char* oldname, const char* newname);
 
-  /** Read the target of a symbolic link
+  /**
+   * Read the target of a symbolic link
    *
    * The buffer should be filled with a null terminated string.  The
    * buffer size argument includes the space for the terminating
@@ -157,7 +158,8 @@ public:
       struct fuse_file_info* fi);
 
 
-  /** Get file system statistics
+  /**
+   * Get file system statistics
    *
    * The 'f_frsize', 'f_favail', 'f_fsid' and 'f_flag' fields are ignored
    *

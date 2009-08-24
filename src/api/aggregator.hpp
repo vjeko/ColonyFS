@@ -89,6 +89,13 @@ public:
 
 
 
+  inline void erase(shared_ptr<T> object) {
+    implementation_.erase(object->get_key());
+  }
+
+
+
+
   inline void erase(const key_type& key) {
     T object(key);
     implementation_.erase(object.get_key());
