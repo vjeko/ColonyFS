@@ -105,7 +105,13 @@ public:
    */
   static int symlink(const char* src, const char* dst);
 
+
+
+
   static int rename(const char* oldname, const char* newname);
+
+
+
 
   /**
    * Read the target of a symbolic link
@@ -117,6 +123,9 @@ public:
    * for success.
    */
   static int readlink (const char *filename, char *buffer, size_t size);
+
+
+
 
   /** File open operation
    *
@@ -139,6 +148,9 @@ public:
       const char* filename,
       struct fuse_file_info* fi);
 
+
+
+
   /** Read data from an open file
    *
    * Read should return exactly the number of bytes requested except
@@ -158,6 +170,8 @@ public:
       struct fuse_file_info* fi);
 
 
+
+
   /**
    * Get file system statistics
    *
@@ -173,12 +187,21 @@ public:
       off_t offset,
       struct fuse_file_info* fi);
 
+
+
+
   /** Remove a file */
   static int unlink(
       const char* filename);
 
+
+
+
   /** Change the size of a file */
   static int truncate(const char* filename, off_t offset);
+
+
+
 
   /** Open directory
    *
@@ -190,6 +213,9 @@ public:
   static int opendir (
       const char* filename,
       struct fuse_file_info* fi);
+
+
+
 
   /** Read directory
    *
@@ -219,6 +245,9 @@ public:
       off_t offset,
       struct fuse_file_info* fi);
 
+
+
+
   /** Create a directory
    *
    * Note that the mode argument may not have the type specification
@@ -229,9 +258,15 @@ public:
       const char* filename,
       mode_t mode);
 
+
+
+
   /** Remove a directory */
   static int rmdir(
       const char* filename);
+
+
+
 
   /**
    * Get attributes from an open file
@@ -250,6 +285,9 @@ public:
       struct stat* stat,
       struct fuse_file_info* fi);
 
+
+
+
   /**
    * Create and open a file
    *
@@ -267,9 +305,15 @@ public:
       mode_t mode,
       struct fuse_file_info* fi);
 
+
+
+
   /** Change the permission bits of a file */
   static int chmod(
       const char* filename, mode_t mode);
+
+
+
 
 private:
 

@@ -81,14 +81,6 @@ public:
 
 
 
-  inline void commit(const key_type& key, const value_type& value) {
-    T object(key, value);
-    implementation_[object.get_key()] = object.get_value();
-  }
-
-
-
-
   inline void erase(shared_ptr<T> object) {
     implementation_.erase(object->get_key());
   }
