@@ -612,10 +612,12 @@ int colonyfs_fusexx::unlink(const char* filepath) {
 
   // Remove the file from the parent.
   shared_ptr<attribute_value> pair = metadata_map_( branch.string() );
-  fattribute& metadata = pair->get_mapped();
+  fattribute& attribute = pair->get_mapped();
 
 
-  fattribute::list_t& content = metadata.list;
+  if ( attribute.stbuf.st_uid != getuid() && getuid() != 0 ) return -EACCES;
+
+  fattribute::list_t& content = attribute.list;
   content.remove(leaf.string());
 
 
@@ -645,24 +647,21 @@ int colonyfs_fusexx::chmod(const char* filename, mode_t mode) {
 
   int status;
 
-  // What are the ownership flags for this file?
+  // Check User ID.
   shared_ptr<attribute_value> pair = metadata_map_( filename );
-  fattribute& metadata = pair->get_mapped();
+  fattribute& attribute = pair->get_mapped();
 
 
-  mode_t file_mode = metadata.stbuf.st_mode;
-
-  // See if we are allowed to mess with the file.
-  if ( (file_mode | mode) == mode ) {
-    metadata.stbuf.st_mode = mode;
+  if ( attribute.stbuf.st_uid == getuid() || getuid() == 0 ) {
+    attribute.stbuf.st_mode = mode;
     status = 0;
   } else {
     status = -EACCES;
   }
 
+
   // Commit.
   metadata_map_.commit(pair);
-
 
   return status;
 
