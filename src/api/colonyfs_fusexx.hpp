@@ -7,6 +7,7 @@
 #include "../debug.hpp"
 
 #include <string>
+#include <boost/filesystem/path.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
 
@@ -316,6 +317,8 @@ public:
 
 
 private:
+
+  static bool validate_path(boost::filesystem::path path);
 
   static rlog::RLogChannel        *fuse_control_;
 };

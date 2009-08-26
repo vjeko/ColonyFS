@@ -9,7 +9,6 @@
 #include <string.h>
 
 #include <boost/foreach.hpp>
-#include <boost/filesystem.hpp>
 
 
 
@@ -55,6 +54,10 @@ int colonyfs_fusexx::symlink (const char* target, const char* link) {
   using namespace colony::xmlrpc;
 
 
+  const boost::filesystem::path full(link);
+  const boost::filesystem::path branch = full.parent_path();
+  const boost::filesystem::path leaf = full.filename();
+
   rLog(fuse_control_, "symlink: %s -> %s", target, link);
 
   // Create the attribute what that be associated with the new link.
@@ -77,10 +80,6 @@ int colonyfs_fusexx::symlink (const char* target, const char* link) {
 
 
   /* Register the link with its parent directory */
-
-  const boost::filesystem::path full(link);
-  const boost::filesystem::path branch = full.parent_path();
-  const boost::filesystem::path leaf = full.filename();
 
   // Retrieve the attribute associated with link's parent directory.
   shared_ptr<attribute_value> parent_pair = metadata_map_( branch.string() );
@@ -133,10 +132,16 @@ int colonyfs_fusexx::readlink (const char *linkname, char *buffer, size_t size) 
 
 int colonyfs_fusexx::truncate(const char* filepath, off_t length) {
 
-  rLog(fuse_control_, "truncate: %s", filepath);
+  using namespace colony::xmlrpc;
+
+
+  const boost::filesystem::path full(filepath);
+
+  rLog(fuse_control_, "truncate: %s to %u", filepath, length);
 
   // Is length negative?
   if (length < 0) return -EINVAL;
+
 
   // Acquire the data, and resize.
   std::string& data = data_map_[ filepath ];
@@ -292,6 +297,8 @@ int colonyfs_fusexx::mkdir(const char* filepath, mode_t mode) {
   const boost::filesystem::path branch = full.parent_path();
   const boost::filesystem::path leaf = full.filename();
 
+  if (!validate_path(leaf)) return -ENAMETOOLONG;
+
 
   // TODO: Check if filename already exists.
   // Create the attribute for the new directory.
@@ -403,6 +410,10 @@ int colonyfs_fusexx::getattr(const char *filepath, struct stat *stat) {
 
 
   const boost::filesystem::path full(filepath);
+  const boost::filesystem::path branch = full.parent_path();
+  const boost::filesystem::path leaf = full.filename();
+
+  if (!validate_path(leaf)) return -ENAMETOOLONG;
 
   try {
 
@@ -483,6 +494,8 @@ int colonyfs_fusexx::create(
   const boost::filesystem::path full(filepath);
   const boost::filesystem::path branch = full.parent_path();
   const boost::filesystem::path leaf = full.filename();
+
+  if (!validate_path(leaf)) return -ENAMETOOLONG;
 
 
   // Create the attribute for the new file.
@@ -581,6 +594,8 @@ int colonyfs_fusexx::unlink(const char* filepath) {
   const boost::filesystem::path full(filepath);
   const boost::filesystem::path branch = full.parent_path();
   const boost::filesystem::path leaf = full.filename();
+
+  if (!validate_path(leaf)) return -ENAMETOOLONG;
 
 
   // Remove the file from the parent.
@@ -684,5 +699,20 @@ int colonyfs_fusexx::rmdir(const char* filepath) {
 
 }
 
+
+bool colonyfs_fusexx::validate_path(boost::filesystem::path path) {
+
+  const size_t max_size = 255;
+  bool result = true;
+
+  if (path.string().length() > max_size) {
+    result = false;
+    std::cout << path.string().length() << "\t\tTOO LONG\n";
+  }
+
+
+  return result;
+
+}
 
 rlog::RLogChannel* colonyfs_fusexx::fuse_control_( RLOG_CHANNEL( "fuse/control" ) );
