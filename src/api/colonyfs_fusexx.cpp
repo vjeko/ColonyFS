@@ -137,15 +137,27 @@ int colonyfs_fusexx::truncate(const char* filepath, off_t length) {
 
   const boost::filesystem::path full(filepath);
 
-  rLog(fuse_control_, "truncate: %s to %u", filepath, length);
+  rLog(fuse_control_, "truncate: %s to %ld", filepath, length);
 
   // Is length negative?
-  if (length < 0) return -EINVAL;
+  //if (length < 0) return -EINVAL;
 
 
   // Acquire the data, and resize.
   std::string& data = data_map_[ filepath ];
   data.resize(length);
+
+
+  // Modify the file size information.
+  shared_ptr<attribute_value> pair = metadata_map_( full.string() );
+  fattribute& attribute = pair->get_mapped();
+
+
+  attribute.stbuf.st_size = data.size();
+
+
+  metadata_map_.commit(pair);
+
 
   return 0;
 
