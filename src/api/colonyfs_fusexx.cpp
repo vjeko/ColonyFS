@@ -669,6 +669,33 @@ int colonyfs_fusexx::chmod(const char* filename, mode_t mode) {
 }
 
 
+int colonyfs_fusexx::chown(const char* filepath, uid_t uid, gid_t gid) {
+
+  using namespace colony::xmlrpc;
+
+
+  const boost::filesystem::path full(filepath);
+
+  rLog(fuse_control_, "chown: %s | UID: %ud GID: %ud", filepath, uid, gid);
+
+
+  // Change user ID and group ID.
+  shared_ptr<attribute_value> pair = metadata_map_( full.string() );
+  fattribute& metadata = pair->get_mapped();
+
+
+  metadata.stbuf.st_uid = uid;
+  metadata.stbuf.st_gid = gid;
+
+
+  // Commit.
+  metadata_map_.commit(pair);
+
+
+  return 0;
+
+}
+
 
 
 int colonyfs_fusexx::rmdir(const char* filepath) {

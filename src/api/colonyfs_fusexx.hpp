@@ -316,6 +316,11 @@ public:
 
 
 
+  static int chown(const char* filepath, uid_t uid, gid_t gid);
+
+
+
+
 private:
 
   static bool validate_path(boost::filesystem::path path);
