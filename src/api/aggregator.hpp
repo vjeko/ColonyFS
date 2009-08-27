@@ -14,6 +14,7 @@
 #include "../storage/chunk_data.hpp"
 #include "../storage/chunk_metadata.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <sys/stat.h>
 
@@ -115,23 +116,25 @@ template<> class aggregator<std::string> {
 
 
   void write(
-      boost::filesystem::path filepath,
+      const boost::filesystem::path filepath,
       const char* buffer,
-      size_t offset,
-      size_t size) {
+      const size_t offset,
+      const size_t size) {
 
-    using namespace colony::storage;
+    using colony::storage::chunk_data;
 
 
     const size_t chunk_index_start = offset / CHUNK_SIZE;
     const size_t chunk_index_end = (offset + size) / CHUNK_SIZE;
 
-
-    size_t data_offset = offset % CHUNK_SIZE;
+    size_t pervious_pointer = 0;
 
     for (size_t count = chunk_index_start; count < chunk_index_end; count++) {
 
-      std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
+      const size_t chunk_start = std::max(offset, count * CHUNK_SIZE) % CHUNK_SIZE;
+      const size_t chunk_end = std::min(offset + size, count * CHUNK_SIZE + CHUNK_SIZE) % CHUNK_SIZE;
+
+      const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
       implementation_type::iterator it = implementation_.find(key);
 
       shared_ptr<chunk_data> chunk;
@@ -143,33 +146,72 @@ template<> class aggregator<std::string> {
       }
 
       chunk_data::data_type& data = *chunk->data_ptr_;
-      const size_t buffer_offset = CHUNK_SIZE * count + data_offset;
 
-      size_t ammount = offset - buffer_offset;
-      if (ammount > CHUNK_SIZE) ammount = CHUNK_SIZE;
+      memcpy(
+          &data[chunk_start],
+          buffer + pervious_pointer,
+          chunk_end - chunk_start
+          );
 
-      memcpy(&data[data_offset], buffer + buffer_offset, ammount);
-
-      data_offset = 0;
+      pervious_pointer += chunk_end - chunk_start;
 
     }
 
   }
 
   void read(
-      boost::filesystem::path file,
-      size_t offset,
-      size_t size) {
+      const boost::filesystem::path filepath,
+      char* buffer,
+      const size_t offset,
+      const size_t size) {
+
+    using colony::storage::chunk_data;
+
+
+    const size_t chunk_index_start = offset / CHUNK_SIZE;
+    const size_t chunk_index_end = (offset + size) / CHUNK_SIZE;
+
+    size_t pervious_pointer = 0;
+
+    for (size_t count = chunk_index_start; count < chunk_index_end; count++) {
+
+      const size_t chunk_start = std::max(offset, count * CHUNK_SIZE) % CHUNK_SIZE;
+      const size_t chunk_end = std::min(offset + size, count * CHUNK_SIZE + CHUNK_SIZE) % CHUNK_SIZE;
+
+      const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
+      implementation_type::iterator it = implementation_.find(key);
+
+      shared_ptr<chunk_data> chunk;
+
+      if (it == implementation_.end()) {
+        std::runtime_error("missing chunk");
+      } else {
+        chunk = it->second;
+      }
+
+      chunk_data::data_type& data = *chunk->data_ptr_;
+
+      memcpy(
+          buffer + pervious_pointer,
+          &data[chunk_start] ,
+          chunk_end - chunk_start
+          );
+
+      pervious_pointer += chunk_end - chunk_start;
+
+    }
 
   }
+
+
 
   void truncate(
-      boost::filesystem::path file,
-      size_t size) {
+      const boost::filesystem::path filepath,
+      const size_t size) {
 
   }
 
-  void erase(boost::filesystem::path file) {
+  void erase(const boost::filesystem::path filepath) {
 
   }
 
