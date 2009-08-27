@@ -11,14 +11,18 @@
 #include "../debug.hpp"
 #include "../xmlrpc/values.hpp"
 #include "../xmlrpc/attribute.hpp"
+#include "../storage/chunk_data.hpp"
+#include "../storage/chunk_metadata.hpp"
 
 #include <iostream>
 #include <sys/stat.h>
 
+#include <boost/filesystem/path.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/exception.hpp>
+#include <boost/lexical_cast.hpp>
 
 
 namespace colony {
@@ -73,8 +77,6 @@ public:
 
 
   inline void commit(shared_ptr<T> pair) {
-    num_++;
-    std::cout << "+++++++\t" << num_ << std::endl;;
     implementation_[pair->get_key()] = pair->get_value();
   }
 
@@ -101,6 +103,84 @@ private:
   size_t              num_;
   implementation_type implementation_;
 };
+
+
+
+
+
+template<> class aggregator<std::string> {
+
+
+  typedef boost::unordered_map<std::string, shared_ptr<colony::storage::chunk_data> > implementation_type;
+
+
+  void write(
+      boost::filesystem::path filepath,
+      const char* buffer,
+      size_t offset,
+      size_t size) {
+
+    using namespace colony::storage;
+
+
+    const size_t chunk_index_start = offset / CHUNK_SIZE;
+    const size_t chunk_index_end = (offset + size) / CHUNK_SIZE;
+
+
+    size_t data_offset = offset % CHUNK_SIZE;
+
+    for (size_t count = chunk_index_start; count < chunk_index_end; count++) {
+
+      std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
+      implementation_type::iterator it = implementation_.find(key);
+
+      shared_ptr<chunk_data> chunk;
+
+      if (it == implementation_.end()) {
+        chunk = make_shared<chunk_data>(filepath.string(), count);
+      } else {
+        chunk = it->second;
+      }
+
+      chunk_data::data_type& data = *chunk->data_ptr_;
+      const size_t buffer_offset = CHUNK_SIZE * count + data_offset;
+
+      size_t ammount = offset - buffer_offset;
+      if (ammount > CHUNK_SIZE) ammount = CHUNK_SIZE;
+
+      memcpy(&data[data_offset], buffer + buffer_offset, ammount);
+
+      data_offset = 0;
+
+    }
+
+  }
+
+  void read(
+      boost::filesystem::path file,
+      size_t offset,
+      size_t size) {
+
+  }
+
+  void truncate(
+      boost::filesystem::path file,
+      size_t size) {
+
+  }
+
+  void erase(boost::filesystem::path file) {
+
+  }
+
+
+private:
+
+  implementation_type implementation_;
+};
+
+
+
 
 } // Namespace.
 #endif /* AGGREGATOR_HPP_ */

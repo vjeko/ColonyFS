@@ -18,7 +18,7 @@
 
 #include <boost/serialization/base_object.hpp>
 
-const int CHUNK_SIZE = 1024*1024*10;
+const size_t CHUNK_SIZE = 1024*1024*10;
 typedef boost::array< char, CHUNK_SIZE > chunk_t;
 
 namespace colony { namespace storage {
