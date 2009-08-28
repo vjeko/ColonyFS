@@ -14,6 +14,7 @@
 
 
 metadata_map_t metadata_map_;
+colony::aggregator<colony::storage::chunk_data>  g_data_sink;
 data_map_t data_map_;
 
 
@@ -144,8 +145,12 @@ int colonyfs_fusexx::truncate(const char* filepath, off_t length) {
 
 
   // Acquire the data, and resize.
+  /*
   std::string& data = data_map_[ filepath ];
   data.resize(length);
+  */
+
+  g_data_sink.truncate(full, length);
 
 
   // Modify the file size information.
@@ -153,7 +158,7 @@ int colonyfs_fusexx::truncate(const char* filepath, off_t length) {
   fattribute& attribute = pair->get_mapped();
 
 
-  attribute.stbuf.st_size = data.size();
+  attribute.stbuf.st_size = length;
 
 
   metadata_map_.commit(pair);
@@ -227,6 +232,7 @@ int colonyfs_fusexx::rename(const char* oldpath, const char* newpath) {
   metadata_map_.commit( newfull_pair );
   metadata_map_.erase( oldfull_pair );
 
+  // FIXME: Implement data rename.
   std::string oldfull_data = data_map_[ oldfull.string() ];
   data_map_.commit( newfull.string(), oldfull_data);
   data_map_.erase(oldfull.string());
@@ -404,8 +410,11 @@ int colonyfs_fusexx::read(
     if (static_cast<size_t>(offset) + size > length)
       size = length - offset;
 
+    g_data_sink.read(full, buffer, offset, size);
+    /*
     std::string& data = data_map_[ full.string().c_str() ];
     memcpy(buffer, data.c_str() + offset, size);
+    */
 
   }
 
@@ -542,9 +551,6 @@ int colonyfs_fusexx::create(
   metadata_map_.commit(parent_pair);
 
 
-  std::string data;
-  data_map_.commit(full.string().c_str(), data);
-
   return 0;
 
 }
@@ -562,24 +568,16 @@ int colonyfs_fusexx::write (
   using namespace colony::xmlrpc;
 
 
-  // Write size.
-  size_t length = offset + size;
+  boost::filesystem::path full(filepath);
 
-  std::string& data = data_map_[ filepath ];
-
-  // Resize the data container if necessary.
-  if (length > data.size()) data.resize(length);
-
-  // Copy the data from buffer to FS.
-  memcpy(&data[offset], buffer, size);
-
+  g_data_sink.write(full, buffer, offset, size);
 
   // Update the attribute.
   shared_ptr<attribute_value> pair = metadata_map_( filepath );
   fattribute& metadata = pair->get_mapped();
 
 
-  metadata.stbuf.st_size = data.size();
+  metadata.stbuf.st_size = offset + size;
 
 
   // Commit.

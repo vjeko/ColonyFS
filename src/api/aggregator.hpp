@@ -109,10 +109,11 @@ private:
 
 
 
-template<> class aggregator<std::string> {
+template<> class aggregator<colony::storage::chunk_data> {
 
+public:
 
-  typedef boost::unordered_map<std::string, shared_ptr<colony::storage::chunk_data> > implementation_type;
+  typedef std::map<std::string, shared_ptr<colony::storage::chunk_data> > implementation_type;
 
 
   void write(
@@ -123,41 +124,51 @@ template<> class aggregator<std::string> {
 
     using colony::storage::chunk_data;
 
+    size_t buffer_start = offset;
+    size_t buffer_end = offset + size;
 
-    const size_t chunk_index_start = offset / CHUNK_SIZE;
-    const size_t chunk_index_end = (offset + size) / CHUNK_SIZE;
+    const size_t chunk_index_start = buffer_start / CHUNK_SIZE;
+    const size_t chunk_index_end = buffer_end / CHUNK_SIZE;
 
-    size_t pervious_pointer = 0;
 
-    for (size_t count = chunk_index_start; count < chunk_index_end; count++) {
+    for (size_t count = chunk_index_start; count <= chunk_index_end; count++) {
 
-      const size_t chunk_start = std::max(offset, count * CHUNK_SIZE) % CHUNK_SIZE;
-      const size_t chunk_end = std::min(offset + size, count * CHUNK_SIZE + CHUNK_SIZE) % CHUNK_SIZE;
+      const size_t remaining_size = buffer_end - buffer_start;
+      const size_t chunk_start = buffer_start % CHUNK_SIZE;
+      const size_t chunk_end = (chunk_start + remaining_size > CHUNK_SIZE) ? CHUNK_SIZE : remaining_size;
+      const size_t chunk_size = chunk_end - chunk_start;
 
       const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
-      implementation_type::iterator it = implementation_.find(key);
 
       shared_ptr<chunk_data> chunk;
+      implementation_type::iterator it = implementation_.find(key);
 
       if (it == implementation_.end()) {
         chunk = make_shared<chunk_data>(filepath.string(), count);
+        implementation_[key] = chunk;
       } else {
         chunk = it->second;
       }
 
-      chunk_data::data_type& data = *chunk->data_ptr_;
+      chunk_data::data_type& raw_data = *(chunk->data_ptr_);
+
+      raw_data.resize(chunk_size);
 
       memcpy(
-          &data[chunk_start],
-          buffer + pervious_pointer,
-          chunk_end - chunk_start
+          &raw_data[chunk_start],
+          buffer + (buffer_start - offset),
+          chunk_size
           );
 
-      pervious_pointer += chunk_end - chunk_start;
 
+
+      buffer_start += chunk_size;
     }
 
   }
+
+
+
 
   void read(
       const boost::filesystem::path filepath,
@@ -168,40 +179,53 @@ template<> class aggregator<std::string> {
     using colony::storage::chunk_data;
 
 
-    const size_t chunk_index_start = offset / CHUNK_SIZE;
-    const size_t chunk_index_end = (offset + size) / CHUNK_SIZE;
+    size_t buffer_start = offset;
+    size_t buffer_end = offset + size;
 
-    size_t pervious_pointer = 0;
+    const size_t chunk_index_start = buffer_start / CHUNK_SIZE;
+    const size_t chunk_index_end = buffer_end / CHUNK_SIZE;
 
-    for (size_t count = chunk_index_start; count < chunk_index_end; count++) {
 
-      const size_t chunk_start = std::max(offset, count * CHUNK_SIZE) % CHUNK_SIZE;
-      const size_t chunk_end = std::min(offset + size, count * CHUNK_SIZE + CHUNK_SIZE) % CHUNK_SIZE;
+    for (size_t count = chunk_index_start; count <= chunk_index_end; count++) {
+
+      const size_t remaining_size = buffer_end - buffer_start;
+      const size_t chunk_start = buffer_start % CHUNK_SIZE;
+      const size_t chunk_end = (chunk_start + remaining_size > CHUNK_SIZE) ? CHUNK_SIZE : remaining_size;
+      const size_t chunk_size = chunk_end - chunk_start;
 
       const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
-      implementation_type::iterator it = implementation_.find(key);
 
       shared_ptr<chunk_data> chunk;
+      implementation_type::iterator it = implementation_.find(key);
 
       if (it == implementation_.end()) {
-        std::runtime_error("missing chunk");
+        std::runtime_error("unknown chunk");
       } else {
         chunk = it->second;
       }
 
-      chunk_data::data_type& data = *chunk->data_ptr_;
+      std::cout << "-------------------------" << std::endl;
+      std::cout << "START READ XX" << std::endl;
+      std::cout << "-------------------------" << std::endl;
+
+      chunk_data::data_type& raw_data = *(chunk->data_ptr_);
+      raw_data.resize(chunk_size);
 
       memcpy(
-          buffer + pervious_pointer,
-          &data[chunk_start] ,
-          chunk_end - chunk_start
+          buffer,
+          &raw_data[chunk_start],
+          chunk_size
           );
 
-      pervious_pointer += chunk_end - chunk_start;
 
+
+      buffer_start += chunk_size;
     }
-
+    std::cout << "-------------------------" << std::endl;
+    std::cout << "END READ" << std::endl;
+    std::cout << "-------------------------" << std::endl;
   }
+
 
 
 
@@ -209,7 +233,11 @@ template<> class aggregator<std::string> {
       const boost::filesystem::path filepath,
       const size_t size) {
 
+    // TODO: Implement this.
   }
+
+
+
 
   void erase(const boost::filesystem::path filepath) {
 
