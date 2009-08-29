@@ -129,16 +129,11 @@ public:
 
     using colony::storage::chunk_data;
 
-    size_t buffer_start = offset;
-    size_t buffer_end = offset + size;
+    size_t buffer_start = 0;
+    size_t buffer_end = size;
 
     const size_t chunk_index_start = buffer_start / CHUNK_SIZE;
     const size_t chunk_index_end = buffer_end / CHUNK_SIZE;
-
-    std::cout << "OFFSET: " << offset << std::endl;
-    std::cout << "SIZE: " << size << std::endl;
-    std::cout << "START: " << chunk_index_start << std::endl;
-    std::cout << "END: " << chunk_index_end <<  std::endl;
 
     for (size_t count = chunk_index_start; count <= chunk_index_end; count++) {
 
@@ -146,10 +141,6 @@ public:
       const size_t chunk_start = buffer_start % CHUNK_SIZE;
       const size_t chunk_end = (chunk_start + remaining_size > CHUNK_SIZE) ? CHUNK_SIZE : remaining_size;
       const size_t chunk_size = chunk_end - chunk_start;
-
-      std::cout << "remaining_size: " << remaining_size << std::endl;
-      std::cout << "chunk_start: " << buffer_start <<  std::endl;
-      std::cout << "chunk_end: " << buffer_end <<  std::endl;
 
 
       const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
@@ -160,20 +151,17 @@ public:
       if (it == implementation_.end()) {
         chunk = make_shared<chunk_data>(filepath.string(), count);
         implementation_[key] = chunk;
-        std::cout << "CREATED THE KEY" <<  std::endl;
       } else {
         chunk = it->second;
-        std::cout << "FOUND THE KEY" <<  std::endl;
       }
 
       chunk_data::data_type& raw_data = *(chunk->data_ptr_);
 
       raw_data.resize(chunk_end);
-      std::cout << "RESIZED" <<  std::endl;
 
       memcpy(
           &raw_data[chunk_start],
-          buffer + (buffer_start - offset),
+          buffer + buffer_start,
           chunk_size
           );
 
@@ -194,8 +182,8 @@ public:
     using colony::storage::chunk_data;
 
 
-    size_t buffer_start = offset;
-    size_t buffer_end = offset + size;
+    size_t buffer_start = 0;
+    size_t buffer_end = size;
 
     const size_t chunk_index_start = buffer_start / CHUNK_SIZE;
     const size_t chunk_index_end = buffer_end / CHUNK_SIZE;
@@ -223,7 +211,7 @@ public:
       raw_data.resize(chunk_size);
 
       memcpy(
-          buffer + (buffer_start - offset),
+          buffer + buffer_start,
           &raw_data[chunk_start],
           chunk_size
           );
