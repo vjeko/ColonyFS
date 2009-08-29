@@ -141,22 +141,13 @@ int colonyfs_fusexx::truncate(const char* filepath, off_t length) {
   rLog(fuse_control_, "truncate: %s to %ld", filepath, length);
 
   // Is length negative?
-  //if (length < 0) return -EINVAL;
-
-
-  // Acquire the data, and resize.
-  /*
-  std::string& data = data_map_[ filepath ];
-  data.resize(length);
-  */
-
-  g_data_sink.truncate(full, length);
-
+  if (length < 0) return -EINVAL;
 
   // Modify the file size information.
   shared_ptr<attribute_value> pair = metadata_map_( full.string() );
   fattribute& attribute = pair->get_mapped();
 
+  g_data_sink.truncate(full, length, attribute.stbuf.st_size);
 
   attribute.stbuf.st_size = length;
 
@@ -410,11 +401,7 @@ int colonyfs_fusexx::read(
     if (static_cast<size_t>(offset) + size > length)
       size = length - offset;
 
-    g_data_sink.read(full, buffer, offset, size);
-    /*
-    std::string& data = data_map_[ full.string().c_str() ];
-    memcpy(buffer, data.c_str() + offset, size);
-    */
+    g_data_sink.read(full, buffer, size, offset);
 
   }
 
@@ -570,7 +557,7 @@ int colonyfs_fusexx::write (
 
   boost::filesystem::path full(filepath);
 
-  g_data_sink.write(full, buffer, offset, size);
+  g_data_sink.write(full, buffer, size, offset);
 
   // Update the attribute.
   shared_ptr<attribute_value> pair = metadata_map_( filepath );
@@ -623,7 +610,7 @@ int colonyfs_fusexx::unlink(const char* filepath) {
 
 
   // Delete the binary data.
-  data_map_.erase(full.string());
+  g_data_sink.erase(full.string(), attribute.stbuf.st_size);
 
   // Delete attribute.
   metadata_map_.erase(full.string());

@@ -113,14 +113,19 @@ template<> class aggregator<colony::storage::chunk_data> {
 
 public:
 
-  typedef std::map<std::string, shared_ptr<colony::storage::chunk_data> > implementation_type;
+  typedef std::map<
+    std::string,
+    shared_ptr<colony::storage::chunk_data>
+  > implementation_type;
+
+
 
 
   void write(
       const boost::filesystem::path filepath,
       const char* buffer,
-      const size_t offset,
-      const size_t size) {
+      const size_t size,
+      const size_t offset) {
 
     using colony::storage::chunk_data;
 
@@ -130,6 +135,10 @@ public:
     const size_t chunk_index_start = buffer_start / CHUNK_SIZE;
     const size_t chunk_index_end = buffer_end / CHUNK_SIZE;
 
+    std::cout << "OFFSET: " << offset << std::endl;
+    std::cout << "SIZE: " << size << std::endl;
+    std::cout << "START: " << chunk_index_start << std::endl;
+    std::cout << "END: " << chunk_index_end <<  std::endl;
 
     for (size_t count = chunk_index_start; count <= chunk_index_end; count++) {
 
@@ -137,6 +146,11 @@ public:
       const size_t chunk_start = buffer_start % CHUNK_SIZE;
       const size_t chunk_end = (chunk_start + remaining_size > CHUNK_SIZE) ? CHUNK_SIZE : remaining_size;
       const size_t chunk_size = chunk_end - chunk_start;
+
+      std::cout << "remaining_size: " << remaining_size << std::endl;
+      std::cout << "chunk_start: " << buffer_start <<  std::endl;
+      std::cout << "chunk_end: " << buffer_end <<  std::endl;
+
 
       const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
 
@@ -146,21 +160,22 @@ public:
       if (it == implementation_.end()) {
         chunk = make_shared<chunk_data>(filepath.string(), count);
         implementation_[key] = chunk;
+        std::cout << "CREATED THE KEY" <<  std::endl;
       } else {
         chunk = it->second;
+        std::cout << "FOUND THE KEY" <<  std::endl;
       }
 
       chunk_data::data_type& raw_data = *(chunk->data_ptr_);
 
-      raw_data.resize(chunk_size);
+      raw_data.resize(chunk_end);
+      std::cout << "RESIZED" <<  std::endl;
 
       memcpy(
           &raw_data[chunk_start],
           buffer + (buffer_start - offset),
           chunk_size
           );
-
-
 
       buffer_start += chunk_size;
     }
@@ -173,8 +188,8 @@ public:
   void read(
       const boost::filesystem::path filepath,
       char* buffer,
-      const size_t offset,
-      const size_t size) {
+      const size_t size,
+      const size_t offset) {
 
     using colony::storage::chunk_data;
 
@@ -204,26 +219,18 @@ public:
         chunk = it->second;
       }
 
-      std::cout << "-------------------------" << std::endl;
-      std::cout << "START READ XX" << std::endl;
-      std::cout << "-------------------------" << std::endl;
-
       chunk_data::data_type& raw_data = *(chunk->data_ptr_);
       raw_data.resize(chunk_size);
 
       memcpy(
-          buffer,
+          buffer + (buffer_start - offset),
           &raw_data[chunk_start],
           chunk_size
           );
 
-
-
       buffer_start += chunk_size;
     }
-    std::cout << "-------------------------" << std::endl;
-    std::cout << "END READ" << std::endl;
-    std::cout << "-------------------------" << std::endl;
+
   }
 
 
@@ -231,15 +238,51 @@ public:
 
   void truncate(
       const boost::filesystem::path filepath,
-      const size_t size) {
+      const size_t new_size,
+      const size_t old_size) {
 
-    // TODO: Implement this.
+    using colony::storage::chunk_data;
+
+
+    const size_t chunk_index_start = new_size / CHUNK_SIZE;
+    const size_t chunk_index_end = old_size / CHUNK_SIZE;
+
+    const std::string key = filepath.string() + boost::lexical_cast<std::string>(chunk_index_start);
+
+    shared_ptr<chunk_data> chunk;
+    implementation_type::iterator it = implementation_.find(key);
+
+    if (it == implementation_.end()) {
+      std::runtime_error("unknown chunk");
+    } else {
+      chunk = it->second;
+    }
+
+    const size_t chunk_size = new_size % CHUNK_SIZE;
+    chunk_data::data_type& raw_data = *(chunk->data_ptr_);
+    raw_data.resize(chunk_size);
+
+    for (size_t count = chunk_index_start + 1; count <= chunk_index_end; count++) {
+      const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
+      implementation_.erase(key);
+    }
+
   }
 
 
 
 
-  void erase(const boost::filesystem::path filepath) {
+  void erase(const boost::filesystem::path filepath, size_t size) {
+
+    using colony::storage::chunk_data;
+
+    const size_t chunk_index_start = 0;
+    const size_t chunk_index_end = size / CHUNK_SIZE;
+
+    for (size_t count = chunk_index_start + 1; count <= chunk_index_end; count++) {
+      const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
+      implementation_.erase(key);
+    }
 
   }
 
