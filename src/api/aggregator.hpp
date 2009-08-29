@@ -135,13 +135,20 @@ public:
     const size_t chunk_index_start = buffer_start / CHUNK_SIZE;
     const size_t chunk_index_end = buffer_end / CHUNK_SIZE;
 
+    std::cout << "chunk_index_start " << chunk_index_start << std::endl;
+    std::cout << "chunk_index_end " << chunk_index_end << std::endl;
+
     for (size_t count = chunk_index_start; count <= chunk_index_end; count++) {
 
       const size_t remaining_size = buffer_end - buffer_start;
-      const size_t chunk_start = buffer_start % CHUNK_SIZE;
-      const size_t chunk_end = (chunk_start + remaining_size > CHUNK_SIZE) ? CHUNK_SIZE : remaining_size;
+      const size_t chunk_start = offset % CHUNK_SIZE;
+      const size_t chunk_end = (offset + remaining_size > CHUNK_SIZE) ? CHUNK_SIZE : chunk_start + remaining_size;
       const size_t chunk_size = chunk_end - chunk_start;
 
+      std::cout << "remaining_size " << remaining_size << std::endl;
+      std::cout << "chunk_end " << chunk_end << std::endl;
+      std::cout << "chunk_start " << chunk_start << std::endl;
+      std::cout << "chunk_size " << chunk_size << std::endl;
 
       const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
 
@@ -188,13 +195,20 @@ public:
     const size_t chunk_index_start = buffer_start / CHUNK_SIZE;
     const size_t chunk_index_end = buffer_end / CHUNK_SIZE;
 
+    std::cout << "chunk_index_start " << chunk_index_start << std::endl;
+    std::cout << "chunk_index_end " << chunk_index_end << std::endl;
 
     for (size_t count = chunk_index_start; count <= chunk_index_end; count++) {
 
       const size_t remaining_size = buffer_end - buffer_start;
-      const size_t chunk_start = buffer_start % CHUNK_SIZE;
-      const size_t chunk_end = (chunk_start + remaining_size > CHUNK_SIZE) ? CHUNK_SIZE : remaining_size;
+      const size_t chunk_start = offset % CHUNK_SIZE;
+      const size_t chunk_end = (offset + remaining_size > CHUNK_SIZE) ? CHUNK_SIZE : chunk_start + remaining_size;
       const size_t chunk_size = chunk_end - chunk_start;
+
+      std::cout << "remaining_size " << remaining_size << std::endl;
+      std::cout << "chunk_end " << chunk_end << std::endl;
+      std::cout << "chunk_start " << chunk_start << std::endl;
+      std::cout << "chunk_size " << chunk_size << std::endl;
 
       const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
 
