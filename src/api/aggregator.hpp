@@ -23,6 +23,7 @@
 #include <boost/make_shared.hpp>
 #include <boost/exception.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/crc.hpp>
 
 
 namespace colony {
@@ -128,6 +129,9 @@ public:
 
     using colony::storage::chunk_data;
 
+    std::cout << "size: " << size << std::endl;
+    std::cout << "offset: " << offset << std::endl;
+
     size_t buffer_start = 0;
     size_t buffer_end = size;
 
@@ -146,7 +150,7 @@ public:
       shared_ptr<chunk_data> chunk = create_if_missing(filepath, count);
 
       chunk_data::data_type& raw_data = *(chunk->data_ptr_);
-
+      raw_data.resize(chunk_end);
       copy_to_chunk(raw_data, buffer, chunk_start, buffer_start, chunk_size);
 
 
@@ -166,12 +170,17 @@ public:
 
     using colony::storage::chunk_data;
 
+    std::cout << "size: " << size << std::endl;
+    std::cout << "offset: " << offset << std::endl;
 
     size_t buffer_start = 0;
     size_t buffer_end = size;
 
     const size_t chunk_index_start = buffer_start / CHUNK_SIZE;
     const size_t chunk_index_end = buffer_end / CHUNK_SIZE;
+
+    std::cout << "chunk start: " << chunk_index_start << std::endl;
+    std::cout << "chunk end: " << chunk_index_end << std::endl;
 
     for (size_t count = chunk_index_start; count <= chunk_index_end; count++) {
 
@@ -180,12 +189,17 @@ public:
       const size_t chunk_end = (offset + remaining_size > CHUNK_SIZE) ? CHUNK_SIZE : chunk_start + remaining_size;
       const size_t chunk_size = chunk_end - chunk_start;
 
+      std::cout << "remaining_size: " << remaining_size << std::endl;
+      std::cout << "chunk_start: " << chunk_start << std::endl;
+      std::cout << "chunk_end: " << chunk_end << std::endl;
+      std::cout << "chunk_size: " << chunk_size << std::endl;
+
+
       const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
 
       shared_ptr<chunk_data> chunk = raise_if_missing(filepath, count);
 
       chunk_data::data_type& raw_data = *(chunk->data_ptr_);
-      raw_data.resize(chunk_size);
 
       copy_from_chunk(raw_data, buffer, chunk_start, buffer_start, chunk_size);
 
@@ -261,7 +275,7 @@ private:
       size_t size
       ) {
 
-    destination.resize(destination_offset + size);
+    destination.resize(CHUNK_SIZE);
 
     memcpy(
         &destination[destination_offset],
@@ -283,7 +297,7 @@ private:
       ) {
 
     memcpy(
-        destination + destination_offset,
+        destination,
         &source[source_offset],
         size
         );
@@ -332,6 +346,7 @@ private:
       std::runtime_error("unknown key");
     } else {
       chunk = it->second;
+      std::cout << "CHUNK " << count << " |----> " << chunk->data_ptr_->size() << std::endl;
     }
 
     return chunk;
