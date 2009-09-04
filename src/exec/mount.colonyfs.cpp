@@ -7,7 +7,8 @@
 
 int main(int argc, char **argv) {
 
-  rlog::StdioNode client_log(1, rlog::StdioNode::OutputThreadId | rlog::StdioNode::OutputColor);
+
+  rlog::StdioNode client_log(1, rlog::StdioNode::OutputColor);
 
   client_log.subscribeTo( RLOG_CHANNEL("debug") ) ;
   client_log.subscribeTo( RLOG_CHANNEL("error") ) ;
@@ -15,6 +16,8 @@ int main(int argc, char **argv) {
   client_log.subscribeTo( RLOG_CHANNEL("warning") );
 
   client_log.subscribeTo( RLOG_CHANNEL("fuse/control") ) ;
+  client_log.subscribeTo( RLOG_CHANNEL("sink") ) ;
+
 
   colonyfs_fusexx hello;
 

@@ -378,34 +378,41 @@ int colonyfs_fusexx::read(
 
   using namespace colony::xmlrpc;
 
+  try {
 
-  const boost::filesystem::path full(filepath);
+    const boost::filesystem::path full(filepath);
 
-  rLog(fuse_control_, "read: %s", full.string().c_str());
-
-
-  // Retrieve the attribute for the file path.
-  shared_ptr<attribute_value> pair = metadata_map_( full.string() );
-  fattribute& attribute = pair->get_mapped();
+    rLog(fuse_control_, "read: %s", full.string().c_str());
 
 
-  // TODO: Figure out size_t/off_t inconsistency.
-  size_t length = attribute.stbuf.st_size;
+    // Retrieve the attribute for the file path.
+    shared_ptr<attribute_value> pair = metadata_map_( full.string() );
+    fattribute& attribute = pair->get_mapped();
 
-  if (static_cast<size_t>(offset) > length) {
 
-    size = 0;
+    // TODO: Figure out size_t/off_t inconsistency.
+    size_t length = attribute.stbuf.st_size;
 
-  } else {
+    if (static_cast<size_t>(offset) > length) {
 
-    if (static_cast<size_t>(offset) + size > length)
-      size = length - offset;
+      size = 0;
 
-    g_data_sink.read(full, buffer, size, offset);
+    } else {
 
+      if (static_cast<size_t>(offset) + size > length)
+        size = length - offset;
+
+      g_data_sink.read(full, buffer, size, offset);
+
+    }
+
+    return size;
+
+  } catch(colony::lookup_e& e) {
+
+    rError("... file not found");
+    return -ENOENT;
   }
-
-  return size;
 
 }
 
@@ -563,8 +570,8 @@ int colonyfs_fusexx::write (
   shared_ptr<attribute_value> pair = metadata_map_( filepath );
   fattribute& metadata = pair->get_mapped();
 
-
-  metadata.stbuf.st_size = offset + size;
+  const int end_pointer = offset + size;
+  if (metadata.stbuf.st_size < end_pointer) metadata.stbuf.st_size = end_pointer;
 
 
   // Commit.

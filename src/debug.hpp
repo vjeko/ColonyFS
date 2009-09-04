@@ -19,7 +19,8 @@
 #include <rlog/StdioNode.h>
 #include <rlog/RLogTime.h>
 
-
+#undef RLOG_SECTION
+#define RLOG_SECTION
 
 //TODO: Foreach does not belong here.
 #include <boost/foreach.hpp>

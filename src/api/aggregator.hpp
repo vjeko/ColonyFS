@@ -120,6 +120,9 @@ public:
   > implementation_type;
 
 
+  aggregator() :
+    sink_log_( RLOG_CHANNEL( "sink" ) )
+    {}
 
 
   void write(
@@ -161,47 +164,6 @@ public:
 
   }
 
-
-
-
-  template<
-    typename Buffer,
-    typename MissingKeyPolicy,
-    typename ActionPolicy
-  > void copy(
-      const boost::filesystem::path filepath,
-      Buffer buffer,
-      MissingKeyPolicy key_policy,
-      ActionPolicy action_policy,
-      const size_t size,
-      const size_t offset) {
-
-    using colony::storage::chunk_data;
-
-
-    size_t buffer_start = 0;
-    size_t buffer_end = size;
-
-    const size_t chunk_index_start = buffer_start / CHUNK_SIZE;
-    const size_t chunk_index_end = buffer_end / CHUNK_SIZE;
-
-    for (size_t count = chunk_index_start; count <= chunk_index_end; count++) {
-
-      const size_t remaining_size = buffer_end - buffer_start;
-      const size_t chunk_start = offset % CHUNK_SIZE;
-      const size_t chunk_end = (offset + remaining_size > CHUNK_SIZE) ? CHUNK_SIZE : chunk_start + remaining_size;
-      const size_t chunk_size = chunk_end - chunk_start;
-
-      const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
-
-      shared_ptr<chunk_data> chunk = key_policy(filepath, count);
-      chunk_data::data_type& chunk_buffer = *(chunk->data_ptr_);
-      action_policy(chunk_buffer, buffer, chunk_start, buffer_start, chunk_size);
-
-      buffer_start += chunk_size;
-    }
-
-  }
 
 
 
@@ -252,17 +214,71 @@ public:
 private:
 
 
+
+
+  template<
+    typename Buffer,
+    typename MissingKeyPolicy,
+    typename ActionPolicy
+  > void copy(
+      const boost::filesystem::path filepath,
+      Buffer buffer,
+      MissingKeyPolicy key_policy,
+      ActionPolicy action_policy,
+      const size_t size,
+      const size_t offset) {
+
+    using colony::storage::chunk_data;
+
+
+    size_t buffer_start = 0;
+    size_t buffer_end = size;
+
+    const size_t chunk_index_start = buffer_start / CHUNK_SIZE;
+    const size_t chunk_index_end = buffer_end / CHUNK_SIZE;
+
+    rLog(sink_log_, "---------------------------");
+    rLog(sink_log_, "OFFSET: %lu", offset);
+    rLog(sink_log_, "SIZE: %lu", size);
+    rLog(sink_log_, "Chunk Index Start: %lu", chunk_index_start);
+    rLog(sink_log_, "Chunk Index End: %lu", chunk_index_end);
+
+    for (size_t count = chunk_index_start; count <= chunk_index_end; count++) {
+
+      const size_t remaining_size = buffer_end - buffer_start;
+      const size_t chunk_start = offset % CHUNK_SIZE;
+      const size_t chunk_end = (buffer_start + remaining_size > CHUNK_SIZE) ? CHUNK_SIZE : chunk_start + remaining_size;
+      const size_t chunk_delta = chunk_end - chunk_start;
+
+      rLog(sink_log_, "Chunk Start: %lu", chunk_start);
+      rLog(sink_log_, "Chunk End: %lu", chunk_end);
+      rLog(sink_log_, "Remaining Size: %lu", remaining_size);
+      rLog(sink_log_, "Chunk Delta: %lu", chunk_delta);
+      rLog(sink_log_, "---------------------------");
+
+      shared_ptr<chunk_data> chunk = key_policy(filepath, count);
+      chunk_data::data_type& chunk_buffer = *(chunk->data_ptr_);
+      action_policy(chunk_buffer, buffer, chunk_start, buffer_start, chunk_delta);
+
+      buffer_start += chunk_delta;
+    }
+
+  }
+
+
+
+
   void write_to_chunk(
       colony::storage::chunk_data::data_type& destination,
       const char* source,
       size_t destination_offset,
       size_t source_offset,
-      size_t size
+      size_t chunk_delta
       ) {
 
-    destination.resize(CHUNK_SIZE);
+    destination.reserve(CHUNK_SIZE);
 
-    memcpy(&destination[destination_offset], source + source_offset, size);
+    memcpy(&destination[destination_offset], source + source_offset, chunk_delta);
 
   }
 
@@ -274,10 +290,10 @@ private:
       char* destination,
       size_t source_offset,
       size_t destination_offset,
-      size_t size
+      size_t chunk_delta
       ) {
 
-    memcpy(destination + destination_offset, &source[source_offset], size);
+    memcpy(destination + destination_offset, &source[source_offset], chunk_delta);
 
   }
 
@@ -329,8 +345,9 @@ private:
   }
 
 
-
-  implementation_type implementation_;
+  rlog::RLogChannel                      *sink_log_;
+  implementation_type                            implementation_;
+  aggregator<colony::xmlrpc::chunkserver_value>  chunkserver_sink_;
 };
 
 
