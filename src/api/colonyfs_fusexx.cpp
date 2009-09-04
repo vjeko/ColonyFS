@@ -135,27 +135,37 @@ int colonyfs_fusexx::truncate(const char* filepath, off_t length) {
 
   using namespace colony::xmlrpc;
 
+  try {
 
-  const boost::filesystem::path full(filepath);
+    const boost::filesystem::path full(filepath);
 
-  rLog(fuse_control_, "truncate: %s to %ld", filepath, length);
+    rLog(fuse_control_, "truncate: %s to %ld", filepath, length);
 
-  // Is length negative?
-  if (length < 0) return -EINVAL;
+    // Is length negative?
+    if (length < 0) return -EINVAL;
 
-  // Modify the file size information.
-  shared_ptr<attribute_value> pair = metadata_map_( full.string() );
-  fattribute& attribute = pair->get_mapped();
+    // Modify the file size information.
+    shared_ptr<attribute_value> pair = metadata_map_( full.string() );
+    fattribute& attribute = pair->get_mapped();
 
-  g_data_sink.truncate(full, length, attribute.stbuf.st_size);
+    g_data_sink.truncate(full, length, attribute.stbuf.st_size);
 
-  attribute.stbuf.st_size = length;
-
-
-  metadata_map_.commit(pair);
+    attribute.stbuf.st_size = length;
 
 
-  return 0;
+    metadata_map_.commit(pair);
+
+
+    return 0;
+
+  } catch (colony::lookup_e& e) {
+
+    rError("... metadata corruption -- file not found");
+
+    return -ENODEV;
+
+  }
+
 
 }
 
@@ -378,7 +388,7 @@ int colonyfs_fusexx::read(
 
   using namespace colony::xmlrpc;
 
-  try {
+ // try {
 
     const boost::filesystem::path full(filepath);
 
@@ -408,11 +418,11 @@ int colonyfs_fusexx::read(
 
     return size;
 
-  } catch(colony::lookup_e& e) {
+//  } catch(colony::lookup_e& e) {
 
-    rError("... file not found");
-    return -ENOENT;
-  }
+//    rError("... file not found");
+//    return -ENOENT;
+//  }
 
 }
 
@@ -543,6 +553,9 @@ int colonyfs_fusexx::create(
 
   // Commit.
   metadata_map_.commit(parent_pair);
+
+  // Data also has exist!
+  g_data_sink.write(full, 0, 0, 0);
 
 
   return 0;

@@ -276,7 +276,8 @@ private:
       size_t chunk_delta
       ) {
 
-    destination.reserve(CHUNK_SIZE);
+    const size_t required_size = destination_offset + chunk_delta;
+    if (destination.size() < required_size) destination.resize(required_size);
 
     memcpy(&destination[destination_offset], source + source_offset, chunk_delta);
 
@@ -345,7 +346,7 @@ private:
   }
 
 
-  rlog::RLogChannel                      *sink_log_;
+  rlog::RLogChannel                             *sink_log_;
   implementation_type                            implementation_;
   aggregator<colony::xmlrpc::chunkserver_value>  chunkserver_sink_;
 };
