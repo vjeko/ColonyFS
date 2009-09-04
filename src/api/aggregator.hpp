@@ -25,7 +25,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
-#include <boost/mem_fn.hpp>
 
 
 namespace colony {
@@ -130,29 +129,6 @@ public:
       const size_t offset) {
 
     using colony::storage::chunk_data;
-/*
-    size_t buffer_start = 0;
-    size_t buffer_end = size;
-
-    const size_t chunk_index_start = buffer_start / CHUNK_SIZE;
-    const size_t chunk_index_end = buffer_end / CHUNK_SIZE;
-
-    for (size_t count = chunk_index_start; count <= chunk_index_end; count++) {
-
-      const size_t remaining_size = buffer_end - buffer_start;
-      const size_t chunk_start = offset % CHUNK_SIZE;
-      const size_t chunk_end = (offset + remaining_size > CHUNK_SIZE) ? CHUNK_SIZE : chunk_start + remaining_size;
-      const size_t chunk_size = chunk_end - chunk_start;
-
-      const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
-
-      shared_ptr<chunk_data> chunk = create_if_missing(filepath, count);
-      chunk_data::data_type& raw_data = *(chunk->data_ptr_);
-      write_to_chunk(raw_data, buffer, chunk_start, buffer_start, chunk_size);
-
-      buffer_start += chunk_size;
-    }
-*/
 
     copy(
         filepath,
@@ -163,6 +139,7 @@ public:
         offset);
 
   }
+
 
 
 
@@ -183,6 +160,7 @@ public:
         offset);
 
   }
+
 
 
 
@@ -217,8 +195,8 @@ public:
       const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
 
       shared_ptr<chunk_data> chunk = key_policy(filepath, count);
-      chunk_data::data_type& raw_data = *(chunk->data_ptr_);
-      action_policy(raw_data, buffer, chunk_start, buffer_start, chunk_size);
+      chunk_data::data_type& chunk_buffer = *(chunk->data_ptr_);
+      action_policy(chunk_buffer, buffer, chunk_start, buffer_start, chunk_size);
 
       buffer_start += chunk_size;
     }
@@ -238,20 +216,11 @@ public:
     const size_t chunk_index_start = new_size / CHUNK_SIZE;
     const size_t chunk_index_end = old_size / CHUNK_SIZE;
 
-    const std::string key = filepath.string() + boost::lexical_cast<std::string>(chunk_index_start);
-
-    shared_ptr<chunk_data> chunk;
-    implementation_type::iterator it = implementation_.find(key);
-
-    if (it == implementation_.end()) {
-      std::runtime_error("unknown chunk");
-    } else {
-      chunk = it->second;
-    }
+    shared_ptr<chunk_data> chunk = raise_if_missing(filepath, chunk_index_start);
 
     const size_t chunk_size = new_size % CHUNK_SIZE;
-    chunk_data::data_type& raw_data = *(chunk->data_ptr_);
-    raw_data.resize(chunk_size);
+    chunk_data::data_type& chunk_buffer = *(chunk->data_ptr_);
+    chunk_buffer.resize(chunk_size);
 
     for (size_t count = chunk_index_start + 1; count <= chunk_index_end; count++) {
       const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
@@ -263,14 +232,14 @@ public:
 
 
 
-  void erase(const boost::filesystem::path filepath, size_t size) {
+  void erase(const boost::filesystem::path filepath, size_t total_size) {
 
     using colony::storage::chunk_data;
 
     const size_t chunk_index_start = 0;
-    const size_t chunk_index_end = size / CHUNK_SIZE;
+    const size_t chunk_index_end = total_size / CHUNK_SIZE;
 
-    for (size_t count = chunk_index_start + 1; count <= chunk_index_end; count++) {
+    for (size_t count = chunk_index_start; count <= chunk_index_end; count++) {
       const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
       implementation_.erase(key);
     }
@@ -351,7 +320,7 @@ private:
     implementation_type::iterator it = implementation_.find(key);
 
     if (it == implementation_.end()) {
-      std::runtime_error("unknown key");
+      throw lookup_e() << key_info_t(key);
     } else {
       chunk = it->second;
     }
