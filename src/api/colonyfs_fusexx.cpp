@@ -234,9 +234,7 @@ int colonyfs_fusexx::rename(const char* oldpath, const char* newpath) {
   metadata_map_.erase( oldfull_pair );
 
   // FIXME: Implement data rename.
-  std::string oldfull_data = data_map_[ oldfull.string() ];
-  data_map_.commit( newfull.string(), oldfull_data);
-  data_map_.erase(oldfull.string());
+  g_data_sink.rename(oldfull, newfull, newfull_pair->get_mapped().stbuf.st_size);
 
   return 0;
 

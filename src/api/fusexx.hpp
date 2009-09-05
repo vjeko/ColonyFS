@@ -22,7 +22,7 @@
 
 #define FUSE_USE_VERSION 26 // earlier versions have deprecated functions
 
-#define _unimplemented_() { printf("\n\n%s() unimplemented\n\n", __FUNCTION__); return 0; };
+#define _unimplemented_() { return 0; };
 
 // C++ Headers
 #include <string> // memset

@@ -194,6 +194,28 @@ public:
 
 
 
+  void rename(
+      const boost::filesystem::path oldpath,
+      const boost::filesystem::path newpath,
+      size_t total_size) {
+
+    using colony::storage::chunk_data;
+
+    const size_t chunk_index_start = 0;
+    const size_t chunk_index_end = total_size / CHUNK_SIZE;
+
+    for (size_t count = chunk_index_start; count <= chunk_index_end; count++) {
+      const std::string old_key = oldpath.string() + boost::lexical_cast<std::string>(count);
+      const std::string new_key = newpath.string() + boost::lexical_cast<std::string>(count);
+      implementation_[new_key] = implementation_[old_key];
+      implementation_.erase(old_key);
+    }
+
+  }
+
+
+
+
   void erase(const boost::filesystem::path filepath, size_t total_size) {
 
     using colony::storage::chunk_data;

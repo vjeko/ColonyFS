@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
   client_log.subscribeTo( RLOG_CHANNEL("warning") );
 
   client_log.subscribeTo( RLOG_CHANNEL("fuse/control") ) ;
-  client_log.subscribeTo( RLOG_CHANNEL("sink") ) ;
+  //client_log.subscribeTo( RLOG_CHANNEL("sink") ) ;
 
 
   colonyfs_fusexx hello;
