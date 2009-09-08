@@ -38,7 +38,7 @@ public:
   /*
    * Get value.
    *
-   * Do not deal with exception at this level. Let caller take an
+   * Do not deal with exceptions at this level. Let caller take an
    * appropriate action.
    */
   template <typename T>

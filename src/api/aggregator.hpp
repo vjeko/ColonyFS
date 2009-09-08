@@ -38,7 +38,8 @@ class lookup_e : public boost::exception {};
 
 
 
-template<typename T> class aggregator {
+template<typename T>
+class sink_local_impl {
 
 public:
 
@@ -53,12 +54,12 @@ public:
 
 
 
-  aggregator() {};
+  sink_local_impl() {};
 
 
 
 
-  virtual ~aggregator() {};
+  virtual ~sink_local_impl() {};
 
 
 
@@ -102,8 +103,131 @@ public:
 
 private:
 
-  size_t              num_;
+
+
+
   implementation_type implementation_;
+};
+
+
+
+
+
+
+template<typename T>
+class sink_remote_impl {
+
+public:
+
+  typedef typename T::key_type           key_type;
+  typedef typename T::value_type         value_type;
+  typedef typename T::mapped_type        mapped_type;
+
+
+
+
+  sink_remote_impl() {};
+
+
+
+
+  virtual ~sink_remote_impl() {};
+
+
+
+
+  inline shared_ptr<T> operator()(const key_type& key) {
+  }
+
+
+
+
+  inline void commit(shared_ptr<T> pair) {
+  }
+
+
+
+
+  inline void erase(shared_ptr<T> object) {
+  }
+
+
+
+
+  inline void erase(const key_type& key) {
+  }
+
+
+
+
+private:
+
+
+
+
+};
+
+
+
+
+template<
+  typename T,
+  template <typename T> class Implementation = sink_local_impl
+> class aggregator {
+
+public:
+
+  typedef typename T::key_type           key_type;
+  typedef typename T::value_type         value_type;
+  typedef typename T::mapped_type        mapped_type;
+
+
+
+
+  aggregator() {};
+
+
+
+
+  virtual ~aggregator() {};
+
+
+
+
+  inline shared_ptr<T> operator()(const key_type& key) {
+    return implementation_(key);
+  }
+
+
+
+
+  inline void commit(shared_ptr<T> pair) {
+    implementation_.commit(pair);
+  }
+
+
+
+
+  inline void erase(shared_ptr<T> object) {
+    implementation_.erase(object);
+  }
+
+
+
+
+  inline void erase(const key_type& key) {
+    implementation_.erase(key);
+  }
+
+
+
+
+private:
+
+
+
+
+  Implementation<T>  implementation_;
 };
 
 
@@ -121,7 +245,7 @@ public:
 
 
   aggregator() :
-    sink_log_( RLOG_CHANNEL( "sink" ) )
+    sink_log_( RLOG_CHANNEL( "sink/data" ) )
     {}
 
 
@@ -260,8 +384,8 @@ private:
     const size_t chunk_index_end = buffer_end / CHUNK_SIZE;
 
     rLog(sink_log_, "---------------------------");
-    rLog(sink_log_, "OFFSET: %lu", offset);
-    rLog(sink_log_, "SIZE: %lu", size);
+    rLog(sink_log_, "Buffer Offset: %lu", offset);
+    rLog(sink_log_, "Buffer Size: %lu", size);
     rLog(sink_log_, "Chunk Index Start: %lu", chunk_index_start);
     rLog(sink_log_, "Chunk Index End: %lu", chunk_index_end);
 

@@ -32,7 +32,7 @@ bool harmony::put(const std::string& key, const std::string& value) {
    */
   xmlrpc_c::clientSimple  client;
   xmlrpc_c::value         result;
-  std::string             method("put");
+  std::string             method("write");
 
   client.call(url_, method, "ss", &result, key.c_str(), value.c_str());
 
@@ -60,7 +60,7 @@ std::string harmony::get(const std::string& key) {
    */
   xmlrpc_c::clientSimple  client;
   xmlrpc_c::value         result;
-  std::string             method("get");
+  std::string             method("read");
 
   client.call(url_, method, "s", &result, key.c_str());
 
