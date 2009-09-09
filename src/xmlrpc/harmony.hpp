@@ -12,9 +12,20 @@
 
 #include <boost/exception.hpp>
 
+#include <xmlrpc-c/base.hpp>
+
 #include <string>
+#include <map>
 #include <iostream>
 #include <sstream>
+
+
+
+
+enum HarmonyOperation {
+  HARMONY_READ,
+  HARMONY_WRITE
+};
 
 
 
@@ -77,7 +88,21 @@ public:
   }
 
 private:
-  static const int  port_ = 1212;
+
+
+  std::map<std::string, xmlrpc_c::value> generate_op(
+      HarmonyOperation Op,
+      const std::string& key,
+      const std::string& id);
+
+  std::map<std::string, xmlrpc_c::value> generate_op(
+      HarmonyOperation Op,
+      const std::string& key,
+      const std::string& value,
+      const std::string& id);
+
+
+  static const int  port_ = 36459;
   std::string       url_;
 };
 

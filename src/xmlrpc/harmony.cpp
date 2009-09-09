@@ -20,15 +20,7 @@
 
 
 
-const std::string XML_OP_TAG("op");
-const std::string XML_VALUE_TAG("value");
-const std::string XML_KEY_TAG("key");
-const std::string XML_ID_TAG("id");
-
 const std::string HARMONY_APPLY("op_apply");
-
-const int HARMONY_READ = 0;
-const int HARMONY_WRITE = 1;
 
 
 
@@ -42,80 +34,53 @@ harmony::harmony(std::string url) :
 harmony::~harmony() {}
 
 
+
 void harmony::write(const std::string& key, const std::string& value) {
-   using std::string;
-   using std::map;
-   using std::pair;
-   using xmlrpc_c::value_int;
-   using xmlrpc_c::value_string;
-   using xmlrpc_c::value_struct;
-   using xmlrpc_c::paramList;
 
+  const xmlrpc_c::value_struct op_param(
+      generate_op(HARMONY_WRITE, key, value, "0.0.0.0:0-0-5")
+      );
 
-   map<string, xmlrpc_c::value> value_param_map;
-   value_param_map[XML_VALUE_TAG] = xmlrpc_c::value_string(value);
+  xmlrpc_c::paramList param_list;
 
-   const value_struct value_param(value_param_map);
+  // Operand.
+  param_list.add(op_param);
 
+  // Timeout.
+  param_list.add(xmlrpc_c::value_nil());
 
-   boost::hash<std::string> string_hash;
-   const size_t hash = string_hash(key);
+  const std::string url("http://barb.cs.washington.edu:36459");
+  xmlrpc_c::clientSimple  client;
+  xmlrpc_c::value         result;
 
-   map<string, xmlrpc_c::value> op_param_map;
-   op_param_map[XML_OP_TAG] = xmlrpc_c::value_int(HARMONY_WRITE);
-   op_param_map[XML_KEY_TAG] = xmlrpc_c::value_int(hash);
-   op_param_map[XML_ID_TAG] = xmlrpc_c::value_string("0.0.0.0:0-0-3");
-   op_param_map[XML_VALUE_TAG] = value_param;
-
-   const xmlrpc_c::value_struct op_param(op_param_map);
-
-
-   paramList param_list;
-   param_list.add(op_param);
-   param_list.add(xmlrpc_c::value_nil());
-
-
-   const std::string url("http://barb.cs.washington.edu:36459");
-   xmlrpc_c::clientSimple  client;
-   xmlrpc_c::value         result;
-
-   client.call(url, HARMONY_APPLY, param_list, &result);
- }
+  client.call(url, HARMONY_APPLY, param_list, &result);
+}
 
 
 
 
- void harmony::read(const std::string& key) {
-   using std::string;
-   using std::map;
-   using std::pair;
-   using xmlrpc_c::value_int;
-   using xmlrpc_c::value_string;
-   using xmlrpc_c::value_struct;
-   using xmlrpc_c::paramList;
+void harmony::read(const std::string& key) {
 
-   boost::hash<std::string> string_hash;
-   const size_t hash = string_hash(key);
+  const xmlrpc_c::value_struct op_param(
+      generate_op(HARMONY_READ, key, "0.0.0.0:0-0-6")
+      );
 
-   map<string, xmlrpc_c::value> op_param_map;
-   op_param_map[XML_OP_TAG] = xmlrpc_c::value_int(HARMONY_READ);
-   op_param_map[XML_KEY_TAG] = xmlrpc_c::value_int(hash);
-   op_param_map[XML_ID_TAG] = xmlrpc_c::value_string("0.0.0.0:0-0-4");
+  xmlrpc_c::paramList param_list;
 
-   const xmlrpc_c::value_struct op_param(op_param_map);
+  // Operand.
+  param_list.add(op_param);
 
+  // Timeout.
+  param_list.add(xmlrpc_c::value_nil());
 
-   paramList param_list;
-   param_list.add(op_param);
-   param_list.add(xmlrpc_c::value_nil());
+  const std::string url("http://barb.cs.washington.edu:36459");
+  xmlrpc_c::clientSimple  client;
+  xmlrpc_c::value         result;
+
+  client.call(url, HARMONY_APPLY, param_list, &result);
+}
 
 
-   const std::string url("http://barb.cs.washington.edu:36459");
-   xmlrpc_c::clientSimple  client;
-   xmlrpc_c::value         result;
-
-   client.call(url, HARMONY_APPLY, param_list, &result);
- }
 
 
 bool harmony::put(const std::string& key, const std::string& value) {
@@ -144,6 +109,8 @@ bool harmony::put(const std::string& key, const std::string& value) {
 
   return xmlrpc_c::value_boolean(result);
 }
+
+
 
 
 std::string harmony::get(const std::string& key) {
@@ -176,5 +143,54 @@ std::string harmony::get(const std::string& key) {
   return xmlrpc_c::value_string(value);
 
 }
+
+
+
+
+std::map<std::string, xmlrpc_c::value> harmony::generate_op(
+    HarmonyOperation Op,
+    const std::string& key,
+    const std::string& id) {
+
+  const std::string XML_OP_TAG("op");
+  const std::string XML_KEY_TAG("key");
+  const std::string XML_ID_TAG("id");
+
+  boost::hash<std::string> string_hash;
+  const size_t hash = string_hash(key);
+
+  std::map<std::string, xmlrpc_c::value> op_param_map;
+  op_param_map[XML_OP_TAG] = xmlrpc_c::value_int(Op);
+  op_param_map[XML_KEY_TAG] = xmlrpc_c::value_int(hash);
+  op_param_map[XML_ID_TAG] = xmlrpc_c::value_string(id);
+
+  return op_param_map;
+}
+
+
+
+
+std::map<std::string, xmlrpc_c::value> harmony::generate_op(
+    HarmonyOperation Op,
+    const std::string& key,
+    const std::string& value,
+    const std::string& id) {
+
+  const std::string XML_VALUE_TAG("value");
+
+  std::map<std::string, xmlrpc_c::value>
+  op_param_map(generate_op(Op, key, id));
+
+  std::map<std::string, xmlrpc_c::value> value_param_map;
+  value_param_map[XML_VALUE_TAG] = xmlrpc_c::value_string(value);
+  const xmlrpc_c::value_struct value_param(value_param_map);
+
+  op_param_map[XML_VALUE_TAG] = value_param;
+
+  return op_param_map;
+}
+
+
+
 
 } } // Namespace
