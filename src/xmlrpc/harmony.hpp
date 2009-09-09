@@ -16,6 +16,10 @@
 #include <iostream>
 #include <sstream>
 
+
+
+
+
 namespace colony { namespace xmlrpc {
 
 typedef boost::error_info<struct tag_key, std::string> key_info;
@@ -31,6 +35,9 @@ protected:
 public:
   harmony(std::string url);
   virtual ~harmony();
+
+  void write(const std::string& key, const std::string& value);
+  void read(const std::string& key);
 
   bool put(const std::string&, const std::string&);
   std::string get(const std::string&);

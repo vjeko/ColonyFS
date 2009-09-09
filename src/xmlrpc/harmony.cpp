@@ -9,10 +9,29 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
 
 #include <xmlrpc-c/girerr.hpp>
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/client_simple.hpp>
+
+#include <boost/functional/hash.hpp>
+
+
+
+
+const std::string XML_OP_TAG("op");
+const std::string XML_VALUE_TAG("value");
+const std::string XML_KEY_TAG("key");
+const std::string XML_ID_TAG("id");
+
+const std::string HARMONY_APPLY("op_apply");
+
+const int HARMONY_READ = 0;
+const int HARMONY_WRITE = 1;
+
+
+
 
 namespace colony { namespace xmlrpc {
 
@@ -21,6 +40,83 @@ harmony::harmony(std::string url) :
 }
 
 harmony::~harmony() {}
+
+
+void harmony::write(const std::string& key, const std::string& value) {
+   using std::string;
+   using std::map;
+   using std::pair;
+   using xmlrpc_c::value_int;
+   using xmlrpc_c::value_string;
+   using xmlrpc_c::value_struct;
+   using xmlrpc_c::paramList;
+
+
+   map<string, xmlrpc_c::value> value_param_map;
+   value_param_map[XML_VALUE_TAG] = xmlrpc_c::value_string(value);
+
+   const value_struct value_param(value_param_map);
+
+
+   boost::hash<std::string> string_hash;
+   const size_t hash = string_hash(key);
+
+   map<string, xmlrpc_c::value> op_param_map;
+   op_param_map[XML_OP_TAG] = xmlrpc_c::value_int(HARMONY_WRITE);
+   op_param_map[XML_KEY_TAG] = xmlrpc_c::value_int(hash);
+   op_param_map[XML_ID_TAG] = xmlrpc_c::value_string("0.0.0.0:0-0-3");
+   op_param_map[XML_VALUE_TAG] = value_param;
+
+   const xmlrpc_c::value_struct op_param(op_param_map);
+
+
+   paramList param_list;
+   param_list.add(op_param);
+   param_list.add(xmlrpc_c::value_nil());
+
+
+   const std::string url("http://barb.cs.washington.edu:36459");
+   xmlrpc_c::clientSimple  client;
+   xmlrpc_c::value         result;
+
+   client.call(url, HARMONY_APPLY, param_list, &result);
+ }
+
+
+
+
+ void harmony::read(const std::string& key) {
+   using std::string;
+   using std::map;
+   using std::pair;
+   using xmlrpc_c::value_int;
+   using xmlrpc_c::value_string;
+   using xmlrpc_c::value_struct;
+   using xmlrpc_c::paramList;
+
+   boost::hash<std::string> string_hash;
+   const size_t hash = string_hash(key);
+
+   map<string, xmlrpc_c::value> op_param_map;
+   op_param_map[XML_OP_TAG] = xmlrpc_c::value_int(HARMONY_READ);
+   op_param_map[XML_KEY_TAG] = xmlrpc_c::value_int(hash);
+   op_param_map[XML_ID_TAG] = xmlrpc_c::value_string("0.0.0.0:0-0-4");
+
+   const xmlrpc_c::value_struct op_param(op_param_map);
+
+
+   paramList param_list;
+   param_list.add(op_param);
+   param_list.add(xmlrpc_c::value_nil());
+
+
+   const std::string url("http://barb.cs.washington.edu:36459");
+   xmlrpc_c::clientSimple  client;
+   xmlrpc_c::value         result;
+
+   client.call(url, HARMONY_APPLY, param_list, &result);
+ }
+
 
 bool harmony::put(const std::string& key, const std::string& value) {
 
