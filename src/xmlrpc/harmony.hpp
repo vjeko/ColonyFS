@@ -48,7 +48,7 @@ public:
   virtual ~harmony();
 
   void write(const std::string& key, const std::string& value);
-  void read(const std::string& key);
+  std::string read(const std::string& key);
 
   bool put(const std::string&, const std::string&);
   std::string get(const std::string&);

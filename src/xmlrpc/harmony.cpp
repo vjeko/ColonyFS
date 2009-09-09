@@ -54,12 +54,23 @@ void harmony::write(const std::string& key, const std::string& value) {
   xmlrpc_c::value         result;
 
   client.call(url, HARMONY_APPLY, param_list, &result);
+
+  xmlrpc_c::value_struct op_struct = xmlrpc_c::value_array(result).vectorValueValue()[1];
+  std::map<std::string, xmlrpc_c::value> op_map(op_struct);
+
+  xmlrpc_c::value_int e = op_map["err"];
+
+  if (e) {
+    std::cout << "Errno: " << e << std::endl;
+    throw key_missing_error();
+  }
+
 }
 
 
 
 
-void harmony::read(const std::string& key) {
+std::string harmony::read(const std::string& key) {
 
   const xmlrpc_c::value_struct op_param(
       generate_op(HARMONY_READ, key, "0.0.0.0:0-0-6")
@@ -78,6 +89,23 @@ void harmony::read(const std::string& key) {
   xmlrpc_c::value         result;
 
   client.call(url, HARMONY_APPLY, param_list, &result);
+
+  xmlrpc_c::value_struct op_struct = xmlrpc_c::value_array(result).vectorValueValue()[1];
+  std::map<std::string, xmlrpc_c::value> op_map(op_struct);
+
+  xmlrpc_c::value_int e = op_map["err"];
+
+  if (e) {
+    std::cout << "Errno: " << e << std::endl;
+    throw key_missing_error();
+  }
+
+  xmlrpc_c::value_struct value_struct = op_map["value"];
+
+  std::map<std::string, xmlrpc_c::value> value_map(value_struct);
+  xmlrpc_c::value_string value = value_map["value"];
+
+  return value.crlfValue();
 }
 
 
