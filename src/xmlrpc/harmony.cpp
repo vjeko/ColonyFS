@@ -37,7 +37,7 @@ harmony::~harmony() {}
 
 
 
-void harmony::write(const std::string& key, const std::string& value) {
+bool harmony::put(const std::string& key, const std::string& value) {
 
   const xmlrpc_c::value_struct op_param(
       generate_op(key, value)
@@ -70,12 +70,14 @@ void harmony::write(const std::string& key, const std::string& value) {
 
   std::map<std::string, xmlrpc_c::value> op_map(op_struct);
   xmlrpc_c::value_int key_error = op_map[XML_ERROR_TAG];
+
+  return true;
 }
 
 
 
 
-std::string harmony::read(const std::string& key) {
+std::string harmony::get(const std::string& key) {
 
   const xmlrpc_c::value_struct op_param(
       generate_op(key)
@@ -95,6 +97,12 @@ std::string harmony::read(const std::string& key) {
   // Commit.
   param_list.add(xmlrpc_c::value_nil());
 
+  /*
+   * The reason why we recreate client in every step,
+   * is to avoid race conditions. XMRPC documentation
+   * does not specify whether clientSimple can be used as
+   * a shared object.
+   */
   const std::string url("http://barb.cs.washington.edu:36459");
   xmlrpc_c::clientSimple  client;
   xmlrpc_c::value         result;
@@ -112,70 +120,6 @@ std::string harmony::read(const std::string& key) {
   xmlrpc_c::value_string value = value_map[XML_VALUE_TAG];
 
   return value.crlfValue();
-}
-
-
-
-
-bool harmony::put(const std::string& key, const std::string& value) {
-
-  /*
-   * The reason why we recreate client in every step,
-   * is to avoid race conditions. XMRPC documentation
-   * does not specify whether clientSimple can be used as
-   * a shared object.
-   */
-  xmlrpc_c::clientSimple  client;
-  xmlrpc_c::value         result;
-  std::string             method("write");
-
-  client.call(url_, method, "ss", &result, key.c_str(), value.c_str());
-
-  /*
-   * The return is an array.
-   * [1] success.
-   * [2] output (if any).
-   *
-   * For puts there is never any output.
-   * For gets there is output only on success.
-   */
-  //xmlrpc_c::value status = xmlrpc_c::value_array(result).vectorValueValue()[0];
-
-  return xmlrpc_c::value_boolean(result);
-}
-
-
-
-
-std::string harmony::get(const std::string& key) {
-
-  /*
-   * The reason why we recreate client in every step,
-   * is to avoid race conditions. XMRPC documentation
-   * does not specify whether clientSimple can be used as
-   * a shared object.
-   */
-  xmlrpc_c::clientSimple  client;
-  xmlrpc_c::value         result;
-  std::string             method("read");
-
-  client.call(url_, method, "s", &result, key.c_str());
-
-  /* What is the return status? */
-  xmlrpc_c::value status_xmlrpc = xmlrpc_c::value_array(result).vectorValueValue()[0];
-
-  /*
-   * Throw an exception in case we failed.
-   * Let the caller decide what to do.
-   */
-  if (!xmlrpc_c::value_boolean(status_xmlrpc)) {
-    throw key_missing_error() << key_info(key);
-  }
-
-  /* Otherwise return the value. */
-  xmlrpc_c::value value = xmlrpc_c::value_array(result).vectorValueValue()[1];
-  return xmlrpc_c::value_string(value);
-
 }
 
 
