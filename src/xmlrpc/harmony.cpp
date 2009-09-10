@@ -20,7 +20,9 @@
 
 
 
-const std::string HARMONY_APPLY("op_apply");
+const std::string HARMONY_APPLY("op_create");
+const std::string XML_ERROR_TAG("err");
+const std::string XML_VALUE_TAG("value");
 
 
 
@@ -60,16 +62,14 @@ void harmony::write(const std::string& key, const std::string& value) {
   xmlrpc_c::value         result;
 
   client.call(url, HARMONY_APPLY, param_list, &result);
-/*
+
   xmlrpc_c::value_array response(result);
 
   xmlrpc_c::value_int dht_error = response.vectorValueValue()[0];
-  xmlrpc_c::value_struct op_struct = response.vectorValueValue()[1];
+  xmlrpc_c::value_struct op_struct = response.vectorValueValue()[2];
 
   std::map<std::string, xmlrpc_c::value> op_map(op_struct);
   xmlrpc_c::value_int key_error = op_map[XML_ERROR_TAG];
-*/
-
 }
 
 
@@ -101,23 +101,17 @@ std::string harmony::read(const std::string& key) {
 
   client.call(url, HARMONY_APPLY, param_list, &result);
 
-  xmlrpc_c::value_struct op_struct = xmlrpc_c::value_array(result).vectorValueValue()[1];
+  xmlrpc_c::value_struct op_struct = xmlrpc_c::value_array(result).vectorValueValue()[2];
   std::map<std::string, xmlrpc_c::value> op_map(op_struct);
-/*
-  xmlrpc_c::value_int e = op_map["err"];
 
-  if (e) {
-    std::cout << "Errno: " << e << std::endl;
-    return "";
-  }
+  xmlrpc_c::value_int e = op_map[XML_ERROR_TAG];
 
-  xmlrpc_c::value_struct value_struct = op_map["value"];
+  xmlrpc_c::value_struct value_struct = op_map[XML_VALUE_TAG];
 
   std::map<std::string, xmlrpc_c::value> value_map(value_struct);
-  xmlrpc_c::value_string value = value_map["value"];
+  xmlrpc_c::value_string value = value_map[XML_VALUE_TAG];
 
   return value.crlfValue();
-*/
 }
 
 
