@@ -38,10 +38,13 @@ harmony::~harmony() {}
 void harmony::write(const std::string& key, const std::string& value) {
 
   const xmlrpc_c::value_struct op_param(
-      generate_op(HARMONY_WRITE, key, value, "0.0.0.0:0-0-5")
+      generate_op(key, value)
       );
 
   xmlrpc_c::paramList param_list;
+
+  // Operation Type.
+  param_list.add(xmlrpc_c::value_int(HARMONY_WRITE));
 
   // Operand.
   param_list.add(op_param);
@@ -49,21 +52,23 @@ void harmony::write(const std::string& key, const std::string& value) {
   // Timeout.
   param_list.add(xmlrpc_c::value_nil());
 
+  // Commit.
+  param_list.add(xmlrpc_c::value_nil());
+
   const std::string url("http://barb.cs.washington.edu:36459");
   xmlrpc_c::clientSimple  client;
   xmlrpc_c::value         result;
 
   client.call(url, HARMONY_APPLY, param_list, &result);
+/*
+  xmlrpc_c::value_array response(result);
 
-  xmlrpc_c::value_struct op_struct = xmlrpc_c::value_array(result).vectorValueValue()[1];
+  xmlrpc_c::value_int dht_error = response.vectorValueValue()[0];
+  xmlrpc_c::value_struct op_struct = response.vectorValueValue()[1];
+
   std::map<std::string, xmlrpc_c::value> op_map(op_struct);
-
-  xmlrpc_c::value_int e = op_map["err"];
-
-  if (e) {
-    std::cout << "Errno: " << e << std::endl;
-    throw key_missing_error();
-  }
+  xmlrpc_c::value_int key_error = op_map[XML_ERROR_TAG];
+*/
 
 }
 
@@ -73,15 +78,21 @@ void harmony::write(const std::string& key, const std::string& value) {
 std::string harmony::read(const std::string& key) {
 
   const xmlrpc_c::value_struct op_param(
-      generate_op(HARMONY_READ, key, "0.0.0.0:0-0-6")
+      generate_op(key)
       );
 
   xmlrpc_c::paramList param_list;
+
+  // Operation Type.
+  param_list.add(xmlrpc_c::value_int(HARMONY_READ));
 
   // Operand.
   param_list.add(op_param);
 
   // Timeout.
+  param_list.add(xmlrpc_c::value_nil());
+
+  // Commit.
   param_list.add(xmlrpc_c::value_nil());
 
   const std::string url("http://barb.cs.washington.edu:36459");
@@ -92,12 +103,12 @@ std::string harmony::read(const std::string& key) {
 
   xmlrpc_c::value_struct op_struct = xmlrpc_c::value_array(result).vectorValueValue()[1];
   std::map<std::string, xmlrpc_c::value> op_map(op_struct);
-
+/*
   xmlrpc_c::value_int e = op_map["err"];
 
   if (e) {
     std::cout << "Errno: " << e << std::endl;
-    throw key_missing_error();
+    return "";
   }
 
   xmlrpc_c::value_struct value_struct = op_map["value"];
@@ -106,6 +117,7 @@ std::string harmony::read(const std::string& key) {
   xmlrpc_c::value_string value = value_map["value"];
 
   return value.crlfValue();
+*/
 }
 
 
@@ -176,21 +188,15 @@ std::string harmony::get(const std::string& key) {
 
 
 std::map<std::string, xmlrpc_c::value> harmony::generate_op(
-    HarmonyOperation Op,
-    const std::string& key,
-    const std::string& id) {
+    const std::string& key) {
 
-  const std::string XML_OP_TAG("op");
   const std::string XML_KEY_TAG("key");
-  const std::string XML_ID_TAG("id");
 
   boost::hash<std::string> string_hash;
   const size_t hash = string_hash(key);
 
   std::map<std::string, xmlrpc_c::value> op_param_map;
-  op_param_map[XML_OP_TAG] = xmlrpc_c::value_int(Op);
   op_param_map[XML_KEY_TAG] = xmlrpc_c::value_int(hash);
-  op_param_map[XML_ID_TAG] = xmlrpc_c::value_string(id);
 
   return op_param_map;
 }
@@ -199,15 +205,13 @@ std::map<std::string, xmlrpc_c::value> harmony::generate_op(
 
 
 std::map<std::string, xmlrpc_c::value> harmony::generate_op(
-    HarmonyOperation Op,
     const std::string& key,
-    const std::string& value,
-    const std::string& id) {
+    const std::string& value) {
 
   const std::string XML_VALUE_TAG("value");
 
   std::map<std::string, xmlrpc_c::value>
-  op_param_map(generate_op(Op, key, id));
+  op_param_map(generate_op(key));
 
   std::map<std::string, xmlrpc_c::value> value_param_map;
   value_param_map[XML_VALUE_TAG] = xmlrpc_c::value_string(value);
@@ -216,6 +220,13 @@ std::map<std::string, xmlrpc_c::value> harmony::generate_op(
   op_param_map[XML_VALUE_TAG] = value_param;
 
   return op_param_map;
+}
+
+
+
+
+void harmony::validate(xmlrpc_c::value_array result) {
+
 }
 
 

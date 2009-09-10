@@ -34,8 +34,14 @@ enum HarmonyOperation {
 namespace colony { namespace xmlrpc {
 
 typedef boost::error_info<struct tag_key, std::string> key_info;
+typedef boost::error_info<struct tag_key, std::string> dht_info;
 
 class key_missing_error : public boost::exception {};
+class dht_error : public boost::exception {};
+
+
+
+
 
 class harmony {
 protected:
@@ -91,15 +97,13 @@ private:
 
 
   std::map<std::string, xmlrpc_c::value> generate_op(
-      HarmonyOperation Op,
-      const std::string& key,
-      const std::string& id);
+      const std::string& key);
 
   std::map<std::string, xmlrpc_c::value> generate_op(
-      HarmonyOperation Op,
       const std::string& key,
-      const std::string& value,
-      const std::string& id);
+      const std::string& value);
+
+  void validate(xmlrpc_c::value_array result);
 
 
   static const int  port_ = 36459;
