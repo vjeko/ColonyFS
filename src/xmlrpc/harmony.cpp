@@ -20,13 +20,6 @@
 
 
 
-const std::string HARMONY_APPLY("op_create");
-const std::string XML_ERROR_TAG("err");
-const std::string XML_VALUE_TAG("value");
-
-
-
-
 namespace colony { namespace xmlrpc {
 
 harmony::harmony(std::string url) :
@@ -61,15 +54,22 @@ bool harmony::put(const std::string& key, const std::string& value) {
   xmlrpc_c::clientSimple  client;
   xmlrpc_c::value         result;
 
-  client.call(url, HARMONY_APPLY, param_list, &result);
+  client.call(url, METHOD_CALL, param_list, &result);
 
   xmlrpc_c::value_array response(result);
 
-  xmlrpc_c::value_int dht_error = response.vectorValueValue()[0];
+  xmlrpc_c::value_int dht_errno = response.vectorValueValue()[0];
+  xmlrpc_c::value_struct request = response.vectorValueValue()[1];
   xmlrpc_c::value_struct op_struct = response.vectorValueValue()[2];
 
-  std::map<std::string, xmlrpc_c::value> op_map(op_struct);
-  xmlrpc_c::value_int key_error = op_map[XML_ERROR_TAG];
+  std::map<std::string, xmlrpc_c::value> request_map(op_struct);
+  std::map<std::string, xmlrpc_c::value> op_struct_map(op_struct);
+
+  if (dht_errno) throw dht_error();
+
+  xmlrpc_c::value_int key_errno = op_struct_map[XML_ERROR_TAG];
+
+  if (key_errno) throw key_missing_error();
 
   return true;
 }
@@ -107,16 +107,27 @@ std::string harmony::get(const std::string& key) {
   xmlrpc_c::clientSimple  client;
   xmlrpc_c::value         result;
 
-  client.call(url, HARMONY_APPLY, param_list, &result);
+  client.call(url, METHOD_CALL, param_list, &result);
 
-  xmlrpc_c::value_struct op_struct = xmlrpc_c::value_array(result).vectorValueValue()[2];
-  std::map<std::string, xmlrpc_c::value> op_map(op_struct);
+  xmlrpc_c::value_array response(result);
 
-  xmlrpc_c::value_int e = op_map[XML_ERROR_TAG];
 
-  xmlrpc_c::value_struct value_struct = op_map[XML_VALUE_TAG];
+  xmlrpc_c::value_int dht_errno = response.vectorValueValue()[0];
+  xmlrpc_c::value_struct request = response.vectorValueValue()[1];
+  xmlrpc_c::value_struct op_struct = response.vectorValueValue()[2];
 
+  std::map<std::string, xmlrpc_c::value> request_map(op_struct);
+  std::map<std::string, xmlrpc_c::value> op_struct_map(op_struct);
+
+  if (dht_errno) throw dht_error();
+
+  xmlrpc_c::value_int key_errno = op_struct_map[XML_ERROR_TAG];
+
+  if (key_errno) throw key_missing_error();
+
+  xmlrpc_c::value_struct value_struct = op_struct_map[XML_VALUE_TAG];
   std::map<std::string, xmlrpc_c::value> value_map(value_struct);
+
   xmlrpc_c::value_string value = value_map[XML_VALUE_TAG];
 
   return value.crlfValue();
@@ -127,8 +138,6 @@ std::string harmony::get(const std::string& key) {
 
 std::map<std::string, xmlrpc_c::value> harmony::generate_op(
     const std::string& key) {
-
-  const std::string XML_KEY_TAG("key");
 
   boost::hash<std::string> string_hash;
   const size_t hash = string_hash(key);
@@ -146,8 +155,6 @@ std::map<std::string, xmlrpc_c::value> harmony::generate_op(
     const std::string& key,
     const std::string& value) {
 
-  const std::string XML_VALUE_TAG("value");
-
   std::map<std::string, xmlrpc_c::value>
   op_param_map(generate_op(key));
 
@@ -163,8 +170,7 @@ std::map<std::string, xmlrpc_c::value> harmony::generate_op(
 
 
 
-void harmony::validate(xmlrpc_c::value_array result) {
-
+void harmony::validate() {
 }
 
 

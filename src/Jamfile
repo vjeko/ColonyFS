@@ -106,15 +106,15 @@ exe parser :
   boost_system
   ;
 
-exe harmony :
-  test/xmlrpc/client.cpp
+exe test_dht :
+  test/xmlrpc/test_dht.cpp
   uledfs_xmlrpc
   boost_unit_test_framework
   boost_program_options
   ;
 
-exe decoder :
-  test/xmlrpc/encoding_test.cpp
+exe test_encoding :
+  test/xmlrpc/test_encoding.cpp
 
   uledfs_xmlrpc
   boost_unit_test_framework
@@ -135,5 +135,5 @@ exe mount.colonyfs :
 
 
 #test-suite uledfs_test :
-#  [ run test/xmlrpc/client.cpp uledfs_xmlrpc boost_unit_test_framework ]
+#  [ run test/xmlrpc/test_dht.cpp uledfs_xmlrpc boost_unit_test_framework ]
 #  ;

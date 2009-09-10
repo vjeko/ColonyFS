@@ -13,19 +13,12 @@
 #include <boost/exception.hpp>
 
 #include <xmlrpc-c/base.hpp>
+#include "xmlrpc-c/girerr.hpp"
 
 #include <string>
 #include <map>
 #include <iostream>
 #include <sstream>
-
-
-
-
-enum HarmonyOperation {
-  HARMONY_READ,
-  HARMONY_WRITE
-};
 
 
 
@@ -39,8 +32,34 @@ typedef boost::error_info<struct tag_key, std::string> dht_info;
 class key_missing_error : public boost::exception {};
 class dht_error : public boost::exception {};
 
+enum HarmonyOperation {
+  HARMONY_READ,
+  HARMONY_WRITE
+};
 
+enum HarmonyError {
+  E_SUCCESS,
+  E_FAIL,
+  E_NOT_IMPLEMENTED,
+  E_API,
+  E_FORMAT,
+  E_PENDING,
+  E_TIMEOUT,
+  E_RETRY,
+  E_NOT_FOUND,
+  E_CONFIG,
+  E_BAD_PACKET,
+  E_BAD_CONNECT,
+  E_NOT_CONNECTED,
+  E_NOT_RUNNING,
+  E_ADDRINUSE,
+  E_SHUTDOWN
+};
 
+const std::string XML_KEY_TAG("key");
+const std::string XML_VALUE_TAG("value");
+const std::string METHOD_CALL("op_create");
+const std::string XML_ERROR_TAG("err");
 
 
 class harmony {
@@ -100,7 +119,7 @@ private:
       const std::string& key,
       const std::string& value);
 
-  void validate(xmlrpc_c::value_array result);
+  void validate();
 
 
   static const int  port_ = 36459;
