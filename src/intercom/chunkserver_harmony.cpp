@@ -48,10 +48,6 @@ void chunkserver_harmony::init() {
   // Append our hostname to a given value...
   chunkserver_info.append(hostname);
 
-  foreach(std::string& host, chunkserver_info.get_mapped()) {
-    rInfo("Host: %s", host.c_str());
-  }
-
   // ... and commit it to Harmony.
   dht_.put(chunkserver_info.get_key(), chunkserver_info.get_value());
 
