@@ -124,11 +124,31 @@ public:
   typedef typename T::value_type         value_type;
   typedef typename T::mapped_type        mapped_type;
 
+  typedef boost::unordered_map<std::string, std::string>  implementation_type;
+  typedef typename implementation_type::iterator          iterator;
+  typedef typename implementation_type::const_iterator    const_iterator;
+
 
 
 
   sink_remote_impl() :
-    dht_("http://barb.cs.washington.edu:36459") {}
+    dht_("http://barb.cs.washington.edu:36459") {
+
+    const std::string          swarm("harmony-test");
+    xmlrpc::chunkserver_value  chunkserver_info(swarm, chunkservers_);
+
+    try {
+
+      chunkserver_info = dht_.get_value<xmlrpc::chunkserver_value>(chunkserver_info.get_key());
+      chunkservers_ = chunkserver_info.get_mapped();
+
+    } catch (colony::xmlrpc::key_missing_error& e) {
+      // If the swarm is missing, this implies we are the first one joining.
+      rInfo("swarm seems to be empty... joining");
+      printf("KEY NOT FOUND\n");
+    }
+
+  };
 
 
 
@@ -139,24 +159,37 @@ public:
 
 
   inline shared_ptr<T> operator()(const key_type& key) {
+    shared_ptr<T> pair = make_shared<T>(key);
+    typename implementation_type::iterator it = implementation_.find(pair->get_key());
+
+    if(it == implementation_.end())
+      throw lookup_e() << key_info_t(pair->get_key());
+
+    pair->set_value(it->second);
+
+    return pair;
   }
 
 
 
 
   inline void commit(shared_ptr<T> pair) {
+    implementation_[pair->get_key()] = pair->get_value();
   }
 
 
 
 
   inline void erase(shared_ptr<T> object) {
+    implementation_.erase(object->get_key());
   }
 
 
 
 
   inline void erase(const key_type& key) {
+    T object(key);
+    implementation_.erase(object.get_key());
   }
 
 
@@ -165,9 +198,9 @@ public:
 private:
 
 
-  colony::xmlrpc::harmony dht_;
-
-
+  std::vector<std::string>    chunkservers_;
+  colony::xmlrpc::harmony     dht_;
+  implementation_type         implementation_;
 };
 
 
@@ -175,7 +208,7 @@ private:
 
 template<
   typename T,
-  template <typename T> class Implementation = sink_local_impl
+  template <typename T> class Implementation = sink_remote_impl
 > class aggregator {
 
 public:
@@ -234,6 +267,10 @@ private:
 };
 
 
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Metadata
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 

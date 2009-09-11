@@ -65,11 +65,17 @@ bool harmony::put(const std::string& key, const std::string& value) {
   std::map<std::string, xmlrpc_c::value> request_map(op_struct);
   std::map<std::string, xmlrpc_c::value> op_struct_map(op_struct);
 
-  if (dht_errno) throw dht_error();
+  if (dht_errno) {
+    printf("PUT ERROR!\n");
+    throw dht_error();
+  }
 
   xmlrpc_c::value_int key_errno = op_struct_map[XML_ERROR_TAG];
 
-  if (key_errno) throw key_missing_error();
+  if (key_errno) {
+    printf("PUT ERROR!\n");
+    throw key_missing_error();
+  }
 
   return true;
 }
@@ -119,11 +125,19 @@ std::string harmony::get(const std::string& key) {
   std::map<std::string, xmlrpc_c::value> request_map(op_struct);
   std::map<std::string, xmlrpc_c::value> op_struct_map(op_struct);
 
-  if (dht_errno) throw dht_error();
+  int e = dht_errno;
+  if (dht_errno) {
+    printf("GET ERROR: %d\n", e);
+    throw dht_error();
+  }
 
   xmlrpc_c::value_int key_errno = op_struct_map[XML_ERROR_TAG];
 
-  if (key_errno) throw key_missing_error();
+  e = key_errno;
+  if (key_errno) {
+    printf("GET ERROR: %d\n", e);
+    throw key_missing_error();
+  }
 
   xmlrpc_c::value_struct value_struct = op_struct_map[XML_VALUE_TAG];
   std::map<std::string, xmlrpc_c::value> value_map(value_struct);
