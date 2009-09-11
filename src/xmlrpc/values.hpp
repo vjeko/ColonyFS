@@ -180,7 +180,9 @@ public:
 
   virtual ~chunkserver_value() {};
 
-  void append(std::string& hostname) {};
+  void append(std::string& hostname) {
+    mapped_.push_back(hostname);
+  };
 };
 
 

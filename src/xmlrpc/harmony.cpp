@@ -128,9 +128,11 @@ std::string harmony::get(const std::string& key) {
   xmlrpc_c::value_struct value_struct = op_struct_map[XML_VALUE_TAG];
   std::map<std::string, xmlrpc_c::value> value_map(value_struct);
 
-  xmlrpc_c::value_string value = value_map[XML_VALUE_TAG];
+  xmlrpc_c::value_bytestring raw_value = value_map[XML_VALUE_TAG];
+  std::vector<unsigned char> raw_value_vector = raw_value.vectorUcharValue();
 
-  return value.crlfValue();
+  std::string value(raw_value_vector.begin(), raw_value_vector.end());
+  return value;
 }
 
 
@@ -159,7 +161,8 @@ std::map<std::string, xmlrpc_c::value> harmony::generate_op(
   op_param_map(generate_op(key));
 
   std::map<std::string, xmlrpc_c::value> value_param_map;
-  value_param_map[XML_VALUE_TAG] = xmlrpc_c::value_string(value);
+  std::vector<unsigned char> raw_value(value.begin(), value.end());
+  value_param_map[XML_VALUE_TAG] = xmlrpc_c::value_bytestring(raw_value);
   const xmlrpc_c::value_struct value_param(value_param_map);
 
   op_param_map[XML_VALUE_TAG] = value_param;

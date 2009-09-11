@@ -45,6 +45,9 @@ void chunkserver_harmony::init() {
   // Append our hostname to a given value...
   chunkserver_info.append(hostname);
 
+  rInfo("Key: %s", chunkserver_info.get_key().c_str());
+  rInfo("Value: %s", chunkserver_info.get_value().c_str());
+
   // ... and commit it to Harmony.
   if ( !dht_.put(chunkserver_info.get_key(), chunkserver_info.get_value()) ) {
     rError("DHT refuses to deposit key-value pair");

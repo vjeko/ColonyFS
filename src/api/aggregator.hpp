@@ -13,6 +13,7 @@
 #include "../xmlrpc/attribute.hpp"
 #include "../storage/chunk_data.hpp"
 #include "../storage/chunk_metadata.hpp"
+#include "../xmlrpc/harmony.hpp"
 
 #include <algorithm>
 #include <sys/stat.h>
@@ -126,7 +127,8 @@ public:
 
 
 
-  sink_remote_impl() {};
+  sink_remote_impl() :
+    dht_("http://barb.cs.washington.edu:36459") {}
 
 
 
@@ -163,6 +165,7 @@ public:
 private:
 
 
+  colony::xmlrpc::harmony dht_;
 
 
 };
