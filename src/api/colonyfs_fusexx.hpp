@@ -13,8 +13,6 @@
 
 
 
-
-//typedef colony::io_wrapper<std::string, fattribute>          metadata_map_t;
 typedef colony::aggregator<colony::xmlrpc::attribute_value>  metadata_map_t;
 typedef colony::io_wrapper<std::string, std::string>         data_map_t;
 
@@ -325,5 +323,7 @@ private:
 
   static bool validate_path(boost::filesystem::path path);
 
-  static rlog::RLogChannel        *fuse_control_;
+  static metadata_map_t                                   metadata_map_;
+  static colony::aggregator<colony::storage::chunk_data>  g_data_sink;
+  static rlog::RLogChannel                               *fuse_control_;
 };

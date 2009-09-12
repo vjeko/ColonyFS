@@ -13,13 +13,6 @@
 
 
 
-metadata_map_t metadata_map_;
-colony::aggregator<colony::storage::chunk_data>  g_data_sink;
-data_map_t data_map_;
-
-
-
-
 colonyfs_fusexx::colonyfs_fusexx() {
 
   using namespace colony::xmlrpc;
@@ -756,4 +749,6 @@ bool colonyfs_fusexx::validate_path(boost::filesystem::path path) {
 
 }
 
+metadata_map_t colonyfs_fusexx::metadata_map_;
+colony::aggregator<colony::storage::chunk_data>  colonyfs_fusexx::g_data_sink;
 rlog::RLogChannel* colonyfs_fusexx::fuse_control_( RLOG_CHANNEL( "fuse/control" ) );

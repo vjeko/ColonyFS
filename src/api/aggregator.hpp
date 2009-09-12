@@ -14,10 +14,13 @@
 #include "../storage/chunk_data.hpp"
 #include "../storage/chunk_metadata.hpp"
 #include "../xmlrpc/harmony.hpp"
+#include "../intercom/user_harmony.hpp"
+#include "../parsers/user_parser.hpp"
 
 #include <algorithm>
 #include <sys/stat.h>
 
+#include <boost/asio/io_service.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/shared_ptr.hpp>
@@ -34,8 +37,9 @@ namespace colony {
 
 
 typedef boost::error_info<struct metadata_error, std::string> key_info_t;
-class lookup_e : public boost::exception {};
 
+class lookup_e : public boost::exception {};
+class resource_error : public boost::exception {};
 
 
 
@@ -134,20 +138,6 @@ public:
   sink_remote_impl() :
     dht_("http://barb.cs.washington.edu:36459") {
 
-    const std::string          swarm("harmony-test");
-    xmlrpc::chunkserver_value  chunkserver_info(swarm, chunkservers_);
-
-    try {
-
-      chunkserver_info = dht_.get_value<xmlrpc::chunkserver_value>(chunkserver_info.get_key());
-      chunkservers_ = chunkserver_info.get_mapped();
-
-    } catch (colony::xmlrpc::key_missing_error& e) {
-      // If the swarm is missing, this implies we are the first one joining.
-      rInfo("swarm seems to be empty... joining");
-      printf("KEY NOT FOUND\n");
-    }
-
   };
 
 
@@ -174,6 +164,8 @@ public:
 
 
   inline void commit(shared_ptr<T> pair) {
+
+
     implementation_[pair->get_key()] = pair->get_value();
   }
 
@@ -197,10 +189,10 @@ public:
 
 private:
 
-
-  std::vector<std::string>    chunkservers_;
-  colony::xmlrpc::harmony     dht_;
-  implementation_type         implementation_;
+  colony::xmlrpc::harmony        dht_;
+  boost::asio::io_service        io_service_;
+  std::vector<std::string>       chunkservers_;
+  implementation_type            implementation_;
 };
 
 
@@ -208,7 +200,7 @@ private:
 
 template<
   typename T,
-  template <typename T> class Implementation = sink_remote_impl
+  template <typename T> class Implementation = sink_local_impl
 > class aggregator {
 
 public:
@@ -262,14 +254,14 @@ private:
 
 
 
-
-  Implementation<T>  implementation_;
+  boost::asio::io_service             io_service_;
+  Implementation<T>                   implementation_;
 };
 
 
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// Metadata
+// Data
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
@@ -285,8 +277,28 @@ public:
 
 
   aggregator() :
-    sink_log_( RLOG_CHANNEL( "sink/data" ) )
-    {}
+      dht_("UNKNOWN"),
+      sink_log_( RLOG_CHANNEL( "sink/data" ) ),
+      conf_path_("conf/user.conf"),
+      parser_(conf_path_),
+      client_(io_service_, parser_, dht_){
+
+
+    const std::string          swarm("harmony-test");
+    xmlrpc::chunkserver_value  chunkserver_info(swarm, chunkservers_);
+
+    try {
+
+      chunkserver_info = dht_.get_value<xmlrpc::chunkserver_value>(chunkserver_info.get_key());
+      chunkservers_ = chunkserver_info.get_mapped();
+
+      rError("found %lu chunkservers", chunkservers_.size());
+
+    } catch (colony::xmlrpc::key_missing_error& e) {
+      rError("no chunkservers found...");
+    }
+
+  }
 
 
   void write(
@@ -443,8 +455,8 @@ private:
       rLog(sink_log_, "---------------------------");
 
       shared_ptr<chunk_data> chunk = key_policy(filepath, count);
-      chunk_data::data_type& chunk_buffer = *(chunk->data_ptr_);
-      action_policy(chunk_buffer, buffer, chunk_start, buffer_start, chunk_delta);
+
+      action_policy(chunk, buffer, chunk_start, buffer_start, chunk_delta);
 
       buffer_start += chunk_delta;
     }
@@ -455,17 +467,23 @@ private:
 
 
   void write_to_chunk(
-      colony::storage::chunk_data::data_type& destination,
+      shared_ptr<colony::storage::chunk_data> destination,
       const char* source,
       size_t destination_offset,
       size_t source_offset,
       size_t chunk_delta
       ) {
 
-    const size_t required_size = destination_offset + chunk_delta;
-    if (destination.size() < required_size) destination.resize(required_size);
+    colony::storage::chunk_data::data_type& chunk_buffer = *(destination->data_ptr_);
 
-    memcpy(&destination[destination_offset], source + source_offset, chunk_delta);
+    const size_t required_size = destination_offset + chunk_delta;
+    if (chunk_buffer.size() < required_size) chunk_buffer.resize(required_size);
+
+    memcpy(&chunk_buffer[destination_offset], source + source_offset, chunk_delta);
+
+    client_.deposit_chunk(destination);
+
+    sleep(1);
 
   }
 
@@ -473,14 +491,15 @@ private:
 
 
   void read_from_chunk(
-      colony::storage::chunk_data::data_type& source,
+      shared_ptr<colony::storage::chunk_data> source,
       char* destination,
       size_t source_offset,
       size_t destination_offset,
       size_t chunk_delta
       ) {
 
-    memcpy(destination + destination_offset, &source[source_offset], chunk_delta);
+    colony::storage::chunk_data::data_type& chunk_buffer = *(source->data_ptr_);
+    memcpy(destination + destination_offset, &chunk_buffer[source_offset], chunk_delta);
 
   }
 
@@ -532,9 +551,14 @@ private:
   }
 
 
+  boost::asio::io_service                        io_service_;
+  colony::xmlrpc::harmony                        dht_;
   rlog::RLogChannel                             *sink_log_;
   implementation_type                            implementation_;
-  aggregator<colony::xmlrpc::chunkserver_value>  chunkserver_sink_;
+  boost::filesystem::path                        conf_path_;
+  colony::parser::user_parser                    parser_;
+  colony::intercom::user_harmony                 client_;
+  std::vector<std::string>                       chunkservers_;
 };
 
 
