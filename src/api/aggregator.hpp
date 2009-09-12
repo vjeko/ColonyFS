@@ -483,7 +483,8 @@ private:
 
     client_.deposit_chunk(destination);
 
-    sleep(1);
+    io_service_.run();
+    io_service_.reset();
 
   }
 
