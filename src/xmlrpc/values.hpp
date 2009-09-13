@@ -90,7 +90,7 @@ private:
 
 
 
-template<typename T>
+template<typename T, typename Derived>
 class base_value {
 public:
 
@@ -139,20 +139,28 @@ public:
   }
 
   template<typename Destination>
-  void deserialize(const std::string& value, Destination& destionation) {
+  static void deserialize(const std::string& value, Destination& destionation) {
     std::stringstream ss(value);
     iarchive_type ia(ss);
     ia >> destionation;
   }
 
   template<typename Value>
-  std::string& serialize(Value& value, std::string& destionation) {
+  static std::string& serialize(Value& value, std::string& destionation) {
     std::stringstream ss;
     oarchive_type oa(ss);
     oa << value;
 
     destionation = ss.str();
     return destionation;
+  }
+
+  static std::string get_signature(std::string argument) {
+    instruction i(Derived::signature_, argument);
+
+    std::string result;
+    serialize(i, result);
+    return result;
   }
 
   instruction    instruction_;
@@ -166,86 +174,92 @@ public:
 
 
 
-class chunkserver_value : public base_value< chunkserver_list_t > {
+class chunkserver_value : public base_value< chunkserver_list_t, chunkserver_value > {
 
 public:
 
   chunkserver_value(const std::string& key, const std::string& value) :
-    base_value<chunkserver_list_t>(key, value) {};
+    base_value<chunkserver_list_t, chunkserver_value>(key, value) {};
 
   chunkserver_value(const std::string& swarm, const chunkserver_list_t& chunkservers) :
-      base_value< chunkserver_list_t >(CHUNKSERVER_INSTRUCTION, swarm) {
+      base_value< chunkserver_list_t, chunkserver_value>(CHUNKSERVER_INSTRUCTION, swarm) {
     mapped_ = chunkservers;
   };
-
-  virtual ~chunkserver_value() {};
 
   void append(std::string& hostname) {
     mapped_.push_back(hostname);
   };
+
+  const static instruction_enum signature_ = CHUNKSERVER_INSTRUCTION;
 };
 
 
 
 
 
-class filename_value : public base_value<size_t> {
+class filename_value : public base_value<size_t, filename_value> {
 
 public:
 
   filename_value(const std::string& key, const std::string& value) :
-    base_value<size_t>(key, value) {};
+    base_value<size_t, filename_value>(key, value) {};
 
   filename_value(const std::string& filename, const size_t chunk_num):
-      base_value<size_t>(FILENAME_INSTRUCTION, filename) {
+      base_value<size_t, filename_value>(FILENAME_INSTRUCTION, filename) {
     mapped_ = chunk_num;
   };
 
   virtual ~filename_value() {};
 
+  const static instruction_enum signature_ = FILENAME_INSTRUCTION;
+
 };
 
 
 
 
-class chunk_value : public base_value<std::string> {
+class chunk_value : public base_value<std::string, chunk_value> {
 
 public:
 
   chunk_value(const std::string& key, const std::string& value) :
-    base_value<std::string>(key, value) {};
+    base_value<std::string, chunk_value>(key, value) {};
 
   chunk_value(
       const std::string& filename,
       const size_t chunk_num,
       const std::string& location) :
-          base_value<std::string>(CHUNK_INSTRUCTION, boost::lexical_cast<std::string>(chunk_num) + filename) {
+          base_value<std::string, chunk_value>(CHUNK_INSTRUCTION, boost::lexical_cast<std::string>(chunk_num) + filename) {
     mapped_ = location;
   };
 
   virtual ~chunk_value() {};
+
+  const static instruction_enum signature_ = CHUNK_INSTRUCTION;
 };
 
 
 
 
-class attribute_value : public base_value<fattribute> {
+class attribute_value : public base_value<fattribute, attribute_value> {
 
 public:
 
   attribute_value(const std::string& key, const std::string& value) :
-    base_value<fattribute>(key, value) {};
+    base_value<fattribute, attribute_value>(key, value) {};
 
   attribute_value(const std::string& filename) :
-      base_value<fattribute>(ATTRIBUTE_INSTRUCTION, filename) {
+      base_value<fattribute, attribute_value>(ATTRIBUTE_INSTRUCTION, filename) {
   }
 
   attribute_value(const std::string& filename, const fattribute& a) :
-      base_value<fattribute>(ATTRIBUTE_INSTRUCTION, filename) {
+      base_value<fattribute, attribute_value>(ATTRIBUTE_INSTRUCTION, filename) {
     mapped_ = a;
   }
 
   virtual ~attribute_value() {};
+
+  const static instruction_enum signature_ = ATTRIBUTE_INSTRUCTION;
 };
 
 } }
