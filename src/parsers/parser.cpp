@@ -13,7 +13,7 @@
 
 namespace colony { namespace parser {
 
-parser::parser(boost::filesystem::path& config_path) :
+parser::parser(boost::filesystem::path config_path) :
 	config_("Configuration"),
 	parser_control_(RLOG_CHANNEL( "parser/control" )){
 

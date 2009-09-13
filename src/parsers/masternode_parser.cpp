@@ -13,7 +13,7 @@
 namespace colony { namespace parser {
 
 masternode_parser::masternode_parser(
-		boost::filesystem::path& config_path) : parser(config_path) {
+		boost::filesystem::path config_path) : parser(config_path) {
 
 		  config_.add_options()
           ("metadata.path",

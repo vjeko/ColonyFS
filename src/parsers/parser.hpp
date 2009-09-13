@@ -36,7 +36,7 @@ protected:
 	typedef boost::int32_t quota_t;
 
 public:
-	parser(boost::filesystem::path&);
+	parser(boost::filesystem::path);
 	virtual ~parser();
 
 	/*

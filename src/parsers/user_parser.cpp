@@ -17,7 +17,7 @@
 namespace colony { namespace parser {
 
 user_parser::user_parser(
-		boost::filesystem::path& config_path) :
+		boost::filesystem::path config_path) :
 	parser(config_path) {
 
 	config_.add_options()

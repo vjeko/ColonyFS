@@ -23,7 +23,7 @@ public:
 	typedef std::vector< std::string > path_t;
 	typedef std::string masternode_t;
 
-	user_parser(boost::filesystem::path&);
+	user_parser(boost::filesystem::path);
 	virtual ~user_parser();
 
 	void check();

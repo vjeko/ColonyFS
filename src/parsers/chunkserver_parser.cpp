@@ -17,7 +17,7 @@
 namespace colony { namespace parser {
 
 chunkserver_parser::chunkserver_parser(
-		boost::filesystem::path& config_path) :
+		boost::filesystem::path config_path) :
 	parser(config_path) {
 
 	config_.add_options()

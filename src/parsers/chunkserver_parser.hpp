@@ -23,7 +23,7 @@ public:
 	typedef std::vector< std::string > path_t;
 	typedef std::string masternode_t;
 
-	chunkserver_parser(boost::filesystem::path&);
+	chunkserver_parser(boost::filesystem::path);
 	virtual ~chunkserver_parser();
 
 	void check();

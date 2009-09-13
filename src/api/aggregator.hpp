@@ -16,6 +16,7 @@
 #include "../xmlrpc/harmony.hpp"
 #include "../intercom/user_harmony.hpp"
 #include "../parsers/user_parser.hpp"
+#include "../storage/bridge.hpp"
 
 #include <algorithm>
 #include <sys/stat.h>
@@ -277,19 +278,18 @@ public:
 
 
   aggregator() :
-      dht_("UNKNOWN"),
-      sink_log_( RLOG_CHANNEL( "sink/data" ) ),
-      conf_path_("conf/user.conf"),
-      parser_(conf_path_),
-      client_(io_service_, parser_, dht_){
+      bridge_(io_service_),
+      sink_log_( RLOG_CHANNEL( "sink/data" ) ) {
 
 
-    const std::string          swarm("harmony-test");
+    const std::string& swarm = bridge_.parser_->get_swarm();
+    colony::xmlrpc::harmony& dht = *(bridge_.dht_);
+
     xmlrpc::chunkserver_value  chunkserver_info(swarm, chunkservers_);
 
     try {
 
-      chunkserver_info = dht_.get_value<xmlrpc::chunkserver_value>(chunkserver_info.get_key());
+      chunkserver_info = dht.get_value<xmlrpc::chunkserver_value>(chunkserver_info.get_key());
       chunkservers_ = chunkserver_info.get_mapped();
 
       rError("found %lu chunkservers", chunkservers_.size());
@@ -481,7 +481,8 @@ private:
 
     memcpy(&chunk_buffer[destination_offset], source + source_offset, chunk_delta);
 
-    client_.deposit_chunk(destination);
+    colony::intercom::user_harmony client = *(bridge_.client_);
+    client.deposit_chunk(destination);
 
     io_service_.run();
     io_service_.reset();
@@ -553,12 +554,9 @@ private:
 
 
   boost::asio::io_service                        io_service_;
-  colony::xmlrpc::harmony                        dht_;
+  colony::bridge                                 bridge_;
   rlog::RLogChannel                             *sink_log_;
   implementation_type                            implementation_;
-  boost::filesystem::path                        conf_path_;
-  colony::parser::user_parser                    parser_;
-  colony::intercom::user_harmony                 client_;
   std::vector<std::string>                       chunkservers_;
 };
 
