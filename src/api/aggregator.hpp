@@ -17,7 +17,7 @@
 #include "../intercom/user_harmony.hpp"
 #include "../parsers/user_parser.hpp"
 #include "../storage/bridge.hpp"
-#include "../storage/cache.hpp"
+#include "../storage/basic_cache.hpp"
 
 #include <algorithm>
 #include <sys/stat.h>
@@ -284,10 +284,8 @@ public:
       sink_log_( RLOG_CHANNEL( "sink/data" ) ) {
 
 
-    const std::string swarm = bridge_.parser_->get_swarm();
+    const std::string& swarm = bridge_.parser_->get_swarm();
     colony::xmlrpc::harmony& dht = *(bridge_.dht_);
-
-    printf("%s\n", swarm.c_str());
 
     try {
 
@@ -484,12 +482,12 @@ private:
     if (chunk_buffer.size() < required_size) chunk_buffer.resize(required_size);
 
     memcpy(&chunk_buffer[destination_offset], source + source_offset, chunk_delta);
-
+/*
     client_.deposit_chunk(destination);
 
     io_service_.run();
     io_service_.reset();
-
+*/
   }
 
 
@@ -515,21 +513,8 @@ private:
       const boost::filesystem::path filepath,
       const size_t count) {
 
-    using colony::storage::chunk_data;
+    return cache_.mutate(filepath.string(), count);
 
-    const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
-
-    shared_ptr<chunk_data> chunk;
-    implementation_type::iterator it = implementation_.find(key);
-
-    if (it == implementation_.end()) {
-      chunk = make_shared<chunk_data>(filepath.string(), count);
-      implementation_[key] = chunk;
-    } else {
-      chunk = it->second;
-    }
-
-    return chunk;
   }
 
 
@@ -539,25 +524,14 @@ private:
       const boost::filesystem::path filepath,
       const size_t count) {
 
-    const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
+    return cache_.read(filepath.string(), count);
 
-    using colony::storage::chunk_data;
-
-    shared_ptr<chunk_data> chunk;
-    implementation_type::iterator it = implementation_.find(key);
-
-    if (it == implementation_.end()) {
-      throw lookup_e() << key_info_t(key);
-    } else {
-      chunk = it->second;
-    }
-
-    return chunk;
   }
 
 
   boost::asio::io_service                        io_service_;
   colony::bridge                                 bridge_;
+  basic_cache cache_;
 
   colony::intercom::user_harmony&                client_;
   rlog::RLogChannel                             *sink_log_;

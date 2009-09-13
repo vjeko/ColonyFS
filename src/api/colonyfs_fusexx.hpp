@@ -1,6 +1,5 @@
 // hello.hpp
 #include "fusexx.hpp"
-#include "io_wrapper.hpp"
 #include "aggregator.hpp"
 #include "../xmlrpc/attribute.hpp"
 #include "../xmlrpc/values.hpp"
@@ -14,7 +13,6 @@
 
 
 typedef colony::aggregator<colony::xmlrpc::attribute_value>  metadata_map_t;
-typedef colony::io_wrapper<std::string, std::string>         data_map_t;
 
 
 
