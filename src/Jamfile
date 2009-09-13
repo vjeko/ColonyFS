@@ -81,7 +81,7 @@ lib uledfs :
   ;
 
 exe chunkserver :
-  test/intercom/chunkserver_test.cpp
+  exec/exec_chunkserver.cpp
 
   rlog
   uledfs

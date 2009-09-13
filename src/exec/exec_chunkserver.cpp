@@ -1,11 +1,12 @@
 /*
- * chunkserver.cpp
+ * exec_chunkserver.cpp
  *
- *  Created on: Jun 27, 2008
+ *  Created on: Sep 13, 2009
  *      Author: vjeko
  */
 
-#include "../../api/chunkserver_api.hpp"
+
+#include "../api/chunkserver_api.hpp"
 
 /* SIGINT helper function. */
 void _sig_h(int sig) {
@@ -24,7 +25,7 @@ int main(int argc, char* argv[]) {
   /* Make sure to catch SIGINT (CTRL-C) interrupt. */
   signal(SIGINT, _sig_h);
 
-  rlog::StdioNode chunkserver_log;
+  rlog::StdioNode chunkserver_log(1, rlog::StdioNode::OutputColor);
 
   // subscribe to various things individually
   chunkserver_log.subscribeTo( RLOG_CHANNEL("info") );
