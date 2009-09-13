@@ -98,9 +98,10 @@ public:
   template <typename T>
   T get_value (std::string key) {
 
-    value_t  value  = get(key);
+    const std::string raw_key = T::get_signature(key);
+    value_t value = get(raw_key);
 
-    return T(key, value);
+    return T(raw_key, value);
   }
 
   // Set key value pair.

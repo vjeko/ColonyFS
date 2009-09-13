@@ -7,6 +7,7 @@
 
 
 #include "chunkserver_harmony.hpp"
+#include <boost/scoped_ptr.hpp>
 
 #include "../storage/chunk_data.hpp"
 #include "../storage/util.hpp"
@@ -36,20 +37,21 @@ void chunkserver_harmony::init() {
 
   try {
 
-    chunkserver_info = dht_.get_value<xmlrpc::chunkserver_value>(chunkserver_info.get_key());
+    // See if the swarm exists. If so, a proper value is returned.
+    chunkserver_info =
+        dht_.get_value<xmlrpc::chunkserver_value>(swarm);
 
-    // See if the swarm exists. If so, a proper key is returned.
-    //chunkserver_info = dht_.get_value<xmlrpc::chunkserver_value>(swarm);
   } catch (colony::xmlrpc::key_missing_error& e) {
     // If the swarm is missing, this implies we are the first one joining.
     rInfo("swarm seems to be empty... joining");
+
   }
 
   // Append our hostname to a given value...
   chunkserver_info.append(hostname);
 
   // ... and commit it to Harmony.
-  dht_.put(chunkserver_info.get_key(), chunkserver_info.get_value());
+  dht_.set_pair(chunkserver_info);
 
   // Set the prefix for storing data.
   boost::filesystem::path path(parser_.get_path()[0]);

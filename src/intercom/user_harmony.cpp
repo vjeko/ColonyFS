@@ -36,8 +36,9 @@ void user_harmony::retrieve_chunk(
   rLog(user_harmony_control_, "retrieving chunk [%s][%d]",
       data_ptr->uid_.c_str(), data_ptr->cuid_);
 
-  xmlrpc::chunkserver_value chunkserver_value(parser_.get_swarm(), chunkservers_);
-  chunkserver_value = dht_.get_value<xmlrpc::chunkserver_value>(chunkserver_value.get_key());
+  xmlrpc::chunkserver_value chunkserver_value =
+      dht_.get_value<xmlrpc::chunkserver_value>(parser_.get_swarm());
+
   chunkservers_ = chunkserver_value.get_mapped();
 
   request_read(data_ptr);
@@ -119,8 +120,9 @@ void user_harmony::deposit_chunk(
   rLog(user_harmony_control_, "request for chunk mutation: <%s><%d>",
       data_ptr->uid_.c_str(), data_ptr->cuid_);
 
-  xmlrpc::chunkserver_value chunkserver_value(parser_.get_swarm(), chunkservers_);
-  chunkserver_value = dht_.get_value<xmlrpc::chunkserver_value>(chunkserver_value.get_key());
+  xmlrpc::chunkserver_value chunkserver_value =
+      dht_.get_value<xmlrpc::chunkserver_value>(parser_.get_swarm());
+
   chunkservers_ = chunkserver_value.get_mapped();
 
   get_metadata(data_ptr);
