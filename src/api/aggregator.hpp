@@ -9,15 +9,20 @@
 #define AGGREGATOR_HPP_
 
 #include "../debug.hpp"
+
 #include "../xmlrpc/values.hpp"
 #include "../xmlrpc/attribute.hpp"
-#include "../storage/chunk_data.hpp"
-#include "../storage/chunk_metadata.hpp"
 #include "../xmlrpc/harmony.hpp"
-#include "../intercom/user_harmony.hpp"
+
 #include "../parsers/user_parser.hpp"
+
 #include "../storage/bridge.hpp"
 #include "../storage/basic_cache.hpp"
+
+#include "../storage/chunk_data.hpp"
+#include "../storage/chunk_metadata.hpp"
+
+#include "../intercom/user_harmony.hpp"
 
 #include <algorithm>
 #include <sys/stat.h>
@@ -27,6 +32,7 @@
 #include <boost/unordered_map.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <boost/exception.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>
@@ -35,7 +41,11 @@
 
 namespace colony {
 
-
+typedef boost::tuple<
+      boost::asio::io_service,
+      colony::intercom::user_harmony,
+      colony::xmlrpc::harmony
+    > bridge_type;
 
 
 typedef boost::error_info<struct metadata_error, std::string> key_info_t;
@@ -267,8 +277,8 @@ public:
   aggregator() :
       bridge_(io_service_),
       client_( *(bridge_.client_) ),
+      dht_( *(bridge_.dht_) ),
       sink_log_( RLOG_CHANNEL( "sink/data" ) ) {
-
 
     const std::string& swarm = bridge_.parser_->get_swarm();
     colony::xmlrpc::harmony& dht = *(bridge_.dht_);
@@ -516,9 +526,11 @@ private:
 
   boost::asio::io_service                        io_service_;
   colony::bridge                                 bridge_;
-  basic_cache<colony::storage::chunk_data>       cache_;
 
   colony::intercom::user_harmony&                client_;
+  colony::xmlrpc::harmony&                       dht_;
+
+  basic_cache<colony::storage::chunk_data>       cache_;
   rlog::RLogChannel                             *sink_log_;
   std::vector<std::string>                       chunkservers_;
 };

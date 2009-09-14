@@ -28,15 +28,16 @@ public:
 
   user_harmony(
       boost::asio::io_service& io_service,
-      colony::parser::user_parser& parser,
-      colony::xmlrpc::harmony& dht);
+      std::string swarm);
 
   virtual ~user_harmony();
 
   void retrieve_chunk(
+      std::string hostname,
       boost::shared_ptr<colony::storage::chunk_data>) ;
 
   void deposit_chunk(
+      std::string hostname,
       boost::shared_ptr<colony::storage::chunk_data const>);
 
   /*
@@ -87,6 +88,7 @@ private:
   /* void retrieve_chunk(...); */
 
   void request_read(
+      std::string hostname,
       boost::shared_ptr<colony::storage::chunk_data>);
 
   void read_from_chunkserver(
@@ -105,6 +107,7 @@ private:
   /* void deposti_chunk(...) */
 
   void get_metadata(
+      std::string hostname,
       boost::shared_ptr<colony::storage::chunk_data const>);
 
   void write_to_chunkserver(
@@ -124,8 +127,7 @@ private:
       const boost::shared_ptr<colony::storage::chunk_data const> data_ptr,
       connection_ptr_t connection_ptr);
 
-  colony::parser::user_parser        &parser_;
-  colony::xmlrpc::harmony            &dht_;
+  std::string                         swarm_;
   rlog::RLogChannel                  *user_harmony_control_;
 
   rng_type                                  rng_;

@@ -26,7 +26,7 @@ class lookup_e : public boost::exception {};
 template<typename T>
 class basic_cache {
 public:
-  class lookup_e : public boost::exception {};
+
   typedef typename T::key_type  key_type;
   typedef T                     value_type;
 

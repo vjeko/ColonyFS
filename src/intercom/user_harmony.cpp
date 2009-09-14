@@ -19,11 +19,9 @@ namespace colony { namespace intercom {
 
 user_harmony::user_harmony(
     boost::asio::io_service& io_service,
-    colony::parser::user_parser& parser,
-    colony::xmlrpc::harmony& dht) :
+    std::string swarm) :
       client_mt::client_mt(io_service),
-      parser_(parser),
-      dht_(dht),
+      swarm_(swarm),
       user_harmony_control_( RLOG_CHANNEL( "intercom/user_harmony/control" ) ) {
 
 }
@@ -31,34 +29,36 @@ user_harmony::user_harmony(
 user_harmony::~user_harmony() { }
 
 void user_harmony::retrieve_chunk(
+    std::string hostname,
     boost::shared_ptr<colony::storage::chunk_data> data_ptr) {
-
+/*
   rLog(user_harmony_control_, "retrieving chunk [%s][%d]",
       data_ptr->uid_.c_str(), data_ptr->cuid_);
 
   xmlrpc::chunkserver_value chunkserver_value =
-      dht_.get_value<xmlrpc::chunkserver_value>(parser_.get_swarm());
+      dht_.get_value<xmlrpc::chunkserver_value>(swarm_);
 
   chunkservers_ = chunkserver_value.get_mapped();
-
-  request_read(data_ptr);
+*/
+  request_read(hostname, data_ptr);
 }
 
 void user_harmony::request_read(
+    std::string hostname,
     boost::shared_ptr<colony::storage::chunk_data> data_ptr) {
-
+/*
   std::string key(boost::lexical_cast<std::string>(data_ptr->cuid_) + data_ptr->uid_);
 
   xmlrpc::chunk_value chunk_info = dht_.get_value<xmlrpc::chunk_value>(key);
-
+*/
   rLog(user_harmony_control_, "chunk (%s)(%d) -> %s",
-      data_ptr->uid_.c_str(), data_ptr->cuid_, chunk_info.get_value().c_str());;
+      data_ptr->uid_.c_str(), data_ptr->cuid_, hostname.c_str());
 
   boost::shared_ptr<colony::storage::network_metadata> network_metadata_ptr(
       new colony::storage::network_metadata(
           (*data_ptr).uid_,
           (*data_ptr).cuid_,
-          chunk_info.get_value())
+          hostname)
       );
 
   read_from_chunkserver(network_metadata_ptr, data_ptr);
@@ -115,37 +115,37 @@ void user_harmony::receive_data(
 /* void deposti_chunk(...) */
 
 void user_harmony::deposit_chunk(
+    std::string hostname,
     boost::shared_ptr<colony::storage::chunk_data const> data_ptr) {
-
+/*
   rLog(user_harmony_control_, "request for chunk mutation: <%s><%d>",
       data_ptr->uid_.c_str(), data_ptr->cuid_);
 
   xmlrpc::chunkserver_value chunkserver_value =
-      dht_.get_value<xmlrpc::chunkserver_value>(parser_.get_swarm());
+      dht_.get_value<xmlrpc::chunkserver_value>(swarm_);
 
   chunkservers_ = chunkserver_value.get_mapped();
-
-  get_metadata(data_ptr);
+*/
+  get_metadata(hostname, data_ptr);
 
 }
 
 void user_harmony::get_metadata(
+    std::string hostname,
 		boost::shared_ptr<colony::storage::chunk_data const> data_ptr) {
-
+/*
   const std::string chunkserver = random_value(chunkservers_);
 
   rLog(user_harmony_control_, "depositing chunk metadata <%s><%d><%s>",
       data_ptr->uid_.c_str(), data_ptr->cuid_, chunkserver.c_str() );
-
+*/
   xmlrpc::chunk_value chunk(
       data_ptr->uid_.c_str(),
       data_ptr->cuid_,
-      chunkserver
+      hostname
       );
 
-  dht_.put(chunk.get_key(), chunk.get_value());
-
-  write_to_chunkserver(chunkserver, data_ptr);
+  write_to_chunkserver(hostname, data_ptr);
 
 }
 

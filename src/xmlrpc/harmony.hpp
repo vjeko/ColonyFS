@@ -110,6 +110,11 @@ public:
     put( pair.get_key(), pair.get_value() );
   }
 
+  template <typename T>
+  void set_pair (boost::shared_ptr<T> pair_ptr) {
+    put( pair_ptr->get_key(), pair_ptr->get_value() );
+  }
+
 private:
 
 

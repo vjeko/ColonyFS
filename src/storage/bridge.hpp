@@ -25,7 +25,7 @@ public:
   bridge(boost::asio::io_service& io_service) :
       parser_(new colony::parser::user_parser("conf/user.conf")),
       dht_(new colony::xmlrpc::harmony(parser_->get_swarm())),
-      client_(new colony::intercom::user_harmony(io_service, *parser_, *dht_)) {
+      client_(new colony::intercom::user_harmony(io_service, parser_->get_swarm())) {
 
   }
 
