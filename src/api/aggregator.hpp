@@ -482,12 +482,7 @@ private:
     if (chunk_buffer.size() < required_size) chunk_buffer.resize(required_size);
 
     memcpy(&chunk_buffer[destination_offset], source + source_offset, chunk_delta);
-/*
-    client_.deposit_chunk(destination);
 
-    io_service_.run();
-    io_service_.reset();
-*/
   }
 
 
