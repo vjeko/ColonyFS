@@ -36,7 +36,7 @@ colonyfs_fusexx::colonyfs_fusexx() {
 
 
   // Commit.
-  metadata_map_.commit(pair);
+  metadata_sink_.commit(pair);
 
 }
 
@@ -70,13 +70,13 @@ int colonyfs_fusexx::symlink (const char* target, const char* link) {
 
 
   // Commit.
-  metadata_map_.commit(pair);
+  metadata_sink_.commit(pair);
 
 
   /* Register the link with its parent directory */
 
   // Retrieve the attribute associated with link's parent directory.
-  shared_ptr<attribute_value> parent_pair = metadata_map_( branch.string() );
+  shared_ptr<attribute_value> parent_pair = metadata_sink_( branch.string() );
   fattribute& parent_attribute = parent_pair->get_mapped();
 
 
@@ -85,7 +85,7 @@ int colonyfs_fusexx::symlink (const char* target, const char* link) {
 
 
   // Commit.
-  metadata_map_.commit(parent_pair);
+  metadata_sink_.commit(parent_pair);
 
   return 0;
 
@@ -100,7 +100,7 @@ int colonyfs_fusexx::readlink (const char *linkname, char *buffer, size_t size) 
 
 
   // Retrieve the attribute associated with the link.
-  shared_ptr<attribute_value> pair = metadata_map_( linkname );
+  shared_ptr<attribute_value> pair = metadata_sink_( linkname );
   fattribute& attribute = pair->get_mapped();
 
 
@@ -138,15 +138,15 @@ int colonyfs_fusexx::truncate(const char* filepath, off_t length) {
     if (length < 0) return -EINVAL;
 
     // Modify the file size information.
-    shared_ptr<attribute_value> pair = metadata_map_( full.string() );
+    shared_ptr<attribute_value> pair = metadata_sink_( full.string() );
     fattribute& attribute = pair->get_mapped();
 
-    g_data_sink.truncate(full, length, attribute.stbuf.st_size);
+    data_sink_.truncate(full, length, attribute.stbuf.st_size);
 
     attribute.stbuf.st_size = length;
 
 
-    metadata_map_.commit(pair);
+    metadata_sink_.commit(pair);
 
 
     return 0;
@@ -184,12 +184,12 @@ int colonyfs_fusexx::rename(const char* oldpath, const char* newpath) {
 
 
   // Retrieve the attribute for the old branch path.
-  shared_ptr<attribute_value> oldbranch_pair = metadata_map_( oldbranch.string() );
+  shared_ptr<attribute_value> oldbranch_pair = metadata_sink_( oldbranch.string() );
   fattribute& oldbranch_attribute = oldbranch_pair->get_mapped();
 
 
   // Find the old leaf.
-  metadata_map_t::mapped_type::list_t::iterator oldbranch_iterator = std::find(
+  metadata_sink_t::mapped_type::list_t::iterator oldbranch_iterator = std::find(
       oldbranch_attribute.list.begin(),
       oldbranch_attribute.list.end(),
       oldleaf.string()
@@ -200,22 +200,22 @@ int colonyfs_fusexx::rename(const char* oldpath, const char* newpath) {
 
 
   // Commit.
-  metadata_map_.commit(oldbranch_pair);
+  metadata_sink_.commit(oldbranch_pair);
 
 
   // Retrieve the attribute for the new branch path.
-  shared_ptr<attribute_value> newbranch_pair = metadata_map_( newbranch.string() );
+  shared_ptr<attribute_value> newbranch_pair = metadata_sink_( newbranch.string() );
   fattribute& newbranch_attribute = newbranch_pair->get_mapped();
 
   newbranch_attribute.list.push_back(newleaf.string());
 
   // Commit.
-  metadata_map_.commit(newbranch_pair);
+  metadata_sink_.commit(newbranch_pair);
 
 
   // Retrieve the attribute for the new path.
   shared_ptr<attribute_value> oldfull_pair =
-      metadata_map_( oldfull.string() );
+      metadata_sink_( oldfull.string() );
 
   // Associate the old attribute with the new path.
   shared_ptr<attribute_value> newfull_pair =
@@ -223,11 +223,11 @@ int colonyfs_fusexx::rename(const char* oldpath, const char* newpath) {
 
 
   // Erase and commit.
-  metadata_map_.commit( newfull_pair );
-  metadata_map_.erase( oldfull_pair );
+  metadata_sink_.commit( newfull_pair );
+  metadata_sink_.erase( oldfull_pair );
 
   // FIXME: Implement data rename.
-  g_data_sink.rename(oldfull, newfull, newfull_pair->get_mapped().stbuf.st_size);
+  data_sink_.rename(oldfull, newfull, newfull_pair->get_mapped().stbuf.st_size);
 
   return 0;
 
@@ -261,7 +261,7 @@ int colonyfs_fusexx::readdir(
   try {
 
     // Retrieve the attribute for the directory path.
-    shared_ptr<attribute_value> pair = metadata_map_( filepath );
+    shared_ptr<attribute_value> pair = metadata_sink_( filepath );
     fattribute& attribute = pair->get_mapped();
 
 
@@ -325,14 +325,14 @@ int colonyfs_fusexx::mkdir(const char* filepath, mode_t mode) {
 
 
   // Commit.
-  metadata_map_.commit(pair);
+  metadata_sink_.commit(pair);
 
 
   rLog(fuse_control_, "mkdir: %s", full.string().c_str());
 
 
   // Retrieve the attribute associated with directory's parent.
-  shared_ptr<attribute_value> parent_pair = metadata_map_( branch.string() );
+  shared_ptr<attribute_value> parent_pair = metadata_sink_( branch.string() );
   fattribute& parent_attribute = parent_pair->get_mapped();
 
 
@@ -340,7 +340,7 @@ int colonyfs_fusexx::mkdir(const char* filepath, mode_t mode) {
 
 
   // Commit.
-  metadata_map_.commit(parent_pair);
+  metadata_sink_.commit(parent_pair);
 
   return 0;
 
@@ -379,41 +379,35 @@ int colonyfs_fusexx::read(
 
   using namespace colony::xmlrpc;
 
- // try {
 
-    const boost::filesystem::path full(filepath);
+  const boost::filesystem::path full(filepath);
 
-    rLog(fuse_control_, "read: %s", full.string().c_str());
-
-
-    // Retrieve the attribute for the file path.
-    shared_ptr<attribute_value> pair = metadata_map_( full.string() );
-    fattribute& attribute = pair->get_mapped();
+  rLog(fuse_control_, "read: %s", full.string().c_str());
 
 
-    // TODO: Figure out size_t/off_t inconsistency.
-    size_t length = attribute.stbuf.st_size;
+  // Retrieve the attribute for the file path.
+  shared_ptr<attribute_value> pair = metadata_sink_( full.string() );
+  fattribute& attribute = pair->get_mapped();
 
-    if (static_cast<size_t>(offset) > length) {
 
-      size = 0;
+  // TODO: Figure out size_t/off_t inconsistency.
+  size_t length = attribute.stbuf.st_size;
 
-    } else {
+  if (static_cast<size_t>(offset) > length) {
 
-      if (static_cast<size_t>(offset) + size > length)
-        size = length - offset;
+    size = 0;
 
-      g_data_sink.read(full, buffer, size, offset);
+  } else {
 
-    }
+    if (static_cast<size_t>(offset) + size > length)
+      size = length - offset;
 
-    return size;
+    data_sink_.read(full, buffer, size, offset);
 
-//  } catch(colony::lookup_e& e) {
+  }
 
-//    rError("... file not found");
-//    return -ENOENT;
-//  }
+  return size;
+
 
 }
 
@@ -434,7 +428,7 @@ int colonyfs_fusexx::getattr(const char *filepath, struct stat *stat) {
   try {
 
     // Retrieve the attribute for the file path.
-    shared_ptr<attribute_value> pair = metadata_map_( full.string() );
+    shared_ptr<attribute_value> pair = metadata_sink_( full.string() );
     const fattribute& attribute = pair->get_mapped();
 
 
@@ -480,7 +474,7 @@ int colonyfs_fusexx::utime(const char* filepath,  struct utimbuf* time) {
 
 
   // Update the time.
-  shared_ptr<attribute_value> pair = metadata_map_( full.string() );
+  shared_ptr<attribute_value> pair = metadata_sink_( full.string() );
   fattribute& attribute = pair->get_mapped();
 
 
@@ -489,7 +483,7 @@ int colonyfs_fusexx::utime(const char* filepath,  struct utimbuf* time) {
 
 
   // Commit.
-  metadata_map_.commit(pair);
+  metadata_sink_.commit(pair);
 
 
   return 0;
@@ -528,14 +522,14 @@ int colonyfs_fusexx::create(
 
 
   // Commit.
-  metadata_map_.commit(pair);
+  metadata_sink_.commit(pair);
 
 
   rLog(fuse_control_, "create: %s", full.string().c_str());
 
 
   // Register the new file with its parent.
-  shared_ptr<attribute_value> parent_pair = metadata_map_( branch.string() );
+  shared_ptr<attribute_value> parent_pair = metadata_sink_( branch.string() );
   fattribute& parent_attribute = parent_pair->get_mapped();
 
 
@@ -543,10 +537,10 @@ int colonyfs_fusexx::create(
 
 
   // Commit.
-  metadata_map_.commit(parent_pair);
+  metadata_sink_.commit(parent_pair);
 
-  // Data also has exist!
-  g_data_sink.write(full, 0, 0, 0);
+  // Initialize the data structure.
+  data_sink_.write(full, 0, 0, 0);
 
 
   return 0;
@@ -568,10 +562,10 @@ int colonyfs_fusexx::write (
 
   boost::filesystem::path full(filepath);
 
-  g_data_sink.write(full, buffer, size, offset);
+  data_sink_.write(full, buffer, size, offset);
 
   // Update the attribute.
-  shared_ptr<attribute_value> pair = metadata_map_( filepath );
+  shared_ptr<attribute_value> pair = metadata_sink_( filepath );
   fattribute& metadata = pair->get_mapped();
 
   const int end_pointer = offset + size;
@@ -579,7 +573,7 @@ int colonyfs_fusexx::write (
 
 
   // Commit.
-  metadata_map_.commit(pair);
+  metadata_sink_.commit(pair);
 
 
   rLog(fuse_control_, "write: (%lu) %s", size, filepath);
@@ -607,7 +601,7 @@ int colonyfs_fusexx::unlink(const char* filepath) {
 
 
   // Remove the file from the parent.
-  shared_ptr<attribute_value> pair = metadata_map_( branch.string() );
+  shared_ptr<attribute_value> pair = metadata_sink_( branch.string() );
   fattribute& attribute = pair->get_mapped();
 
 
@@ -617,14 +611,14 @@ int colonyfs_fusexx::unlink(const char* filepath) {
   content.remove(leaf.string());
 
 
-  metadata_map_.commit(pair);
+  metadata_sink_.commit(pair);
 
 
   // Delete the binary data.
-  g_data_sink.erase(full.string(), attribute.stbuf.st_size);
+  data_sink_.erase(full.string(), attribute.stbuf.st_size);
 
   // Delete attribute.
-  metadata_map_.erase(full.string());
+  metadata_sink_.erase(full.string());
 
 
   return 0;
@@ -644,7 +638,7 @@ int colonyfs_fusexx::chmod(const char* filename, mode_t mode) {
   int status;
 
   // Check User ID.
-  shared_ptr<attribute_value> pair = metadata_map_( filename );
+  shared_ptr<attribute_value> pair = metadata_sink_( filename );
   fattribute& attribute = pair->get_mapped();
 
 
@@ -657,7 +651,7 @@ int colonyfs_fusexx::chmod(const char* filename, mode_t mode) {
 
 
   // Commit.
-  metadata_map_.commit(pair);
+  metadata_sink_.commit(pair);
 
   return status;
 
@@ -675,7 +669,7 @@ int colonyfs_fusexx::chown(const char* filepath, uid_t uid, gid_t gid) {
 
 
   // Change user ID and group ID.
-  shared_ptr<attribute_value> pair = metadata_map_( full.string() );
+  shared_ptr<attribute_value> pair = metadata_sink_( full.string() );
   fattribute& metadata = pair->get_mapped();
 
 
@@ -684,7 +678,7 @@ int colonyfs_fusexx::chown(const char* filepath, uid_t uid, gid_t gid) {
 
 
   // Commit.
-  metadata_map_.commit(pair);
+  metadata_sink_.commit(pair);
 
 
   return 0;
@@ -705,12 +699,12 @@ int colonyfs_fusexx::rmdir(const char* filepath) {
 
 
   // Remove metadata for the given file.
-  metadata_map_.erase(full.string().c_str());
+  metadata_sink_.erase(full.string().c_str());
 
   try {
 
     // Get the directory content of the parent.
-    shared_ptr<attribute_value> parent_pair = metadata_map_( branch.string() );
+    shared_ptr<attribute_value> parent_pair = metadata_sink_( branch.string() );
     fattribute& parent_metadata = parent_pair->get_mapped();
 
 
@@ -719,7 +713,7 @@ int colonyfs_fusexx::rmdir(const char* filepath) {
 
 
     // Commit.
-    metadata_map_.commit(parent_pair);
+    metadata_sink_.commit(parent_pair);
 
     return 0;
 
@@ -749,6 +743,6 @@ bool colonyfs_fusexx::validate_path(boost::filesystem::path path) {
 
 }
 
-metadata_map_t colonyfs_fusexx::metadata_map_;
-colony::aggregator<colony::storage::chunk_data>  colonyfs_fusexx::g_data_sink;
+metadata_sink_t colonyfs_fusexx::metadata_sink_;
+colony::aggregator<colony::storage::chunk_data>  colonyfs_fusexx::data_sink_;
 rlog::RLogChannel* colonyfs_fusexx::fuse_control_( RLOG_CHANNEL( "fuse/control" ) );

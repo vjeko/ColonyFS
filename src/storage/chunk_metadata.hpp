@@ -48,7 +48,10 @@ public:
   }
 
   bool operator==(const chunk_metadata& other) const {
-    return this->uid_ == other.uid_;
+    const bool result =
+        (this->uid_ == other.uid_) &&
+        (this->cuid_ == other.cuid_);
+    return result;
   }
 
 };

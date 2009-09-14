@@ -12,7 +12,7 @@
 
 
 
-typedef colony::aggregator<colony::xmlrpc::attribute_value>  metadata_map_t;
+typedef colony::aggregator<colony::xmlrpc::attribute_value>  metadata_sink_t;
 
 
 
@@ -321,7 +321,7 @@ private:
 
   static bool validate_path(boost::filesystem::path path);
 
-  static metadata_map_t                                   metadata_map_;
-  static colony::aggregator<colony::storage::chunk_data>  g_data_sink;
+  static metadata_sink_t                                  metadata_sink_;
+  static colony::aggregator<colony::storage::chunk_data>  data_sink_;
   static rlog::RLogChannel                               *fuse_control_;
 };

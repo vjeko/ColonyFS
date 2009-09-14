@@ -72,37 +72,30 @@ public:
 
 
   inline shared_ptr<T> operator()(const key_type& key) {
-    shared_ptr<T> pair = make_shared<T>(key);
-    typename implementation_type::iterator it = implementation_.find(pair->get_key());
-
-    if(it == implementation_.end())
-      throw lookup_e() << key_info_t(pair->get_key());
-
-    pair->set_value(it->second);
-
-    return pair;
+    //return cache_.read(filepath.string(), count);
   }
 
 
 
 
   inline void commit(shared_ptr<T> pair) {
-    implementation_[pair->get_key()] = pair->get_value();
+    //shared_ptr<T> hit = cache_.read(filepath.string(), count);
+    //hit.get() = pair.get();
   }
 
 
 
 
   inline void erase(shared_ptr<T> object) {
-    implementation_.erase(object->get_key());
+    //implementation_.erase(object->get_key());
   }
 
 
 
 
   inline void erase(const key_type& key) {
-    T object(key);
-    implementation_.erase(object.get_key());
+    //T object(key);
+    //implementation_.erase(object.get_key());
   }
 
 
@@ -112,8 +105,7 @@ private:
 
 
 
-
-  implementation_type implementation_;
+  //basic_cache<colony::storage::chunk_data>       cache_;
 };
 
 
@@ -272,11 +264,6 @@ template<> class aggregator<colony::storage::chunk_data> {
 
 public:
 
-  typedef std::map<
-    std::string,
-    shared_ptr<colony::storage::chunk_data>
-  > implementation_type;
-
 
   aggregator() :
       bridge_(io_service_),
@@ -364,7 +351,7 @@ public:
 
     for (size_t count = chunk_index_start + 1; count <= chunk_index_end; count++) {
       const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
-      implementation_.erase(key);
+      //implementation_.erase(key);
     }
 
   }
@@ -385,8 +372,8 @@ public:
     for (size_t count = chunk_index_start; count <= chunk_index_end; count++) {
       const std::string old_key = oldpath.string() + boost::lexical_cast<std::string>(count);
       const std::string new_key = newpath.string() + boost::lexical_cast<std::string>(count);
-      implementation_[new_key] = implementation_[old_key];
-      implementation_.erase(old_key);
+      //implementation_[new_key] = implementation_[old_key];
+      //implementation_.erase(old_key);
     }
 
   }
@@ -403,7 +390,7 @@ public:
 
     for (size_t count = chunk_index_start; count <= chunk_index_end; count++) {
       const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
-      implementation_.erase(key);
+      //implementation_.erase(key);
     }
 
   }
@@ -526,11 +513,10 @@ private:
 
   boost::asio::io_service                        io_service_;
   colony::bridge                                 bridge_;
-  basic_cache cache_;
+  basic_cache<colony::storage::chunk_data>       cache_;
 
   colony::intercom::user_harmony&                client_;
   rlog::RLogChannel                             *sink_log_;
-  implementation_type                            implementation_;
   std::vector<std::string>                       chunkservers_;
 };
 
