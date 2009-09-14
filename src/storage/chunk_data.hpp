@@ -45,15 +45,6 @@ public:
       chunk_metadata                   metadata,
       boost::shared_ptr<data_type>     data_ptr);
 
-	chunk_data(
-	    boost::filesystem::path          path,
-	    chunk_metadata::cuid_type        chunk_id);
-
-	 chunk_data(
-	      boost::filesystem::path        path,
-	      chunk_metadata::cuid_type      chunk_id,
-	      boost::shared_ptr<data_type>   data_ptr);
-
 
 	~chunk_data();
 

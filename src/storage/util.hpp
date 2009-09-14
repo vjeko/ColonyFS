@@ -22,9 +22,6 @@ namespace colony { namespace storage {
 
   void set_prefix(boost::filesystem::path path);
 
-  boost::shared_ptr< std::vector< chunk_data > > chunk_file(
-      const boost::filesystem::path& file_path);
-
   void deposit_chunk(
       const boost::shared_ptr<chunk_data> chunk,
       db& database);
@@ -37,15 +34,6 @@ namespace colony { namespace storage {
       const chunk_metadata::uid_type uid,
       const chunk_metadata::cuid_type cuid,
       const db& database);
-
-  void async_assemble_chunks(
-      const std::string& uid,
-      const db& database,
-      boost::filesystem::ofstream& stream);
-
-  void async_assemble_chunks(
-      const boost::filesystem::path& out,
-      std::vector<boost::shared_ptr<colony::storage::chunk_data> > data_ptr_pool) ;
 
 } } // namespace
 

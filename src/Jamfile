@@ -88,16 +88,6 @@ exe chunkserver :
   boost_system
   ;
 
-exe user :
-  test/intercom/user_test.cpp
-
-  rlog
-  uledfs
-  boost_system
-  boost_program_options
-  boost_filesystem
-  ;
-
 exe parser :
   test/parser/parser_test.cpp
 

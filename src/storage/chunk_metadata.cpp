@@ -22,11 +22,6 @@ chunk_metadata::chunk_metadata(
     cuid_type cuid) :
       basic_metadata::basic_metadata(uid, cuid) {}
 
-chunk_metadata::chunk_metadata(
-    boost::filesystem::path path,
-    cuid_type cuid) :
-      basic_metadata::basic_metadata(path.leaf(), cuid) {}
-
 chunk_metadata::~chunk_metadata() {}
 
 }

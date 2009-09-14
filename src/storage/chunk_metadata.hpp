@@ -30,7 +30,6 @@ public:
   chunk_metadata();
   chunk_metadata(cuid_type);
   chunk_metadata(uid_type, cuid_type);
-  chunk_metadata(boost::filesystem::path, cuid_type);
 
   virtual ~chunk_metadata();
 
