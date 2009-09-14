@@ -19,32 +19,35 @@
 #include "../debug.hpp"
 #include "../storage/chunk_data.hpp"
 
+namespace colony {
+
+class lookup_e : public boost::exception {};
+
 template<typename T>
 class basic_cache {
 public:
+  class lookup_e : public boost::exception {};
+  typedef typename T::key_type  key_type;
+  typedef T                     value_type;
 
-  typedef std::string      key_type;
-  typedef T                value_type;
-
-  typedef boost::unordered_map<key_type, boost::shared_ptr<value_type> > whole_type;
-  typedef boost::unordered_map<key_type, boost::weak_ptr<value_type> >   dirty_type;
+  typedef std::map<key_type, boost::shared_ptr<value_type> > whole_type;
+  typedef std::map<key_type, boost::weak_ptr<value_type> >   dirty_type;
 
 
   basic_cache() {}
   virtual ~basic_cache() {}
 
   const boost::shared_ptr<value_type>
-  read(
-      const typename value_type::uid_type filename,
-      const typename value_type::cuid_type count) {
+  read(const key_type key) {
 
-    const std::string key = filename + boost::lexical_cast<std::string>(count);
     boost::shared_ptr<value_type> value;
 
     typename whole_type::iterator it = whole_.find(key);
 
     if (it == whole_.end()) {
-      value = boost::shared_ptr<value_type>(new value_type(filename, count));
+
+      throw colony::lookup_e();
+      value = boost::shared_ptr<value_type>(new value_type(key));
       whole_[key] = value;
     } else {
       value = it->second;
@@ -57,17 +60,15 @@ public:
 
 
   const boost::shared_ptr<value_type>
-  mutate(
-      const typename value_type::uid_type filename,
-      const typename value_type::cuid_type count) {
+  mutate(const key_type key) {
 
-    const std::string key = filename + boost::lexical_cast<std::string>(count);
     boost::shared_ptr<value_type> value;
 
     typename whole_type::iterator it = whole_.find(key);
 
     if (it == whole_.end()) {
-      value = boost::shared_ptr<value_type>(new value_type(filename, count));
+
+      value = boost::shared_ptr<value_type>(new value_type(key));
       whole_[key] = value;
     } else {
       value = it->second;
@@ -83,5 +84,7 @@ protected:
   dirty_type dirty_;
 
 };
+
+} // Namespace
 
 #endif /* CACHE_HPP_ */

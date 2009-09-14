@@ -19,6 +19,7 @@
 #include <boost/serialization/base_object.hpp>
 
 const size_t CHUNK_SIZE = 1024*1024*10;
+
 typedef boost::array< char, CHUNK_SIZE > chunk_t;
 
 namespace colony { namespace storage {
@@ -28,7 +29,7 @@ class chunk_metadata : public basic_metadata {
 public:
 
   chunk_metadata();
-  chunk_metadata(cuid_type);
+  chunk_metadata(key_type key);
   chunk_metadata(uid_type, cuid_type);
 
   virtual ~chunk_metadata();

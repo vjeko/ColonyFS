@@ -36,6 +36,8 @@ public:
       chunk_metadata::uid_type         uid,
       chunk_metadata::cuid_type        cuid);
 
+  chunk_data(key_type key);
+
   chunk_data(
       chunk_metadata::uid_type         uid,
       chunk_metadata::cuid_type        cuid,

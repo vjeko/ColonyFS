@@ -40,7 +40,6 @@ namespace colony {
 
 typedef boost::error_info<struct metadata_error, std::string> key_info_t;
 
-class lookup_e : public boost::exception {};
 class resource_error : public boost::exception {};
 
 
@@ -72,15 +71,15 @@ public:
 
 
   inline shared_ptr<T> operator()(const key_type& key) {
-    //return cache_.read(filepath.string(), count);
+    return cache_.read(T::get_signature(key));
   }
 
 
 
 
   inline void commit(shared_ptr<T> pair) {
-    //shared_ptr<T> hit = cache_.read(filepath.string(), count);
-    //hit.get() = pair.get();
+    shared_ptr<T> hit = cache_.mutate(pair->get_key());
+    (*hit) = (*pair);
   }
 
 
@@ -105,7 +104,7 @@ private:
 
 
 
-  //basic_cache<colony::storage::chunk_data>       cache_;
+  basic_cache<T>       cache_;
 };
 
 
@@ -147,7 +146,7 @@ public:
     typename implementation_type::iterator it = implementation_.find(pair->get_key());
 
     if(it == implementation_.end())
-      throw lookup_e() << key_info_t(pair->get_key());
+      throw colony::lookup_e();
 
     pair->set_value(it->second);
 
@@ -495,7 +494,9 @@ private:
       const boost::filesystem::path filepath,
       const size_t count) {
 
-    return cache_.mutate(filepath.string(), count);
+    colony::storage::basic_metadata::key_type key(filepath.string(), count);
+
+    return cache_.mutate(key);
 
   }
 
@@ -506,7 +507,9 @@ private:
       const boost::filesystem::path filepath,
       const size_t count) {
 
-    return cache_.read(filepath.string(), count);
+    colony::storage::basic_metadata::key_type key(filepath.string(), count);
+
+    return cache_.read(key);
 
   }
 

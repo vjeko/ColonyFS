@@ -33,6 +33,12 @@ chunk_data::chunk_data(
       chunk_metadata(uid, cuid),
       data_ptr_(new data_type) {}
 
+
+chunk_data::chunk_data(key_type key) :
+
+    chunk_metadata(key),
+    data_ptr_(new data_type) {}
+
 chunk_data::chunk_data(
     chunk_metadata::uid_type         uid,
     chunk_metadata::cuid_type        cuid,
