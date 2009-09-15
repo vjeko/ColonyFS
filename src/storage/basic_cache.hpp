@@ -5,8 +5,8 @@
  *      Author: vjeko
  */
 
-#ifndef CACHE_HPP_
-#define CACHE_HPP_
+#ifndef BASIC_CACHE_HPP_
+#define BASIC_CACHE_HPP_
 
 #include <utility>
 
@@ -25,6 +25,7 @@ class lookup_e : public boost::exception {};
 
 template<typename T>
 class basic_cache {
+
 public:
 
   typedef typename T::key_type  key_type;
@@ -78,6 +79,7 @@ public:
     return value;
   }
 
+
 protected:
 
   whole_type whole_;
@@ -87,4 +89,4 @@ protected:
 
 } // Namespace
 
-#endif /* CACHE_HPP_ */
+#endif /* BASIC_CACHE_HPP_ */

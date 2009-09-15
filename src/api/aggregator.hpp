@@ -18,6 +18,7 @@
 
 #include "../storage/bridge.hpp"
 #include "../storage/basic_cache.hpp"
+#include "../storage/cache.hpp"
 
 #include "../storage/chunk_data.hpp"
 #include "../storage/chunk_metadata.hpp"
@@ -81,14 +82,14 @@ public:
 
 
   inline shared_ptr<T> operator()(const key_type& key) {
-    return cache_.read(T::get_signature(key));
+    return cache_(T::get_signature(key));
   }
 
 
 
 
   inline void commit(shared_ptr<T> pair) {
-    shared_ptr<T> hit = cache_.mutate(pair->get_key());
+    shared_ptr<T> hit = cache_[pair->get_key()];
     (*hit) = (*pair);
   }
 
@@ -114,7 +115,7 @@ private:
 
 
 
-  basic_cache<T>       cache_;
+  cache<T>       cache_;
 };
 
 
@@ -225,7 +226,7 @@ public:
 
 
 
-  inline shared_ptr<T> operator()(const key_type& key) {
+  inline shared_ptr<T> operator()(const key_type key) {
     return implementation_(key);
   }
 

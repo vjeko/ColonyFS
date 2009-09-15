@@ -104,6 +104,14 @@ public:
     return T(raw_key, value);
   }
 
+  template <typename T>
+  const boost::shared_ptr<T> get_pair(std::string key) {
+    const std::string raw_key = T::get_signature(key);
+    value_t value = get(raw_key);
+
+    return boost::shared_ptr<T>(new T(raw_key, value));
+  }
+
   // Set key value pair.
   template <typename T>
   void set_pair (T& pair) {
