@@ -54,7 +54,6 @@ typedef boost::error_info<struct metadata_error, std::string> key_info_t;
 class resource_error : public boost::exception {};
 
 
-
 template<typename T>
 class sink_local_impl {
 
@@ -115,7 +114,7 @@ private:
 
 
 
-  cache<T>       cache_;
+  cache<T, MetadataDeleter<T> >       cache_;
 };
 
 
@@ -507,7 +506,10 @@ private:
 
     colony::storage::basic_metadata::key_type key(filepath.string(), count);
 
+    cachex[key];
+
     return cache_.mutate(key);
+
 
   }
 
@@ -530,7 +532,7 @@ private:
 
   colony::intercom::user_harmony&                client_;
   colony::xmlrpc::harmony&                       dht_;
-
+  cache<colony::storage::chunk_data, DataDeleter<colony::storage::chunk_data> >                  cachex;
   basic_cache<colony::storage::chunk_data>       cache_;
   rlog::RLogChannel                             *sink_log_;
   std::vector<std::string>                       chunkservers_;

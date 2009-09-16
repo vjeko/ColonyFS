@@ -12,41 +12,80 @@
 
 #include "../xmlrpc/harmony.hpp"
 
+#include "../intercom/user_harmony.hpp"
+
+#include <boost/shared_ptr.hpp>
+#include <boost/asio/io_service.hpp>
+
+
+template <typename T>
+struct DataDeleter {
+
+  DataDeleter() {}
+
+  void OnRead(T* p) {
+
+    std::cout << "\t MetadataDeleter OnRead Called!" << std::endl;
+
+  }
+
+  void OnWrite(T* p) {
+
+    std::cout << "\tMetadataDeleter OnWrite Called!" << std::endl;
+
+    //boost::shared_ptr<T> tmp(p);
+
+    //accessor_.deposit_chunk("codered", p);
+    //io_service_.run();
+    //io_service_.reset();
+
+  }
+
+  void OnFlush(T* p) {
+
+    std::cout << "\tMetadataDeleter OnFlush Called!" << std::endl;
+
+  }
+
+  //TODO: IO SERVICE
+  //colony::intercom::user_harmony accessor_;
+
+};
+
+template <typename T>
+struct MetadataDeleter {
+
+  MetadataDeleter() : accessor_("harmony-test") {}
+
+  void OnRead(T* p) {
+
+    std::cout << "\t MetadataDeleter OnRead Called!" << std::endl;
+
+  }
+
+  void OnWrite(T* p) {
+
+    std::cout << "\tMetadataDeleter OnWrite Called!" << std::endl;
+
+    accessor_.set_pair(*p);
+
+  }
+
+  void OnFlush(T* p) {
+
+    std::cout << "\tMetadataDeleter OnFlush Called!" << std::endl;
+
+  }
+
+
+  colony::xmlrpc::harmony accessor_;
+
+};
 
 namespace colony {
 
 
-template <typename T>
-struct Deleter {
-
-  struct OnRead {
-    void operator()(T* p) {
-
-      std::cout << "\tOnRead Deleter Called!" << std::endl;
-
-    }
-  };
-
-  struct OnWrite {
-    void operator()(T* p) {
-
-      std::cout << "\tOnWrite Deleter Called!" << std::endl;
-
-    }
-  };
-
-  struct OnFlush {
-    void operator()(T* p) {
-
-      std::cout << "\tOnFlush Deleter Called!" << std::endl;
-
-    }
-  };
-
-};
-
-
-template <typename T>
+template <typename T, typename D >
 class cache : private basic_cache<T> {
 
 public:
@@ -54,13 +93,17 @@ public:
   typedef typename T::key_type  key_type;
   typedef T                     value_type;
 
-  cache() : dht_("harmony_test") {}
+  cache() {}
 
   const boost::shared_ptr<value_type>
   operator()(const key_type key) {
 
     boost::shared_ptr<T> value(this->read(key));
-    boost::shared_ptr<T> dummy(value.get(), typename Deleter<T>::OnRead());
+    boost::shared_ptr<T>
+    dummy(
+        value.get(),
+        boost::bind(&D::OnRead, deleter_, _1)
+    );
 
     return dummy;
 
@@ -70,14 +113,17 @@ public:
   operator[](const key_type key) {
 
     boost::shared_ptr<T> value(this->mutate(key));
-    boost::shared_ptr<T> dummy(value.get(), typename Deleter<T>::OnWrite());
+    boost::shared_ptr<T>
+    dummy(
+        value.get(),
+        boost::bind(&D::OnWrite, deleter_, _1)
+    );
 
     return dummy;
 
   }
 
-
-  colony::xmlrpc::harmony  dht_;
+  D deleter_;
 
 };
 
