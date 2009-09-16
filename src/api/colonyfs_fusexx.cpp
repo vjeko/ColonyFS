@@ -431,7 +431,6 @@ int colonyfs_fusexx::getattr(const char *filepath, struct stat *stat) {
     shared_ptr<attribute_value> pair = metadata_sink_( full.string() );
     const fattribute& attribute = pair->get_mapped();
 
-
     memset(stat, 0, sizeof(struct stat));
     memcpy(stat, &attribute.stbuf, sizeof(struct stat));
 
@@ -500,7 +499,6 @@ int colonyfs_fusexx::create(
 
   using namespace colony::xmlrpc;
 
-
   const boost::filesystem::path full(filepath);
   const boost::filesystem::path branch = full.parent_path();
   const boost::filesystem::path leaf = full.filename();
@@ -518,6 +516,7 @@ int colonyfs_fusexx::create(
   attribute.stbuf.st_nlink = 1;
   attribute.stbuf.st_uid = getuid();
   attribute.stbuf.st_gid = getgid();
+  attribute.stbuf.st_blksize = 1024*1024;
   clock_gettime(CLOCK_REALTIME, &attribute.stbuf.st_mtim); // Modification time.
 
 

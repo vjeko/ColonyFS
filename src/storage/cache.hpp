@@ -18,10 +18,13 @@
 #include <boost/asio/io_service.hpp>
 
 
+
 template <typename T>
 struct DataDeleter : boost::noncopyable {
 
   DataDeleter() : accessor_(io_service_, "harmony-test") {}
+
+  void NoOp(T* p) {}
 
   void OnRead(T* p) {
 
@@ -33,14 +36,11 @@ struct DataDeleter : boost::noncopyable {
 
     std::cout << "\tDataDeleter OnWrite Called!" << std::endl;
 
-    // TODO: Not allowed to create a shared_ptr.
-
-    /*
+    boost::shared_ptr<T> value(p, boost::bind(&DataDeleter::NoOp, this, _1));
     accessor_.deposit_chunk("codered", value);
 
     io_service_.run();
     io_service_.reset();
-*/
   }
 
   void OnFlush(T* p) {
