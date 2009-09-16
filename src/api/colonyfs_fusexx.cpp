@@ -560,6 +560,8 @@ int colonyfs_fusexx::write (
   using namespace colony::xmlrpc;
 
 
+  rLog(fuse_control_, "write: (%lu) %s", size, filepath);
+
   boost::filesystem::path full(filepath);
 
   data_sink_.write(full, buffer, size, offset);
@@ -575,8 +577,6 @@ int colonyfs_fusexx::write (
   // Commit.
   metadata_sink_.commit(pair);
 
-
-  rLog(fuse_control_, "write: (%lu) %s", size, filepath);
 
   return size;
 

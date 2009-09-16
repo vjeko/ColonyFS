@@ -475,7 +475,7 @@ private:
     colony::storage::chunk_data::data_type& chunk_buffer = *(destination->data_ptr_);
 
     const size_t required_size = destination_offset + chunk_delta;
-    if (chunk_buffer.size() < required_size) chunk_buffer.resize(required_size);
+    if (chunk_buffer.size() < required_size) destination->data_ptr_->resize(required_size);
 
     memcpy(&chunk_buffer[destination_offset], source + source_offset, chunk_delta);
 
@@ -506,9 +506,7 @@ private:
 
     colony::storage::basic_metadata::key_type key(filepath.string(), count);
 
-    cachex[key];
-
-    return cache_.mutate(key);
+    return cachex[key];
 
 
   }
@@ -522,7 +520,7 @@ private:
 
     colony::storage::basic_metadata::key_type key(filepath.string(), count);
 
-    return cache_.read(key);
+    return cachex(key);
 
   }
 
@@ -532,7 +530,7 @@ private:
 
   colony::intercom::user_harmony&                client_;
   colony::xmlrpc::harmony&                       dht_;
-  cache<colony::storage::chunk_data, DataDeleter<colony::storage::chunk_data> >                  cachex;
+  cache<colony::storage::chunk_data, DataDeleter<colony::storage::chunk_data> > cachex;
   basic_cache<colony::storage::chunk_data>       cache_;
   rlog::RLogChannel                             *sink_log_;
   std::vector<std::string>                       chunkservers_;

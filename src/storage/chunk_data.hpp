@@ -12,6 +12,7 @@
 
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/scoped_ptr.hpp>
 #include <boost/serialization/vector.hpp>
 
 #include <vector>
@@ -56,7 +57,7 @@ public:
     ar & data_ptr_;
   }
 
-  boost::shared_ptr<data_type>    data_ptr_;
+  boost::scoped_ptr<data_type>    data_ptr_;
 };
 
 }

@@ -19,41 +19,43 @@
 
 
 template <typename T>
-struct DataDeleter {
+struct DataDeleter : boost::noncopyable {
 
-  DataDeleter() {}
+  DataDeleter() : accessor_(io_service_, "harmony-test") {}
 
   void OnRead(T* p) {
 
-    std::cout << "\t MetadataDeleter OnRead Called!" << std::endl;
+    std::cout << "\tDataDeleter OnRead Called!" << std::endl;
 
   }
 
   void OnWrite(T* p) {
 
-    std::cout << "\tMetadataDeleter OnWrite Called!" << std::endl;
+    std::cout << "\tDataDeleter OnWrite Called!" << std::endl;
 
-    //boost::shared_ptr<T> tmp(p);
+    // TODO: Not allowed to create a shared_ptr.
 
-    //accessor_.deposit_chunk("codered", p);
-    //io_service_.run();
-    //io_service_.reset();
+    /*
+    accessor_.deposit_chunk("codered", value);
 
+    io_service_.run();
+    io_service_.reset();
+*/
   }
 
   void OnFlush(T* p) {
 
-    std::cout << "\tMetadataDeleter OnFlush Called!" << std::endl;
+    std::cout << "\tDataDeleter OnFlush Called!" << std::endl;
 
   }
 
-  //TODO: IO SERVICE
-  //colony::intercom::user_harmony accessor_;
+  boost::asio::io_service           io_service_;
+  colony::intercom::user_harmony    accessor_;
 
 };
 
 template <typename T>
-struct MetadataDeleter {
+struct MetadataDeleter : boost::noncopyable {
 
   MetadataDeleter() : accessor_("harmony-test") {}
 
@@ -102,7 +104,7 @@ public:
     boost::shared_ptr<T>
     dummy(
         value.get(),
-        boost::bind(&D::OnRead, deleter_, _1)
+        boost::bind(&D::OnRead, &deleter_, _1)
     );
 
     return dummy;
@@ -116,10 +118,10 @@ public:
     boost::shared_ptr<T>
     dummy(
         value.get(),
-        boost::bind(&D::OnWrite, deleter_, _1)
+        boost::bind(&D::OnWrite, &deleter_, _1)
     );
 
-    return dummy;
+    return value;
 
   }
 

@@ -13,6 +13,7 @@
 #include <boost/unordered_map.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/tuple/tuple_io.hpp>
 
 #include "bridge.hpp"
 
@@ -48,8 +49,7 @@ public:
     if (it == whole_.end()) {
 
       throw colony::lookup_e();
-      value = boost::shared_ptr<value_type>(new value_type(key));
-      whole_[key] = value;
+
     } else {
       value = it->second;
     }
@@ -71,6 +71,7 @@ public:
 
       value = boost::shared_ptr<value_type>(new value_type(key));
       whole_[key] = value;
+
     } else {
       value = it->second;
     }
