@@ -25,6 +25,9 @@
 
 #include "../intercom/user_harmony.hpp"
 
+#include "../scheduler/DataAccessor.hpp"
+#include "../scheduler/MetadataAccessor.hpp"
+
 #include <algorithm>
 #include <sys/stat.h>
 

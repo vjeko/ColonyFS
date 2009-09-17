@@ -106,6 +106,10 @@ public:
   base_value(const instruction_enum type, const std::string argument = ""):
     instruction_(type, argument) {};
 
+  base_value(const std::string key) {
+    set_key(key);
+  };
+
   base_value(const std::string& key, const std::string& value) {
     set_key(key);
     set_value(value);
