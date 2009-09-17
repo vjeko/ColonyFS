@@ -387,6 +387,13 @@ public:
 
 
 
+  void flush() {
+    cache_.flush();
+  }
+
+
+
+
 private:
 
 
@@ -500,6 +507,9 @@ private:
     return cache_(key);
 
   }
+
+
+
 
   cache<value_type, DataDeleter<value_type> >    cache_;
   rlog::RLogChannel                             *sink_log_;

@@ -26,27 +26,23 @@ struct DataDeleter : boost::noncopyable {
 
   void NoOp(T* p) {}
 
-  void OnRead(T* p) {
-
-    std::cout << "\tDataDeleter OnRead Called!" << std::endl;
-
-  }
+  void OnRead(T* p) {}
 
   void OnWrite(T* p) {
-
-    std::cout << "\tDataDeleter OnWrite Called!" << std::endl;
-
+/*
     boost::shared_ptr<T> value(p, boost::bind(&DataDeleter::NoOp, this, _1));
     accessor_.deposit_chunk("codered", value);
 
     io_service_.run();
     io_service_.reset();
+    */
   }
 
-  void OnFlush(T* p) {
+  void OnFlush(shared_ptr<T> value) {
+    accessor_.deposit_chunk("codered", value);
 
-    std::cout << "\tDataDeleter OnFlush Called!" << std::endl;
-
+    io_service_.run();
+    io_service_.reset();
   }
 
   boost::asio::io_service           io_service_;
@@ -73,7 +69,7 @@ struct MetadataDeleter : boost::noncopyable {
 
   }
 
-  void OnFlush(T* p) {
+  void OnFlush(shared_ptr<T> p) {
 
     std::cout << "\tMetadataDeleter OnFlush Called!" << std::endl;
 
@@ -94,6 +90,9 @@ public:
 
   typedef typename T::key_type  key_type;
   typedef T                     value_type;
+
+  typedef std::map<key_type, boost::shared_ptr<value_type> > whole_type;
+  typedef std::map<key_type, boost::weak_ptr<value_type> >   dirty_type;
 
   cache() {}
 
@@ -122,6 +121,19 @@ public:
     );
 
     return value;
+
+  }
+
+  void flush() {
+
+    // FIXME: Concurrency issues!
+    typename dirty_type::const_iterator it;
+    for(it = this->dirty_.begin(); it != this->dirty_.end(); ++it) {
+      shared_ptr<T> value = it->second.lock();
+      deleter_.OnFlush(value);
+    }
+
+    this->dirty_.clear();
 
   }
 

@@ -317,6 +317,10 @@ public:
 
 
 
+  static int flush(const char* filepath, struct fuse_file_info * fi);
+
+
+
 private:
 
   static bool validate_path(boost::filesystem::path path);

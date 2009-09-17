@@ -742,6 +742,13 @@ bool colonyfs_fusexx::validate_path(boost::filesystem::path path) {
 
 }
 
+int colonyfs_fusexx::flush(const char* filepath, struct fuse_file_info * fi) {
+  data_sink_.flush();
+
+  return 0;
+}
+
+
 metadata_sink_t colonyfs_fusexx::metadata_sink_;
 colony::aggregator<colony::storage::chunk_data>  colonyfs_fusexx::data_sink_;
 rlog::RLogChannel* colonyfs_fusexx::fuse_control_( RLOG_CHANNEL( "fuse/control" ) );

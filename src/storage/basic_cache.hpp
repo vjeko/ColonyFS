@@ -20,6 +20,8 @@
 #include "../debug.hpp"
 #include "../storage/chunk_data.hpp"
 
+#include <boost/smart_ptr.hpp>
+
 namespace colony {
 
 class lookup_e : public boost::exception {};
