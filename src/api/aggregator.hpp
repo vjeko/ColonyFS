@@ -39,7 +39,6 @@
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
-
 namespace colony {
 
 typedef boost::tuple<
@@ -62,10 +61,6 @@ public:
   typedef typename T::key_type           key_type;
   typedef typename T::value_type         value_type;
   typedef typename T::mapped_type        mapped_type;
-
-  typedef boost::unordered_map<std::string, std::string>  implementation_type;
-  typedef typename implementation_type::iterator          iterator;
-  typedef typename implementation_type::const_iterator    const_iterator;
 
 
 
@@ -110,6 +105,13 @@ public:
 
 
 
+  inline void flush() {
+    cache_.flush();
+  }
+
+
+
+
 private:
 
 
@@ -117,80 +119,6 @@ private:
   cache<T, MetadataDeleter<T> >       cache_;
 };
 
-
-
-
-
-
-template<typename T>
-class sink_remote_impl {
-
-public:
-
-  typedef typename T::key_type           key_type;
-  typedef typename T::value_type         value_type;
-  typedef typename T::mapped_type        mapped_type;
-
-  typedef boost::unordered_map<std::string, std::string>  implementation_type;
-  typedef typename implementation_type::iterator          iterator;
-  typedef typename implementation_type::const_iterator    const_iterator;
-
-
-
-
-  sink_remote_impl() {};
-
-
-
-
-  virtual ~sink_remote_impl() {};
-
-
-
-
-  inline shared_ptr<T> operator()(const key_type& key) {
-    shared_ptr<T> pair = make_shared<T>(key);
-    typename implementation_type::iterator it = implementation_.find(pair->get_key());
-
-    if(it == implementation_.end())
-      throw colony::lookup_e();
-
-    pair->set_value(it->second);
-
-    return pair;
-  }
-
-
-
-
-  inline void commit(shared_ptr<T> pair) {
-
-
-    implementation_[pair->get_key()] = pair->get_value();
-  }
-
-
-
-
-  inline void erase(shared_ptr<T> object) {
-    implementation_.erase(object->get_key());
-  }
-
-
-
-
-  inline void erase(const key_type& key) {
-    T object(key);
-    implementation_.erase(object.get_key());
-  }
-
-
-
-
-private:
-
-  implementation_type            implementation_;
-};
 
 
 
@@ -242,6 +170,13 @@ public:
 
   inline void erase(const key_type& key) {
     implementation_.erase(key);
+  }
+
+
+
+
+  inline void flush() {
+    implementation_.flush();
   }
 
 
@@ -340,7 +275,7 @@ public:
 
     for (size_t count = chunk_index_start + 1; count <= chunk_index_end; count++) {
       const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
-      //implementation_.erase(key);
+      // TODO: Erase the chunk!
     }
 
   }
@@ -379,7 +314,7 @@ public:
 
     for (size_t count = chunk_index_start; count <= chunk_index_end; count++) {
       const std::string key = filepath.string() + boost::lexical_cast<std::string>(count);
-      //implementation_.erase(key);
+      // TODO: Erase the chunk!
     }
 
   }
@@ -418,8 +353,6 @@ private:
 
     const size_t chunk_index_start = offset / CHUNK_SIZE;
     const size_t chunk_index_end = (size + offset) / CHUNK_SIZE;
-
-    std::cout << "========= <" << chunk_index_start << ", " << chunk_index_end << std::endl;
 
     rLog(sink_log_, "Buffer Offset: %lu", offset);
     rLog(sink_log_, "Buffer Size: %lu", size);

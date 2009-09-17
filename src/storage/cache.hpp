@@ -18,7 +18,6 @@
 #include <boost/asio/io_service.hpp>
 
 
-
 template <typename T>
 struct DataDeleter : boost::noncopyable {
 
@@ -28,21 +27,15 @@ struct DataDeleter : boost::noncopyable {
 
   void OnRead(T* p) {}
 
-  void OnWrite(T* p) {
-/*
-    boost::shared_ptr<T> value(p, boost::bind(&DataDeleter::NoOp, this, _1));
-    accessor_.deposit_chunk("codered", value);
-
-    io_service_.run();
-    io_service_.reset();
-    */
-  }
+  void OnWrite(T* p) {}
 
   void OnFlush(shared_ptr<T> value) {
     accessor_.deposit_chunk("codered", value);
+  }
 
-    io_service_.run();
+  void OnDone() {
     io_service_.reset();
+    io_service_.run();
   }
 
   boost::asio::io_service           io_service_;
@@ -57,12 +50,13 @@ struct MetadataDeleter : boost::noncopyable {
 
   void OnRead(T* p) {}
 
-  void OnWrite(T* p) {
-    accessor_.set_pair(*p);
+  void OnWrite(T* p) {}
+
+  void OnFlush(shared_ptr<T> p) {
+    accessor_.set_pair(p);
   }
 
-  void OnFlush(shared_ptr<T> p) {}
-
+  void OnDone() {}
 
   colony::xmlrpc::harmony accessor_;
 
@@ -114,9 +108,8 @@ public:
 
   void flush() {
 
-    std::cout << "=========== " << this->dirty_.size() << std::endl;
-
     // FIXME: Concurrency issues!
+
     typename dirty_type::const_iterator it;
     for(it = this->dirty_.begin(); it != this->dirty_.end(); ++it) {
       shared_ptr<T> value = it->second.lock();
@@ -124,6 +117,7 @@ public:
     }
 
     this->dirty_.clear();
+    deleter_.OnDone();
 
   }
 

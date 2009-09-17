@@ -744,6 +744,7 @@ bool colonyfs_fusexx::validate_path(boost::filesystem::path path) {
 
 int colonyfs_fusexx::flush(const char* filepath, struct fuse_file_info * fi) {
   data_sink_.flush();
+  metadata_sink_.flush();
 
   return 0;
 }
