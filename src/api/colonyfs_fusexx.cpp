@@ -516,7 +516,7 @@ int colonyfs_fusexx::create(
   attribute.stbuf.st_nlink = 1;
   attribute.stbuf.st_uid = getuid();
   attribute.stbuf.st_gid = getgid();
-  attribute.stbuf.st_blksize = 1024*1024;
+  attribute.stbuf.st_blksize = CHUNK_SIZE;
   clock_gettime(CLOCK_REALTIME, &attribute.stbuf.st_mtim); // Modification time.
 
 

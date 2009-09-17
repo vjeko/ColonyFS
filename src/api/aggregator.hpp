@@ -138,10 +138,7 @@ public:
 
 
 
-  sink_remote_impl() :
-    dht_("http://barb.cs.washington.edu:36459") {
-
-  };
+  sink_remote_impl() {};
 
 
 
@@ -192,9 +189,6 @@ public:
 
 private:
 
-  colony::xmlrpc::harmony        dht_;
-  boost::asio::io_service        io_service_;
-  std::vector<std::string>       chunkservers_;
   implementation_type            implementation_;
 };
 
@@ -255,9 +249,6 @@ public:
 
 private:
 
-
-
-  boost::asio::io_service             io_service_;
   Implementation<T>                   implementation_;
 };
 
@@ -273,24 +264,13 @@ template<> class aggregator<colony::storage::chunk_data> {
 
 public:
 
+  typedef colony::storage::chunk_data     value_type;
+
 
   aggregator() :
-      bridge_(io_service_),
-      client_( *(bridge_.client_) ),
-      dht_( *(bridge_.dht_) ),
       sink_log_( RLOG_CHANNEL( "sink/data" ) ) {
 
-    const std::string& swarm = bridge_.parser_->get_swarm();
-    colony::xmlrpc::harmony& dht = *(bridge_.dht_);
-
     try {
-
-      xmlrpc::chunkserver_value chunkserver_info =
-          dht.get_value<xmlrpc::chunkserver_value>(swarm);
-
-      chunkservers_ = chunkserver_info.get_mapped();
-
-      rError("found %lu chunkservers", chunkservers_.size());
 
     } catch (colony::xmlrpc::key_missing_error& e) {
       rError("no chunkservers found...");
@@ -433,7 +413,6 @@ private:
     const size_t chunk_index_start = buffer_start / CHUNK_SIZE;
     const size_t chunk_index_end = buffer_end / CHUNK_SIZE;
 
-    rLog(sink_log_, "---------------------------");
     rLog(sink_log_, "Buffer Offset: %lu", offset);
     rLog(sink_log_, "Buffer Size: %lu", size);
     rLog(sink_log_, "Chunk Index Start: %lu", chunk_index_start);
@@ -450,7 +429,6 @@ private:
       rLog(sink_log_, "Chunk End: %lu", chunk_end);
       rLog(sink_log_, "Remaining Size: %lu", remaining_size);
       rLog(sink_log_, "Chunk Delta: %lu", chunk_delta);
-      rLog(sink_log_, "---------------------------");
 
       shared_ptr<chunk_data> chunk = key_policy(filepath, count);
 
@@ -475,7 +453,7 @@ private:
     colony::storage::chunk_data::data_type& chunk_buffer = *(destination->data_ptr_);
 
     const size_t required_size = destination_offset + chunk_delta;
-    if (chunk_buffer.size() < required_size) destination->data_ptr_->resize(required_size);
+    if (chunk_buffer.size() < required_size) chunk_buffer.resize(required_size);
 
     memcpy(&chunk_buffer[destination_offset], source + source_offset, chunk_delta);
 
@@ -506,8 +484,7 @@ private:
 
     colony::storage::basic_metadata::key_type key(filepath.string(), count);
 
-    return cachex[key];
-
+    return cache_[key];
 
   }
 
@@ -520,20 +497,12 @@ private:
 
     colony::storage::basic_metadata::key_type key(filepath.string(), count);
 
-    return cachex(key);
+    return cache_(key);
 
   }
 
-
-  boost::asio::io_service                        io_service_;
-  colony::bridge                                 bridge_;
-
-  colony::intercom::user_harmony&                client_;
-  colony::xmlrpc::harmony&                       dht_;
-  cache<colony::storage::chunk_data, DataDeleter<colony::storage::chunk_data> > cachex;
-  basic_cache<colony::storage::chunk_data>       cache_;
+  cache<value_type, DataDeleter<value_type> >    cache_;
   rlog::RLogChannel                             *sink_log_;
-  std::vector<std::string>                       chunkservers_;
 };
 
 
