@@ -409,16 +409,17 @@ private:
       MissingKeyPolicy key_policy,
       ActionPolicy action_policy,
       const size_t size,
-      const size_t offset) {
+      size_t offset) {
 
     using colony::storage::chunk_data;
-
 
     size_t buffer_start = 0;
     size_t buffer_end = size;
 
-    const size_t chunk_index_start = buffer_start / CHUNK_SIZE;
-    const size_t chunk_index_end = buffer_end / CHUNK_SIZE;
+    const size_t chunk_index_start = offset / CHUNK_SIZE;
+    const size_t chunk_index_end = (size + offset) / CHUNK_SIZE;
+
+    std::cout << "========= <" << chunk_index_start << ", " << chunk_index_end << std::endl;
 
     rLog(sink_log_, "Buffer Offset: %lu", offset);
     rLog(sink_log_, "Buffer Size: %lu", size);
@@ -429,7 +430,7 @@ private:
 
       const size_t remaining_size = buffer_end - buffer_start;
       const size_t chunk_start = offset % CHUNK_SIZE;
-      const size_t chunk_end = (buffer_start + remaining_size > CHUNK_SIZE) ? CHUNK_SIZE : chunk_start + remaining_size;
+      const size_t chunk_end = ((buffer_start + remaining_size) > CHUNK_SIZE) ? CHUNK_SIZE : chunk_start + remaining_size;
       const size_t chunk_delta = chunk_end - chunk_start;
 
       rLog(sink_log_, "Chunk Start: %lu", chunk_start);
@@ -442,6 +443,7 @@ private:
       action_policy(chunk, buffer, chunk_start, buffer_start, chunk_delta);
 
       buffer_start += chunk_delta;
+      offset = 0;
     }
 
   }

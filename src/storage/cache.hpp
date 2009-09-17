@@ -55,25 +55,13 @@ struct MetadataDeleter : boost::noncopyable {
 
   MetadataDeleter() : accessor_("harmony-test") {}
 
-  void OnRead(T* p) {
-
-    std::cout << "\t MetadataDeleter OnRead Called!" << std::endl;
-
-  }
+  void OnRead(T* p) {}
 
   void OnWrite(T* p) {
-
-    std::cout << "\tMetadataDeleter OnWrite Called!" << std::endl;
-
     accessor_.set_pair(*p);
-
   }
 
-  void OnFlush(shared_ptr<T> p) {
-
-    std::cout << "\tMetadataDeleter OnFlush Called!" << std::endl;
-
-  }
+  void OnFlush(shared_ptr<T> p) {}
 
 
   colony::xmlrpc::harmony accessor_;
@@ -125,6 +113,8 @@ public:
   }
 
   void flush() {
+
+    std::cout << "=========== " << this->dirty_.size() << std::endl;
 
     // FIXME: Concurrency issues!
     typename dirty_type::const_iterator it;
