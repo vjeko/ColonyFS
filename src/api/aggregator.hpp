@@ -27,7 +27,6 @@
 
 #include "../scheduler/DataAccessor.hpp"
 #include "../scheduler/MetadataAccessor.hpp"
-#include "../scheduler/MetadataOnlyCache.hpp"
 
 #include <algorithm>
 #include <sys/stat.h>
@@ -120,7 +119,7 @@ private:
 
 
 
-  cache<T, MetadataOnlyCache<T> >       cache_;
+  cache<T, MetadataDeleter<T> >       cache_;
 };
 
 

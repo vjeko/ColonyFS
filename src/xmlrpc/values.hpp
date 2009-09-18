@@ -95,6 +95,7 @@ template<typename T, typename Derived>
 class base_value {
 public:
 
+  typedef std::string   key_type;
   typedef T             value_type;
   typedef T             mapped_type;
 
@@ -199,9 +200,6 @@ class chunkserver_value : public base_value< chunkserver_list_t, chunkserver_val
 
 public:
 
-  typedef std::string   key_type;
-
-
   chunkserver_value() : base_value<chunkserver_list_t, chunkserver_value>() {}
 
   chunkserver_value(const std::string& swarm, const chunkserver_list_t& chunkservers) :
@@ -220,9 +218,6 @@ public:
 class filename_value : public base_value<size_t, filename_value> {
 
 public:
-
-  typedef std::string   key_type;
-
 
   filename_value() : base_value<size_t, filename_value>() {}
 
@@ -243,9 +238,6 @@ public:
 class chunk_value : public base_value<std::string, chunk_value> {
 
 public:
-
-  typedef std::string   key_type;
-
 
   chunk_value() : base_value<std::string, chunk_value>() {}
 
@@ -272,9 +264,6 @@ class attribute_value : public base_value<fattribute, attribute_value> {
 
 public:
 
-  typedef std::string   key_type;
-
-
   attribute_value() : base_value<fattribute, attribute_value> () {}
 
   attribute_value(const std::string& filename) :
@@ -293,7 +282,6 @@ public:
 
 
 
-
 template<typename T>
 struct ValueFactory {
 
@@ -309,7 +297,7 @@ struct ValueFactory {
 
 
 
-  static T New(typename T::key_type key) {
+  static T New(std::string key) {
 
     T result;
     result.set_instruction(key);
