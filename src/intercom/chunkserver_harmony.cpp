@@ -29,17 +29,18 @@ chunkserver_harmony::chunkserver_harmony(
 
 void chunkserver_harmony::init() {
 
+  using xmlrpc::chunkserver_value;
+  using xmlrpc::ValueFactory;
+
   std::string                               hostname(boost::asio::ip::host_name());
   std::string                               swarm(parser_.get_swarm());
-  xmlrpc::chunkserver_value::value_type     chunkservers;
+  chunkserver_value::value_type             chunkservers;
 
-  xmlrpc::chunkserver_value chunkserver_info(swarm, chunkservers);
+  chunkserver_value chunkserver_info = ValueFactory<chunkserver_value>::New(swarm);
 
   try {
 
-    // See if the swarm exists. If so, a proper value is returned.
-    chunkserver_info =
-        dht_.get_value<xmlrpc::chunkserver_value>(swarm);
+    dht_.get_value(chunkserver_info);
 
   } catch (colony::xmlrpc::key_missing_error& e) {
     // If the swarm is missing, this implies we are the first one joining.

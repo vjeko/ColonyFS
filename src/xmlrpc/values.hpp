@@ -34,6 +34,7 @@ namespace colony { namespace xmlrpc {
 
 
 
+
 typedef std::vector<std::string> chunkserver_list_t;
 
 
@@ -110,11 +111,6 @@ public:
     set_key(key);
   };
 
-  base_value(const std::string& key, const std::string& value) {
-    set_key(key);
-    set_value(value);
-  };
-
   virtual ~base_value() {};
 
 
@@ -134,6 +130,9 @@ public:
     return instruction_;
   }
 
+
+
+
   void   set_key(const std::string& key) {
     deserialize(key, instruction_);
   };
@@ -141,6 +140,20 @@ public:
   void   set_value(const std::string& value) {
     deserialize(value, mapped_);
   }
+
+
+
+
+  void   set_mapped(const T mapped) {
+    mapped_ = mapped;
+  }
+
+  void   set_instruction(const std::string arg) {
+    instruction_ = instruction(Derived::signature_, arg);
+  }
+
+
+
 
   template<typename Destination>
   static void deserialize(const std::string& value, Destination& destionation) {
@@ -167,6 +180,11 @@ public:
     return result;
   }
 
+  void reconstruct(std::string key, std::string value) {
+    set_key(key);
+    set_value(value);
+  }
+
   instruction    instruction_;
   std::string    key_;
 
@@ -182,11 +200,10 @@ class chunkserver_value : public base_value< chunkserver_list_t, chunkserver_val
 
 public:
 
-  chunkserver_value(const std::string& key, const std::string& value) :
-    base_value<chunkserver_list_t, chunkserver_value>(key, value) {};
+  chunkserver_value() : base_value<chunkserver_list_t, chunkserver_value>() {}
 
   chunkserver_value(const std::string& swarm, const chunkserver_list_t& chunkservers) :
-      base_value< chunkserver_list_t, chunkserver_value>(CHUNKSERVER_INSTRUCTION, swarm) {
+      base_value<chunkserver_list_t, chunkserver_value>(CHUNKSERVER_INSTRUCTION, swarm) {
     mapped_ = chunkservers;
   };
 
@@ -198,15 +215,11 @@ public:
 };
 
 
-
-
-
 class filename_value : public base_value<size_t, filename_value> {
 
 public:
 
-  filename_value(const std::string& key, const std::string& value) :
-    base_value<size_t, filename_value>(key, value) {};
+  filename_value() : base_value<size_t, filename_value>() {}
 
   filename_value(const std::string& filename, const size_t chunk_num):
       base_value<size_t, filename_value>(FILENAME_INSTRUCTION, filename) {
@@ -226,8 +239,7 @@ class chunk_value : public base_value<std::string, chunk_value> {
 
 public:
 
-  chunk_value(const std::string& key, const std::string& value) :
-    base_value<std::string, chunk_value>(key, value) {};
+  chunk_value() : base_value<std::string, chunk_value>() {}
 
   chunk_value(const std::string& key) :
       base_value<std::string, chunk_value>(signature_, key) {};
@@ -252,8 +264,7 @@ class attribute_value : public base_value<fattribute, attribute_value> {
 
 public:
 
-  attribute_value(const std::string& key, const std::string& value) :
-    base_value<fattribute, attribute_value>(key, value) {};
+  attribute_value() : base_value<fattribute, attribute_value> () {}
 
   attribute_value(const std::string& filename) :
       base_value<fattribute, attribute_value>(ATTRIBUTE_INSTRUCTION, filename) {
@@ -268,6 +279,39 @@ public:
 
   const static instruction_enum signature_ = ATTRIBUTE_INSTRUCTION;
 };
+
+
+
+template<typename T>
+struct ValueFactory {
+
+
+  static T Raw(std::string key, std::string value) {
+
+    T result;
+    result.reconstruct(key, value);
+
+    return result;
+  }
+
+
+
+
+  static T New(std::string key) {
+
+    T result;
+    result.set_instruction(key);
+
+    return result;
+
+  }
+
+
+
+
+};
+
+
 
 } }
 

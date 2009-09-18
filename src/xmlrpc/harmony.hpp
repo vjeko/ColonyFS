@@ -92,7 +92,8 @@ public:
     key_t    key    = ss.str();
     value_t  value  = get(key);
 
-    return T(key, value);
+
+    return ValueFactory<T>::Raw(key, value);
   }
 
   template <typename T>
@@ -101,7 +102,13 @@ public:
     const std::string raw_key = T::get_signature(key);
     value_t value = get(raw_key);
 
-    return T(raw_key, value);
+    return ValueFactory<T>::Raw(key, value);
+  }
+
+  template <typename T>
+  void get_value (T& pair) {
+    value_t raw_value = get(pair.get_key());
+    pair.set_value(raw_value);
   }
 
   template <typename T>

@@ -27,7 +27,8 @@ class chunk_data : public chunk_metadata {
 
 public:
 
-  typedef std::vector< char >          data_type;
+  typedef std::vector< char >               data_type;
+  typedef boost::shared_ptr<data_type>      value_type;
 
   chunk_data();
 

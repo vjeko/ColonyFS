@@ -31,20 +31,21 @@ class basic_cache {
 
 public:
 
-  typedef typename T::key_type  key_type;
-  typedef T                     value_type;
+  typedef typename T::key_type     key_type;
+  typedef T                        element_type;
+  typedef typename T::value_type   value_type;
 
-  typedef std::map<key_type, boost::shared_ptr<value_type> > whole_type;
-  typedef std::map<key_type, boost::weak_ptr<value_type> >   dirty_type;
+  typedef std::map<key_type, boost::shared_ptr<element_type> > whole_type;
+  typedef std::map<key_type, boost::weak_ptr<element_type> >   dirty_type;
 
 
   basic_cache() {}
   virtual ~basic_cache() {}
 
-  const boost::shared_ptr<value_type>
+  const boost::shared_ptr<element_type>
   read(const key_type key) {
 
-    boost::shared_ptr<value_type> value;
+    boost::shared_ptr<element_type> value;
 
     typename whole_type::iterator it = whole_.find(key);
 
@@ -62,16 +63,16 @@ public:
 
 
 
-  const boost::shared_ptr<value_type>
+  const boost::shared_ptr<element_type>
   mutate(const key_type key) {
 
-    boost::shared_ptr<value_type> value;
+    boost::shared_ptr<element_type> value;
 
     typename whole_type::iterator it = whole_.find(key);
 
     if (it == whole_.end()) {
 
-      value = boost::shared_ptr<value_type>(new value_type(key));
+      value = boost::shared_ptr<element_type>(new element_type(key));
       whole_[key] = value;
 
     } else {

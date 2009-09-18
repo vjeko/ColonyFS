@@ -34,12 +34,14 @@ BOOST_AUTO_TEST_CASE( value_filename ) {
 
   using namespace colony::xmlrpc;
 
-  filename_value original(g_filename, g_chunk_num);
+  typedef filename_value element_type;
+
+  element_type original(g_filename, g_chunk_num);
 
   std::string key = original.get_key();
   std::string value = original.get_value();
 
-  filename_value reconstructed(key, value);
+  element_type reconstructed = ValueFactory<element_type>::Raw(key, value);
   instruction instruction = reconstructed.get_instruction();
 
   BOOST_CHECK_EQUAL(FILENAME_INSTRUCTION, instruction.get_type());
@@ -53,11 +55,13 @@ BOOST_AUTO_TEST_CASE( value_chunk ) {
 
   using namespace colony::xmlrpc;
 
-  chunk_value original(g_filename, g_chunk_num, g_hostname);
+  typedef chunk_value element_type;
+
+  element_type original(g_filename, g_chunk_num, g_hostname);
   std::string key = original.get_key();
   std::string value = original.get_value();
 
-  chunk_value reconstructed(key, value);
+  element_type reconstructed = ValueFactory<element_type>::Raw(key, value);;
   instruction instruction = reconstructed.get_instruction();
 
   std::string argument = boost::lexical_cast<std::string>(g_chunk_num) + g_filename;
@@ -73,17 +77,19 @@ BOOST_AUTO_TEST_CASE( value_chunkserver ) {
 
   using namespace colony::xmlrpc;
 
-  chunkserver_value::value_type chunkservers;
+  typedef chunkserver_value element_type;
+
+  element_type::value_type chunkservers;
   chunkservers.push_back("hostname1");
   chunkservers.push_back("hostname2");
   chunkservers.push_back("hostname3");
 
-  chunkserver_value original(g_swarm, chunkservers);
+  element_type original(g_swarm, chunkservers);
 
   std::string key = original.get_key();
   std::string value = original.get_value();
 
-  chunkserver_value reconstructed(key, value);
+  element_type reconstructed = ValueFactory<element_type>::Raw(key, value);;
   instruction instruction = reconstructed.get_instruction();
 
   BOOST_CHECK_EQUAL(CHUNKSERVER_INSTRUCTION, instruction.get_type());
