@@ -229,6 +229,9 @@ public:
   chunk_value(const std::string& key, const std::string& value) :
     base_value<std::string, chunk_value>(key, value) {};
 
+  chunk_value(const std::string& key) :
+      base_value<std::string, chunk_value>(signature_, key) {};
+
   chunk_value(
       const std::string& filename,
       const size_t chunk_num,
