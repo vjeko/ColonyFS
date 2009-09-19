@@ -10,7 +10,7 @@
 
 #include <boost/noncopyable.hpp>
 
-#include "../xmlrpc/harmony.hpp"
+#include "../../xmlrpc/harmony.hpp"
 
 
 
@@ -25,9 +25,6 @@ struct MetadataDeleter : boost::noncopyable {
   void OnWrite(T* p) {}
 
   void OnFlush(shared_ptr<T> p) {
-
-    std::cout << "<><><><><> " << p->get_key() << std::endl;
-
     accessor_.set_pair(p);
   }
 

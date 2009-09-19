@@ -9,8 +9,8 @@
 #define DATAACCESSOR_HPP_
 
 #include "MetadataAccessor.hpp"
-#include "../intercom/user_harmony.hpp"
-#include "../storage/cache.hpp"
+#include "../../intercom/user_harmony.hpp"
+#include "../cache.hpp"
 
 #include <string>
 #include <boost/noncopyable.hpp>

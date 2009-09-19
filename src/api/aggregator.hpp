@@ -16,17 +16,15 @@
 
 #include "../parsers/user_parser.hpp"
 
-#include "../storage/bridge.hpp"
-#include "../storage/basic_cache.hpp"
-#include "../storage/cache.hpp"
+#include "../cache/cache.hpp"
 
 #include "../storage/chunk_data.hpp"
 #include "../storage/chunk_metadata.hpp"
 
 #include "../intercom/user_harmony.hpp"
 
-#include "../scheduler/DataAccessor.hpp"
-#include "../scheduler/MetadataAccessor.hpp"
+#include "../cache/policy/DataAccessor.hpp"
+#include "../cache/policy/MetadataAccessor.hpp"
 
 #include <algorithm>
 #include <sys/stat.h>

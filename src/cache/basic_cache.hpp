@@ -15,8 +15,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/tuple/tuple_io.hpp>
 
-#include "bridge.hpp"
-
 #include "../debug.hpp"
 #include "../storage/chunk_data.hpp"
 
