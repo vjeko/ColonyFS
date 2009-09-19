@@ -23,8 +23,11 @@
 
 #include "../intercom/user_harmony.hpp"
 
-#include "../cache/policy/DataAccessor.hpp"
-#include "../cache/policy/MetadataAccessor.hpp"
+#include "../cache/policy/DataOnFlush.hpp"
+#include "../cache/policy/MetadataOnFlush.hpp"
+
+#include "../cache/policy/DataWriteThrough.hpp"
+#include "../cache/policy/MetadataWriteThrough.hpp"
 
 #include <algorithm>
 #include <sys/stat.h>
@@ -117,7 +120,7 @@ private:
 
 
 
-  cache<T, MetadataDeleter<T> >       cache_;
+  cache<T, MetadataOnFlush<T> >       cache_;
 };
 
 
@@ -447,7 +450,10 @@ private:
 
 
 
-  cache<value_type, DataDeleter<value_type> >    cache_;
+  cache<
+    value_type,
+    DataOnFlush<value_type>
+  >                                              cache_;
   rlog::RLogChannel                             *sink_log_;
 };
 

@@ -1,12 +1,12 @@
 /*
- * MetadataAccessor.hpp
+ * MetadataOnFlush.hpp
  *
- *  Created on: Sep 17, 2009
+ *  Created on: Sep 19, 2009
  *      Author: vjeko
  */
 
-#ifndef METADATAACCESSOR_HPP_
-#define METADATAACCESSOR_HPP_
+#ifndef METADATAONFLUSH_HPP_
+#define METADATAONFLUSH_HPP_
 
 #include <boost/noncopyable.hpp>
 
@@ -16,9 +16,9 @@
 
 
 template <typename T>
-struct MetadataDeleter : boost::noncopyable {
+struct MetadataOnFlush : boost::noncopyable {
 
-  MetadataDeleter() : accessor_("harmony-test") {}
+  MetadataOnFlush() : accessor_("harmony-test") {}
 
   void OnRead(T* p) {}
 
@@ -34,4 +34,5 @@ struct MetadataDeleter : boost::noncopyable {
 
 };
 
-#endif /* METADATAACCESSOR_HPP_ */
+
+#endif /* METADATAONFLUSH_HPP_ */
