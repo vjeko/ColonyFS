@@ -1,5 +1,5 @@
 
-#include "../api/colonyfs_fusexx.hpp"
+#include "../fuse/colonyfs_fusexx.hpp"
 #include "../debug.hpp"
 
 #include <iostream>

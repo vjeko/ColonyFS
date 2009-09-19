@@ -113,6 +113,7 @@ exe test_encoding :
 
 exe mount.colonyfs :
   exec/mount.colonyfs.cpp
+  [ glob fuse/*.cpp ] 
 
   uledfs
   uledfs_xmlrpc

@@ -1,6 +1,6 @@
 // hello.hpp
 #include "fusexx.hpp"
-#include "aggregator.hpp"
+#include "../api/aggregator.hpp"
 #include "../xmlrpc/attribute.hpp"
 #include "../xmlrpc/values.hpp"
 #include "../debug.hpp"

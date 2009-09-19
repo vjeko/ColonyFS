@@ -13,7 +13,6 @@
 
 #include <xmlrpc-c/girerr.hpp>
 #include <xmlrpc-c/base.hpp>
-#include <xmlrpc-c/client_simple.hpp>
 
 #include <boost/functional/hash.hpp>
 
@@ -51,10 +50,9 @@ bool harmony::put(const std::string& key, const std::string& value) {
   param_list.add(xmlrpc_c::value_nil());
 
   const std::string url("http://barb.cs.washington.edu:36459");
-  xmlrpc_c::clientSimple  client;
   xmlrpc_c::value         result;
 
-  client.call(url, METHOD_CALL, param_list, &result);
+  client_.call(url, METHOD_CALL, param_list, &result);
 
   xmlrpc_c::value_array response(result);
 
@@ -108,10 +106,9 @@ std::string harmony::get(const std::string& key) {
    * a shared object.
    */
   const std::string url("http://barb.cs.washington.edu:36459");
-  xmlrpc_c::clientSimple  client;
   xmlrpc_c::value         result;
 
-  client.call(url, METHOD_CALL, param_list, &result);
+  client_.call(url, METHOD_CALL, param_list, &result);
 
   xmlrpc_c::value_array response(result);
 

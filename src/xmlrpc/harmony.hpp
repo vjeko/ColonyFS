@@ -14,6 +14,7 @@
 
 #include <xmlrpc-c/base.hpp>
 #include "xmlrpc-c/girerr.hpp"
+#include <xmlrpc-c/client_simple.hpp>
 
 #include <string>
 #include <map>
@@ -143,8 +144,10 @@ private:
   void validate();
 
 
-  static const int  port_ = 36459;
-  std::string       url_;
+  xmlrpc_c::clientSimple    client_;
+  static const int          port_ = 36459;
+  std::string               url_;
+
 };
 
 } } // Namespace

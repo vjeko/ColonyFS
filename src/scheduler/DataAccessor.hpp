@@ -34,11 +34,7 @@ struct DataDeleter : boost::noncopyable {
 
   void OnFlush(shared_ptr<T> value) {
     accessor_.deposit_chunk("codered", value);
-
-    std::string key(boost::lexical_cast<std::string>(value->cuid_) + value->uid_);
-
-    shared_ptr<C> p = cache_[key];
-    p->set_mapped("codered");
+    // TODO: Commit chunk metadata.
   }
 
   void OnDone() {
