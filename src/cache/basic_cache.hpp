@@ -29,8 +29,8 @@ class basic_cache {
 
 public:
 
-  typedef typename T::key_type     key_type;
   typedef T                        element_type;
+  typedef typename T::key_type     key_type;
   typedef typename T::value_type   value_type;
 
   typedef std::map<key_type, boost::shared_ptr<element_type> > whole_type;
@@ -80,9 +80,6 @@ public:
     dirty_[key] = value;
     return value;
   }
-
-
-protected:
 
   whole_type whole_;
   dirty_type dirty_;

@@ -15,6 +15,7 @@
 #include "../intercom/user_harmony.hpp"
 
 #include <boost/shared_ptr.hpp>
+#include <boost/bind/protect.hpp>
 #include <boost/asio/io_service.hpp>
 
 
@@ -63,6 +64,8 @@ public:
     return value;
 
   }
+
+  dirty_type d_;
 
   void flush() {
 

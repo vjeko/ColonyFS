@@ -26,9 +26,6 @@
 #include "../cache/policy/DataOnFlush.hpp"
 #include "../cache/policy/MetadataOnFlush.hpp"
 
-#include "../cache/policy/DataWriteThrough.hpp"
-#include "../cache/policy/MetadataWriteThrough.hpp"
-
 #include <algorithm>
 #include <sys/stat.h>
 

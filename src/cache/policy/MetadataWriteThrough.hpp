@@ -24,7 +24,8 @@ struct MetadataWriteThrough : boost::noncopyable {
   void OnRead(T* p) {}
 
   void OnWrite(T* p) {
-    accessor_.set_pair(p, boost::bind(&MetadataWriteThrough::NoOp, this, _1));
+    boost::shared_ptr<T> value(p, boost::bind(&MetadataWriteThrough::NoOp, this, _1));
+    accessor_.set_pair(value);
   }
 
   void OnFlush(shared_ptr<T> p) {}

@@ -8,7 +8,6 @@
 #ifndef CHUNK_HPP_
 #define CHUNK_HPP_
 
-#include "storage.hpp"
 #include "basic_metadata.hpp"
 
 #include <string>

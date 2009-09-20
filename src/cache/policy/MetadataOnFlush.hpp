@@ -10,6 +10,7 @@
 
 #include <boost/noncopyable.hpp>
 
+#include "../cache.hpp"
 #include "../../xmlrpc/harmony.hpp"
 
 
