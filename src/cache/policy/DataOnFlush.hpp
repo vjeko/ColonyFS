@@ -10,11 +10,14 @@
 
 #include "MetadataOnFlush.hpp"
 #include "../../intercom/user_harmony.hpp"
+#include "../../accessor.hpp"
+
 #include "../cache.hpp"
 
 #include <string>
 #include <boost/noncopyable.hpp>
 #include <boost/asio/io_service.hpp>
+#include <boost/pool/singleton_pool.hpp>
 
 
 
@@ -24,7 +27,7 @@ struct DataOnFlush : boost::noncopyable {
 
   typedef colony::xmlrpc::chunk_value C;
 
-  DataOnFlush() : accessor_(io_service_, "harmony-test") {}
+  DataOnFlush() {}
 
   void NoOp(T* p) {}
 
@@ -33,7 +36,7 @@ struct DataOnFlush : boost::noncopyable {
   void OnWrite(T* p) {}
 
   void OnFlush(shared_ptr<T> value) {
-    accessor_.deposit_chunk("codered", value);
+    Client::Instance().deposit_chunk("codered", value);
 
     std::string key(boost::lexical_cast<std::string>(value->cuid_) + value->uid_);
 
@@ -44,14 +47,12 @@ struct DataOnFlush : boost::noncopyable {
   void OnDone() {
     cache_.flush();
 
-    io_service_.reset();
-    io_service_.run();
+    Client::IoService().reset();
+    Client::IoService().run();
   }
 
 
   colony::cache<C, MetadataOnFlush<C> > cache_;
-  boost::asio::io_service io_service_;
-  colony::intercom::user_harmony accessor_;
 };
 
 #endif /* DATAONFLUSH_HPP_ */

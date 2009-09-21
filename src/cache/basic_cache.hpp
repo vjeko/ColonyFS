@@ -81,6 +81,9 @@ public:
     return value;
   }
 
+
+
+
   whole_type whole_;
   dirty_type dirty_;
 

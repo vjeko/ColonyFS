@@ -11,6 +11,8 @@
 #include <boost/noncopyable.hpp>
 
 #include "../cache.hpp"
+
+#include "../../accessor.hpp"
 #include "../../xmlrpc/harmony.hpp"
 
 
@@ -19,20 +21,17 @@
 template <typename T>
 struct MetadataOnFlush : boost::noncopyable {
 
-  MetadataOnFlush() : accessor_("harmony-test") {}
+  MetadataOnFlush() {}
 
   void OnRead(T* p) {}
 
   void OnWrite(T* p) {}
 
   void OnFlush(shared_ptr<T> p) {
-    accessor_.set_pair(p);
+    DHT::Instance().set_pair(p);
   }
 
   void OnDone() {}
-
-  colony::xmlrpc::harmony accessor_;
-
 };
 
 
