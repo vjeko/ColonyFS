@@ -181,10 +181,8 @@ public:
     return result;
   }
 
-  void reconstruct(std::string key, std::string value) {
-    set_key(key);
-    set_value(value);
-  }
+
+
 
   instruction    instruction_;
   std::string    key_;

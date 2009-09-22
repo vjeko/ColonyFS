@@ -32,14 +32,8 @@ struct DataOnFlush : boost::noncopyable {
 
     Client::Instance().retrieve_chunk(hostname, p);
 
-    rDebug("about to run io service...");
-
     Client::IoService().reset();
     Client::IoService().run();
-
-    rDebug("... done running io service.");
-
-    rDebug("Chunk size: %lu", p->data_ptr_->size());
   }
 
   void OnRead(T* p) {}

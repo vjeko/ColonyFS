@@ -10,27 +10,27 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/assert.hpp>
 
 #include "../storage/chunk_data.hpp"
 #include "../xmlrpc/values.hpp"
 
+
+
+
 template<typename T>
 struct ValueFactory {
 
-  static T Reconstruct(std::string key, std::string value) {
-
-    T result;
-    result.reconstruct(key, value);
-
-    return result;
-  }
+  typedef T element_type;
 
 
 
-  static T New(std::string key) {
 
-    T result;
-    result.set_instruction(key);
+  static element_type Reconstruct(std::string key, std::string value) {
+
+    element_type result;
+    result.set_key(key);
+    result.set_value(value);
 
     return result;
   }
@@ -38,9 +38,9 @@ struct ValueFactory {
 
 
 
-  static boost::shared_ptr<T> NewPointer(std::string key) {
+  static boost::shared_ptr<element_type> NewPointer(std::string key) {
 
-    boost::shared_ptr<T> result = boost::make_shared<T>(key);
+    boost::shared_ptr<element_type> result = boost::make_shared<T>();
     result->set_instruction(key);
 
     return result;
@@ -62,7 +62,6 @@ struct ValueFactory<colony::storage::chunk_data> {
   static boost::shared_ptr<element_type> NewPointer(element_type::key_type key) {
 
     return boost::make_shared<element_type>(key);
-
   }
 
 };

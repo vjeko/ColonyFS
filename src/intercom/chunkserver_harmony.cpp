@@ -35,11 +35,12 @@ void chunkserver_harmony::init() {
   std::string                               swarm(parser_.get_swarm());
   chunkserver_value::value_type             chunkservers;
 
-  chunkserver_value chunkserver_info = ValueFactory<chunkserver_value>::New(swarm);
+  boost::shared_ptr<chunkserver_value> chunkserver_info =
+      ValueFactory<chunkserver_value>::NewPointer(swarm);
 
   try {
 
-    dht_.get_value(chunkserver_info);
+    dht_.get_pair(chunkserver_info);
 
   } catch (colony::xmlrpc::key_missing_error& e) {
     // If the swarm is missing, this implies we are the first one joining.
@@ -48,7 +49,7 @@ void chunkserver_harmony::init() {
   }
 
   // Append our hostname to a given value...
-  chunkserver_info.append(hostname);
+  chunkserver_info->append(hostname);
 
   // ... and commit it to Harmony.
   dht_.set_pair(chunkserver_info);
@@ -112,8 +113,8 @@ void chunkserver_harmony::display_data(
 
     colony::storage::deposit_chunk(chunk_ptr, database_);
 
-    rLog(com_chunkserver_harmony_control_, "... (%s)(%d)(...)",
-        chunk_ptr->uid_.c_str(), chunk_ptr->cuid_);
+    rLog(com_chunkserver_harmony_control_, "done: (%s)(%d)(%lu)",
+        chunk_ptr->uid_.c_str(), chunk_ptr->cuid_, chunk_ptr->data_ptr_->size());
 
   } else {
     std::cerr << e.message() << std::endl;
@@ -147,8 +148,7 @@ void chunkserver_harmony::send_data(
     boost::shared_ptr<colony::storage::chunk_data> chunk_ptr;
     chunk_ptr = colony::storage::retrieve_chunk(metadata_ptr, database_);
 
-    rLog(com_chunkserver_harmony_control_, "... done: (%s)(%d)(%lu)",
-        chunk_ptr->uid_.c_str(), chunk_ptr->cuid_, chunk_ptr->data_ptr_->size());
+    rLog(com_chunkserver_harmony_control_, "sending chunk data... ");
 
     conn->async_write(*chunk_ptr,
         boost::bind(&chunkserver_harmony::end, this,
@@ -156,7 +156,8 @@ void chunkserver_harmony::send_data(
             conn)
     );
 
-    rLog(com_chunkserver_harmony_control_, "sending chunk data... ");
+    rLog(com_chunkserver_harmony_control_, "... done: (%s)(%d)(%lu)",
+        chunk_ptr->uid_.c_str(), chunk_ptr->cuid_, chunk_ptr->data_ptr_->size());
 
   } else {
     std::cerr << e.message() << std::endl;
@@ -180,7 +181,7 @@ void chunkserver_harmony::handle_write(
     connection_ptr_t conn) {
 
   if (!e) {
-    rLog(com_chunkserver_harmony_control_, "Done sending the data.");
+    rLog(com_chunkserver_harmony_control_, "done sending the data");
   } else {
     std::cerr << e.message() << std::endl;
   }

@@ -69,8 +69,6 @@ boost::shared_ptr<chunk_data> retrieve_chunk(
   int                      read_size = boost::filesystem::file_size(read_path);
   char                     _buffer[read_size];
 
-  std::cout << "Read Size == " << read_size << std::endl;
-
   boost::filesystem::ifstream
     stream(read_path, std::ios::in | std::ios::binary);
 
@@ -79,8 +77,6 @@ boost::shared_ptr<chunk_data> retrieve_chunk(
 
   boost::shared_ptr<chunk_data::data_type>
   data_ptr(new chunk_data::data_type(_buffer, _buffer + read_size) );
-
-  std::cout << "Read Size == " << data_ptr->size() << std::endl;
 
   return boost::shared_ptr<chunk_data>(new chunk_data(uid, cuid, data_ptr) );
 }
