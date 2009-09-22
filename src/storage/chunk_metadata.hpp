@@ -13,7 +13,6 @@
 #include <string>
 
 #include <boost/array.hpp>
-#include <boost/filesystem.hpp>
 
 #include <boost/serialization/base_object.hpp>
 

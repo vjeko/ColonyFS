@@ -30,7 +30,6 @@ chunkserver_harmony::chunkserver_harmony(
 void chunkserver_harmony::init() {
 
   using xmlrpc::chunkserver_value;
-  using xmlrpc::ValueFactory;
 
   std::string                               hostname(boost::asio::ip::host_name());
   std::string                               swarm(parser_.get_swarm());

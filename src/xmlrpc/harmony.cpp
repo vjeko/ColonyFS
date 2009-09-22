@@ -32,8 +32,6 @@ harmony::~harmony() {}
 
 bool harmony::put(const std::string& key, const std::string& value) {
 
-  std::cout << "=> Raw Key: [" << key << "]" << std::endl;
-
   const xmlrpc_c::value_struct op_param(
       generate_op(key, value)
       );
@@ -83,8 +81,6 @@ bool harmony::put(const std::string& key, const std::string& value) {
 
 
 std::string harmony::get(const std::string& key) {
-
-  std::cout << "<= Raw Key: [" << key << "]" << std::endl;
 
   const xmlrpc_c::value_struct op_param(
       generate_op(key)

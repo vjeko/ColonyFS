@@ -26,6 +26,7 @@
 #include <boost/serialization/vector.hpp>
 
 #include "attribute.hpp"
+#include "../algo/ValueFactory.hpp"
 
 
 
@@ -279,38 +280,6 @@ public:
 
   const static instruction_enum signature_ = ATTRIBUTE_INSTRUCTION;
 };
-
-
-
-template<typename T>
-struct ValueFactory {
-
-
-  static T Raw(std::string key, std::string value) {
-
-    T result;
-    result.reconstruct(key, value);
-
-    return result;
-  }
-
-
-
-
-  static T New(std::string key) {
-
-    T result;
-    result.set_instruction(key);
-
-    return result;
-
-  }
-
-
-
-
-};
-
 
 
 } }

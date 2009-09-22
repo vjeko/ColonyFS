@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE( value_filename ) {
   std::string key = original.get_key();
   std::string value = original.get_value();
 
-  element_type reconstructed = ValueFactory<element_type>::Raw(key, value);
+  element_type reconstructed = ValueFactory<element_type>::Reconstruct(key, value);
   instruction instruction = reconstructed.get_instruction();
 
   BOOST_CHECK_EQUAL(FILENAME_INSTRUCTION, instruction.get_type());
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE( value_chunk ) {
   std::string key = original.get_key();
   std::string value = original.get_value();
 
-  element_type reconstructed = ValueFactory<element_type>::Raw(key, value);;
+  element_type reconstructed = ValueFactory<element_type>::Reconstruct(key, value);;
   instruction instruction = reconstructed.get_instruction();
 
   std::string argument = boost::lexical_cast<std::string>(g_chunk_num) + g_filename;
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE( value_chunkserver ) {
   std::string key = original.get_key();
   std::string value = original.get_value();
 
-  element_type reconstructed = ValueFactory<element_type>::Raw(key, value);;
+  element_type reconstructed = ValueFactory<element_type>::Reconstruct(key, value);;
   instruction instruction = reconstructed.get_instruction();
 
   BOOST_CHECK_EQUAL(CHUNKSERVER_INSTRUCTION, instruction.get_type());

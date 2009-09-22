@@ -47,11 +47,11 @@ public:
   const boost::shared_ptr<value_type>
   operator()(const key_type key) {
 
-    boost::shared_ptr<T> value;
+    boost::shared_ptr<T> value = ValueFactory<T>::NewPointer(key);
 
     try {
       rDebug("Reading data from the remote server.");
-      value = policy_.PreRead(key);
+      policy_.PreRead(value);
     } catch(colony::lookup_e& e) {
       rDebug("Reading data from the cache.");
       value = cache_impl_.read(key);

@@ -94,7 +94,7 @@ public:
     value_t  value  = get(key);
 
 
-    return ValueFactory<T>::Raw(key, value);
+    return ValueFactory<T>::Reconstruct(key, value);
   }
 
   template <typename T>
@@ -102,7 +102,7 @@ public:
 
     value_t raw_value = get(raw_key);
 
-    return ValueFactory<T>::Raw(raw_key, raw_value);
+    return ValueFactory<T>::Reconstruct(raw_key, raw_value);
   }
 
   template <typename T>

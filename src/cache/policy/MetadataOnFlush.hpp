@@ -23,17 +23,12 @@ struct MetadataOnFlush : boost::noncopyable {
 
   MetadataOnFlush() {}
 
-  shared_ptr<T> PreRead(typename T::key_type key) {
-
-    shared_ptr<T> p(new T);
-    p->set_key(key);
-
+  void PreRead(shared_ptr<T> p) {
 
     try {
 
       DHT::Instance().get_pair(p);
       rInfo("Value found!");
-      return p;
 
     } catch (colony::xmlrpc::key_missing_error& e) {
       throw colony::lookup_e();

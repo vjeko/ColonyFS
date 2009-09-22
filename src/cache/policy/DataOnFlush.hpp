@@ -27,8 +27,7 @@ struct DataOnFlush : boost::noncopyable {
 
   void NoOp(T* p) {}
 
-  shared_ptr<T> PreRead(typename T::key_type key) {
-    shared_ptr<T> p(new T(key));
+  void PreRead(shared_ptr<T> p) {
     std::string hostname("codered");
 
     Client::Instance().retrieve_chunk(hostname, p);
@@ -41,8 +40,6 @@ struct DataOnFlush : boost::noncopyable {
     rDebug("... done running io service.");
 
     rDebug("Chunk size: %lu", p->data_ptr_->size());
-
-    return p;
   }
 
   void OnRead(T* p) {}
