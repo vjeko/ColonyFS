@@ -148,16 +148,16 @@ void chunkserver_harmony::send_data(
     boost::shared_ptr<colony::storage::chunk_data> chunk_ptr;
     chunk_ptr = colony::storage::retrieve_chunk(metadata_ptr, database_);
 
-    rLog(com_chunkserver_harmony_control_, "sending chunk data... ");
+    std::cout << "POOP" << std::endl;
+
+    rLog(com_chunkserver_harmony_control_, "sending data: (%s)(%d)(%lu)",
+        chunk_ptr->uid_.c_str(), chunk_ptr->cuid_, chunk_ptr->data_ptr_->size());
 
     conn->async_write(*chunk_ptr,
         boost::bind(&chunkserver_harmony::end, this,
             boost::asio::placeholders::error,
             conn)
     );
-
-    rLog(com_chunkserver_harmony_control_, "... done: (%s)(%d)(%lu)",
-        chunk_ptr->uid_.c_str(), chunk_ptr->cuid_, chunk_ptr->data_ptr_->size());
 
   } else {
     std::cerr << e.message() << std::endl;

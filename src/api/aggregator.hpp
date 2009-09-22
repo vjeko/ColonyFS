@@ -77,7 +77,7 @@ public:
 
 
   inline shared_ptr<T> operator()(const key_type& key) {
-    return cache_(T::get_signature(key));
+    return cache_(key);
   }
 
 
