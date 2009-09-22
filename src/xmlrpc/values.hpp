@@ -67,11 +67,11 @@ public:
         type_(type), argument_(argument) {}
 
 
-  instruction_enum get_type() {
+  instruction_enum get_type() const {
     return type_;
   }
 
-  std::string get_argument() {
+  std::string get_argument() const {
     return argument_;
   }
 
@@ -126,7 +126,7 @@ public:
     return mapped_;
   }
 
-  const instruction&       get_instruction() {
+  instruction&       get_instruction() {
     return instruction_;
   }
 

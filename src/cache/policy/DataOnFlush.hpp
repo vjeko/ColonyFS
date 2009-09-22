@@ -8,16 +8,12 @@
 #ifndef DATAONFLUSH_HPP_
 #define DATAONFLUSH_HPP_
 
+#include <boost/noncopyable.hpp>
+
 #include "MetadataOnFlush.hpp"
-#include "../../intercom/user_harmony.hpp"
-#include "../../accessor.hpp"
 
 #include "../cache.hpp"
-
-#include <string>
-#include <boost/noncopyable.hpp>
-#include <boost/asio/io_service.hpp>
-#include <boost/pool/singleton_pool.hpp>
+#include "../../accessor.hpp"
 
 
 
@@ -31,17 +27,38 @@ struct DataOnFlush : boost::noncopyable {
 
   void NoOp(T* p) {}
 
+  shared_ptr<T> PreRead(typename T::key_type key) {
+    shared_ptr<T> p(new T(key));
+    std::string hostname("codered");
+
+    Client::Instance().retrieve_chunk(hostname, p);
+
+    rDebug("about to run io service...");
+
+    Client::IoService().reset();
+    Client::IoService().run();
+
+    rDebug("... done running io service.");
+
+    rDebug("Chunk size: %lu", p->data_ptr_->size());
+
+    return p;
+  }
+
   void OnRead(T* p) {}
 
   void OnWrite(T* p) {}
 
-  void OnFlush(shared_ptr<T> value) {
-    Client::Instance().deposit_chunk("codered", value);
+  void OnFlush(shared_ptr<T> p) {
 
-    std::string key(boost::lexical_cast<std::string>(value->cuid_) + value->uid_);
+    const std::string hostname("codered");
+
+    Client::Instance().deposit_chunk(hostname, p);
+
+    std::string key(boost::lexical_cast<std::string>(p->cuid_) + p->uid_);
 
     shared_ptr<C> chunk_info = cache_[key];
-    chunk_info->set_mapped("codered");
+    chunk_info->set_mapped(hostname);
   }
 
   void OnDone() {

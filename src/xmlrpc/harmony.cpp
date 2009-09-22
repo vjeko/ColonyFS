@@ -6,6 +6,7 @@
  */
 
 #include "harmony.hpp"
+#include "../debug.hpp"
 
 #include <iostream>
 #include <vector>
@@ -30,6 +31,8 @@ harmony::~harmony() {}
 
 
 bool harmony::put(const std::string& key, const std::string& value) {
+
+  std::cout << "=> Raw Key: [" << key << "]" << std::endl;
 
   const xmlrpc_c::value_struct op_param(
       generate_op(key, value)
@@ -80,6 +83,8 @@ bool harmony::put(const std::string& key, const std::string& value) {
 
 
 std::string harmony::get(const std::string& key) {
+
+  std::cout << "<= Raw Key: [" << key << "]" << std::endl;
 
   const xmlrpc_c::value_struct op_param(
       generate_op(key)
@@ -148,6 +153,8 @@ std::map<std::string, xmlrpc_c::value> harmony::generate_op(
 
   boost::hash<std::string> string_hash;
   const size_t hash = string_hash(key);
+
+  rInfo("Hash: %lu", hash);
 
   std::map<std::string, xmlrpc_c::value> op_param_map;
   op_param_map[XML_KEY_TAG] = xmlrpc_c::value_int(hash);

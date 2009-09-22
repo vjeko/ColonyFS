@@ -44,14 +44,22 @@ chunk_data::chunk_data(
     boost::shared_ptr<data_type>     data_ptr) :
 
       chunk_metadata(uid, cuid),
-      data_ptr_(data_ptr.get()) {}
+          data_ptr_(new data_type){
+
+  (*data_ptr_) = (*data_ptr);
+
+}
 
 chunk_data::chunk_data(
     chunk_metadata                  metadata,
     boost::shared_ptr<data_type>    data_ptr) :
 
       chunk_metadata(metadata),
-      data_ptr_(data_ptr.get()) {}
+      data_ptr_(new data_type){
+
+  (*data_ptr_) = (*data_ptr);
+
+}
 
 chunk_data::~chunk_data() {
 	// TODO Auto-generated destructor stub

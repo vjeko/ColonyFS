@@ -47,14 +47,18 @@ public:
   const boost::shared_ptr<value_type>
   operator()(const key_type key) {
 
-    boost::shared_ptr<T> value = cache_impl_.read(key);
-    boost::shared_ptr<T>
-    dummy(
-        value.get(),
-        boost::bind(&Policy::OnRead, &policy_, _1)
-    );
+    boost::shared_ptr<T> value;
 
-    return dummy;
+    try {
+      rDebug("Reading data from the remote server.");
+      value = policy_.PreRead(key);
+    } catch(colony::lookup_e& e) {
+      rDebug("Reading data from the cache.");
+      value = cache_impl_.read(key);
+
+    }
+
+    return value;
   }
 
 

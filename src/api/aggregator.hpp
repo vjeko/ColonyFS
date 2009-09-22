@@ -81,8 +81,6 @@ public:
   }
 
 
-
-
   inline void commit(shared_ptr<T> pair) {
     shared_ptr<T> hit = cache_[pair->get_key()];
     (*hit) = (*pair);

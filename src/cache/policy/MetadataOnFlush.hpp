@@ -11,9 +11,9 @@
 #include <boost/noncopyable.hpp>
 
 #include "../cache.hpp"
-
 #include "../../accessor.hpp"
-#include "../../xmlrpc/harmony.hpp"
+
+#include <sstream>
 
 
 
@@ -22,6 +22,23 @@ template <typename T>
 struct MetadataOnFlush : boost::noncopyable {
 
   MetadataOnFlush() {}
+
+  shared_ptr<T> PreRead(typename T::key_type key) {
+
+    shared_ptr<T> p(new T);
+    p->set_key(key);
+
+
+    try {
+
+      DHT::Instance().get_pair(p);
+      rInfo("Value found!");
+      return p;
+
+    } catch (colony::xmlrpc::key_missing_error& e) {
+      throw colony::lookup_e();
+    }
+  }
 
   void OnRead(T* p) {}
 

@@ -36,7 +36,9 @@ colonyfs_fusexx::colonyfs_fusexx() {
 
 
   // Commit.
+  DHT::Instance().set_pair(pair);
   metadata_sink_.commit(pair);
+  metadata_sink_.flush();
 
 }
 
@@ -389,6 +391,8 @@ int colonyfs_fusexx::read(
   shared_ptr<attribute_value> pair = metadata_sink_( full.string() );
   fattribute& attribute = pair->get_mapped();
 
+  std::cout << "READ: " <<  pair->get_key() << std::endl;
+
 
   // TODO: Figure out size_t/off_t inconsistency.
   size_t length = attribute.stbuf.st_size;
@@ -530,7 +534,6 @@ int colonyfs_fusexx::create(
   // Register the new file with its parent.
   shared_ptr<attribute_value> parent_pair = metadata_sink_( branch.string() );
   fattribute& parent_attribute = parent_pair->get_mapped();
-
 
   parent_attribute.list.push_back(leaf.string());
 

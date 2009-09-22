@@ -98,18 +98,23 @@ public:
   }
 
   template <typename T>
-  T get_value (std::string key) {
+  T get_value (std::string raw_key) {
 
-    const std::string raw_key = T::get_signature(key);
-    value_t value = get(raw_key);
+    value_t raw_value = get(raw_key);
 
-    return ValueFactory<T>::Raw(key, value);
+    return ValueFactory<T>::Raw(raw_key, raw_value);
   }
 
   template <typename T>
   void get_value (T& pair) {
     value_t raw_value = get(pair.get_key());
     pair.set_value(raw_value);
+  }
+
+  template <typename T>
+  void get_pair (boost::shared_ptr<T> pair) {
+    value_t raw_value = get(pair->get_key());
+    pair->set_value(raw_value);
   }
 
   template <typename T>
