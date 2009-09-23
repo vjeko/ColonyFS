@@ -12,6 +12,7 @@
 #include "MetadataOnFlush.hpp"
 #include "../../intercom/user_harmony.hpp"
 #include "../cache.hpp"
+#include "../../algo/CSScheduler.hpp"
 
 #include <string>
 #include <boost/noncopyable.hpp>
@@ -35,7 +36,7 @@ struct DataWriteThrough : boost::noncopyable {
 
   void OnFlush(shared_ptr<T> value) {
 
-    const std::string hostname("codered");
+    const std::string hostname = colony::CSScheduler::GetCS();
 
     Client::Intance().deposit_chunk(hostname, value);
 

@@ -56,6 +56,10 @@ public:
     ar & data_ptr_;
   }
 
+  key_type get_key() {
+    return key_type(uid_, cuid_);
+  }
+
   boost::scoped_ptr<data_type>    data_ptr_;
 };
 

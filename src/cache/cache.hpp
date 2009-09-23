@@ -50,12 +50,11 @@ public:
     boost::shared_ptr<T> value = ValueFactory<T>::NewPointer(key);
 
     try {
-      rDebug("Reading data from the remote server.");
+      rDebug("Contacting the remote resource.");
       policy_.PreRead(value);
     } catch(colony::lookup_e& e) {
-      rDebug("Reading data from the cache.");
-      value = cache_impl_.read(key);
-
+      rWarning("Nothing found -- trying the cache.");
+      value = cache_impl_.read(value->get_key());
     }
 
     return value;
@@ -74,8 +73,7 @@ public:
         boost::bind(&Policy::OnWrite, &policy_, _1)
     );
 
-    return value;
-
+    return dummy;
   }
 
 

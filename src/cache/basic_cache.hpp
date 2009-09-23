@@ -43,12 +43,16 @@ public:
   const boost::shared_ptr<element_type>
   read(const key_type key) {
 
+    std::cout << "Read <<< " << key << std::endl;
+
     boost::shared_ptr<element_type> value;
 
     typename whole_type::iterator it = whole_.find(key);
 
     if (it == whole_.end()) {
 
+      // FIXME: New exception!
+      rError("Nothing in the base cache?");
       throw colony::lookup_e();
 
     } else {
@@ -63,6 +67,8 @@ public:
 
   const boost::shared_ptr<element_type>
   mutate(const key_type key) {
+
+    std::cout << "Mutate >>> " << key << std::endl;
 
     boost::shared_ptr<element_type> value;
 

@@ -510,6 +510,9 @@ int colonyfs_fusexx::create(
   if (!validate_path(leaf)) return -ENAMETOOLONG;
 
 
+  rLog(fuse_control_, "create: %s", full.string().c_str());
+
+
   // Create the attribute for the new file.
   shared_ptr<attribute_value> pair = make_shared<attribute_value>( full.string() );
   fattribute& attribute = pair->get_mapped();
@@ -526,9 +529,6 @@ int colonyfs_fusexx::create(
 
   // Commit.
   metadata_sink_.commit(pair);
-
-
-  rLog(fuse_control_, "create: %s", full.string().c_str());
 
 
   // Register the new file with its parent.

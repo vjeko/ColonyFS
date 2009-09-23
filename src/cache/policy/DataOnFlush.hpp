@@ -14,6 +14,7 @@
 
 #include "../cache.hpp"
 #include "../../accessor.hpp"
+#include "../../algo/CSScheduler.hpp"
 
 
 
@@ -28,7 +29,8 @@ struct DataOnFlush : boost::noncopyable {
   void NoOp(T* p) {}
 
   void PreRead(shared_ptr<T> p) {
-    std::string hostname("codered");
+
+    const std::string hostname = colony::CSScheduler::GetCS();
 
     Client::Instance().retrieve_chunk(hostname, p);
 
@@ -42,7 +44,7 @@ struct DataOnFlush : boost::noncopyable {
 
   void OnFlush(shared_ptr<T> p) {
 
-    const std::string hostname("codered");
+    const std::string hostname = colony::CSScheduler::GetCS();
 
     Client::Instance().deposit_chunk(hostname, p);
 
