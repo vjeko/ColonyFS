@@ -34,13 +34,5 @@ network_db::range_iterator network_db::find_chunk(
   return metadata_set.equal_range(boost::make_tuple(uid, cuid));
 }
 
-void network_db::print() {
 
-  _db_impl::const_iterator it;
-  for (it = database.begin(); it != database.end(); ++it) {
-    it->print();
-  }
-
-} }
-
-} // Namespace
+} } // Namespace

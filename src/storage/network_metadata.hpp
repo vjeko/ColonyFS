@@ -36,10 +36,6 @@ struct network_metadata : basic_metadata {
 
   host_type   host_;
 
-  void print() const {
-    printf("%8s | %4d | %8s\n", uid_.c_str(), cuid_, host_.c_str() );
-  }
-
 };
 
 } } // Namespace
