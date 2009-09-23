@@ -65,20 +65,23 @@ boost::shared_ptr<chunk_data> retrieve_chunk(
     const chunk_metadata::cuid_type cuid,
     const db& database) {
 
-  boost::filesystem::path  read_path(database(uid)(cuid));
-  int                      read_size = boost::filesystem::file_size(read_path);
-  char                     _buffer[read_size];
+  const std::string p = database(uid)(cuid);
+  const boost::filesystem::path  read_path(p);
 
-  boost::filesystem::ifstream
-    stream(read_path, std::ios::in | std::ios::binary);
+  ptrdiff_t                read_size = boost::filesystem::file_size(read_path);
 
-  stream.read(_buffer, read_size);
+  boost::filesystem::ifstream stream(read_path, std::ios::in | std::ios::binary);
+
+  boost::shared_ptr<chunk_data> chunk_ptr = boost::make_shared<chunk_data>(uid, cuid);
+  chunk_ptr->data_ptr_->resize(read_size);
+
+  ptrdiff_t bytes_read = stream.readsome(&chunk_ptr->data_ptr_->front(), read_size);
+
+  BOOST_ASSERT(bytes_read == read_size);
+
   stream.close();
 
-  boost::shared_ptr<chunk_data::data_type>
-  data_ptr(new chunk_data::data_type(_buffer, _buffer + read_size) );
-
-  return boost::shared_ptr<chunk_data>(new chunk_data(uid, cuid, data_ptr) );
+  return chunk_ptr;
 }
 
 } } // namespace

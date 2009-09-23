@@ -34,10 +34,10 @@ public:
   num_of_chunks_type get_num_of_chunks() const;
 
   cuid_map_type::mapped_type& operator[](
-      const chunk_metadata::cuid_type& cuid);
+      const chunk_metadata::cuid_type cuid);
 
-  const cuid_map_type::mapped_type& operator()(
-      const chunk_metadata::cuid_type& cuid) const;
+  const cuid_map_type::mapped_type operator()(
+      const chunk_metadata::cuid_type cuid) const;
 
 private:
 

@@ -45,15 +45,21 @@ void db::save_chunk(
     const db::representation_type& representation) {
 
   (*this)[metadata.uid_][metadata.cuid_] = representation;
+
+  std::cout << "PUT: " << representation << std::endl;
+  std::cout << (*this)(metadata.uid_)(metadata.cuid_) << std::endl;;
+
 }
 
-db::representation_type db::load_chunk(
+const db::representation_type db::load_chunk(
     const chunk_metadata::uid_type uid,
     const chunk_metadata::cuid_type cuid) const {
+
+  std::cout << "GET: " << (*this)(uid)(cuid) << std::endl;
   return (*this)(uid)(cuid);
 }
 
-db::representation_type db::load_chunk(const chunk_metadata metadata) const {
+const db::representation_type db::load_chunk(const chunk_metadata metadata) const {
   return (*this)(metadata.uid_)(metadata.cuid_);
 }
 

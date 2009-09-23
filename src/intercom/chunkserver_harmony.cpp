@@ -12,6 +12,8 @@
 #include "../storage/chunk_data.hpp"
 #include "../storage/util.hpp"
 
+#include "../exceptions.hpp"
+
 namespace colony {
 
 namespace intercom {
@@ -147,8 +149,6 @@ void chunkserver_harmony::send_data(
 
     boost::shared_ptr<colony::storage::chunk_data> chunk_ptr;
     chunk_ptr = colony::storage::retrieve_chunk(metadata_ptr, database_);
-
-    std::cout << "POOP" << std::endl;
 
     rLog(com_chunkserver_harmony_control_, "sending data: (%s)(%d)(%lu)",
         chunk_ptr->uid_.c_str(), chunk_ptr->cuid_, chunk_ptr->data_ptr_->size());

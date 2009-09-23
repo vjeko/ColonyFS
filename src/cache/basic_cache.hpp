@@ -16,13 +16,12 @@
 #include <boost/tuple/tuple_io.hpp>
 
 #include "../debug.hpp"
+#include "../exceptions.hpp"
 #include "../storage/chunk_data.hpp"
 
 #include <boost/smart_ptr.hpp>
 
 namespace colony {
-
-class lookup_e : public boost::exception {};
 
 template<typename T>
 class basic_cache {
@@ -43,17 +42,14 @@ public:
   const boost::shared_ptr<element_type>
   read(const key_type key) {
 
-    std::cout << "Read <<< " << key << std::endl;
-
     boost::shared_ptr<element_type> value;
 
     typename whole_type::iterator it = whole_.find(key);
 
     if (it == whole_.end()) {
 
-      // FIXME: New exception!
-      rError("Nothing in the base cache?");
-      throw colony::lookup_e();
+      rWarning("Value not in the cache!");
+      throw colony::cache_miss_e();
 
     } else {
       value = it->second;
@@ -67,8 +63,6 @@ public:
 
   const boost::shared_ptr<element_type>
   mutate(const key_type key) {
-
-    std::cout << "Mutate >>> " << key << std::endl;
 
     boost::shared_ptr<element_type> value;
 

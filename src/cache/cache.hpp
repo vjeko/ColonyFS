@@ -50,11 +50,13 @@ public:
     boost::shared_ptr<T> value = ValueFactory<T>::NewPointer(key);
 
     try {
-      rDebug("Contacting the remote resource.");
-      policy_.PreRead(value);
-    } catch(colony::lookup_e& e) {
-      rWarning("Nothing found -- trying the cache.");
+
       value = cache_impl_.read(value->get_key());
+
+    } catch(colony::cache_miss_e& e) {
+
+      policy_.PreRead(value);
+
     }
 
     return value;

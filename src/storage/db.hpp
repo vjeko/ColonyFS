@@ -35,11 +35,11 @@ public:
       const chunk_metadata& metadata,
       const representation_type& representation);
 
-  representation_type load_chunk(
+  const representation_type load_chunk(
       const chunk_metadata::uid_type uid,
       const chunk_metadata::cuid_type cuid) const;
 
-  representation_type load_chunk(const chunk_metadata metadata) const;
+  const representation_type load_chunk(const chunk_metadata metadata) const;
 
   file::num_of_chunks_type get_num_of_chunks(
       const chunk_metadata::uid_type& uid) const;

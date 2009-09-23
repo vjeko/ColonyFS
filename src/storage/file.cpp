@@ -28,13 +28,13 @@ file::num_of_chunks_type file::get_num_of_chunks() const {
 }
 
 file::cuid_map_type::mapped_type& file::operator[](
-    const chunk_metadata::cuid_type& cuid) {
+    const chunk_metadata::cuid_type cuid) {
   if (cuid + 1 > num_of_chunks_) num_of_chunks_ = cuid + 1;
   return cuid_map_[cuid];
 }
 
-const file::cuid_map_type::mapped_type& file::operator()(
-    const chunk_metadata::cuid_type& cuid) const {
+const file::cuid_map_type::mapped_type file::operator()(
+    const chunk_metadata::cuid_type cuid) const {
 
   cuid_map_type::const_iterator
     chunk_iterator = cuid_map_.find(cuid);

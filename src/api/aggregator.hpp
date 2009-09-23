@@ -411,6 +411,8 @@ private:
       size_t chunk_delta
       ) {
 
+    BOOST_ASSERT(source->data_ptr_->size() >= chunk_delta);
+
     colony::storage::chunk_data::data_type& chunk_buffer = *(source->data_ptr_);
     memcpy(destination + destination_offset, &chunk_buffer[source_offset], chunk_delta);
 
@@ -438,7 +440,9 @@ private:
 
     colony::storage::basic_metadata::key_type key(filepath.string(), count);
 
-    return cache_(key);
+    const shared_ptr<colony::storage::chunk_data> result = cache_(key);
+
+    return result;
 
   }
 
