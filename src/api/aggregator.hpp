@@ -76,9 +76,24 @@ public:
 
 
 
+  void operator()(shared_ptr<T> value) {
+    cache_(value);
+  }
+
+
+
+  void operator[](shared_ptr<T> value) {
+    cache_[value];
+  }
+
+
+
+
   inline shared_ptr<T> operator()(const key_type& key) {
     return cache_(key);
   }
+
+
 
 
   inline void commit(shared_ptr<T> pair) {
@@ -150,6 +165,15 @@ public:
     return implementation_(key);
   }
 
+
+  void operator()(const shared_ptr<T> value) {
+    implementation_(value);
+  }
+
+
+  void operator[](shared_ptr<T> value) {
+    implementation_[value];
+  }
 
 
 

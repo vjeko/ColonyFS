@@ -65,7 +65,25 @@ public:
 
 
 
-  const boost::shared_ptr<value_type>
+  void operator()(shared_ptr<T> value) {
+
+    cache_impl_.read(value);
+
+  }
+
+
+
+
+
+  void operator[](shared_ptr<T> value) {
+
+    cache_impl_.mutate(value);
+
+  }
+
+
+
+  const shared_ptr<value_type>
   operator[](const key_type key) {
 
     boost::shared_ptr<T> value = cache_impl_.mutate(key);

@@ -60,6 +60,47 @@ public:
 
 
 
+  void read(shared_ptr<element_type> value) {
+
+    typename element_type::key_type key = value->get_key();
+    typename whole_type::iterator it = whole_.find(key);
+
+    if (it == whole_.end()) {
+
+      rWarning("Value not in the cache!");
+      throw colony::cache_miss_e();
+
+    } else {
+
+      value = it->second;
+
+    }
+
+  }
+
+
+
+  void mutate(shared_ptr<T> value) {
+
+    typename T::key_type key = value->get_key();
+    typename whole_type::iterator it = whole_.find(key);
+
+    if (it == whole_.end()) {
+
+      whole_[key] = value;
+
+    } else {
+
+      value = it->second;
+
+    }
+
+    dirty_[key] = value;
+
+  }
+
+
+
 
   const boost::shared_ptr<element_type>
   mutate(const key_type key) {
