@@ -39,28 +39,8 @@ public:
   basic_cache() {}
   virtual ~basic_cache() {}
 
-  const boost::shared_ptr<element_type>
-  read(const key_type key) {
 
-    boost::shared_ptr<element_type> value;
-
-    typename whole_type::iterator it = whole_.find(key);
-
-    if (it == whole_.end()) {
-
-      rWarning("Value not in the cache!");
-      throw colony::cache_miss_e();
-
-    } else {
-      value = it->second;
-    }
-
-    return value;
-  }
-
-
-
-  void read(shared_ptr<element_type> value) {
+  void read(shared_ptr<T> value) {
 
     typename element_type::key_type key = value->get_key();
     typename whole_type::iterator it = whole_.find(key);
@@ -72,7 +52,7 @@ public:
 
     } else {
 
-      value = it->second;
+      (*value) = (*whole_[key]);
 
     }
 
@@ -85,17 +65,18 @@ public:
     typename T::key_type key = value->get_key();
     typename whole_type::iterator it = whole_.find(key);
 
+
     if (it == whole_.end()) {
 
-      whole_[key] = value;
+      whole_[key] = boost::shared_ptr<T>(value);
 
     } else {
 
-      value = it->second;
+      value = boost::shared_ptr<T>(it->second);
 
     }
 
-    dirty_[key] = value;
+    dirty_[key] = boost::shared_ptr<T>(value);
 
   }
 
@@ -119,6 +100,28 @@ public:
     }
 
     dirty_[key] = value;
+    return value;
+  }
+
+
+
+
+  const boost::shared_ptr<element_type>
+  read(const key_type key) {
+
+    boost::shared_ptr<element_type> value;
+
+    typename whole_type::iterator it = whole_.find(key);
+
+    if (it == whole_.end()) {
+
+      rWarning("Value not in the cache!");
+      throw colony::cache_miss_e();
+
+    } else {
+      value = it->second;
+    }
+
     return value;
   }
 

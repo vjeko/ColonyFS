@@ -20,9 +20,15 @@ colonyfs_fusexx::colonyfs_fusexx() {
 
   boost::filesystem::path root("/");
 
+  std::cout << "INITIALIZING!" << std::endl;
+
   // Create the attribute associated with the root directory.
   shared_ptr<attribute_value> pair = ValueFactory<attribute_value>::NewPointer( root.string() );
+  std::cout << "++ Count: " << pair.use_count() << std::endl;
+
   metadata_sink_[pair];
+
+  std::cout << "++ Count After: " << pair.use_count() << std::endl;
 
   fattribute& attribute = pair->get_mapped();
 
@@ -439,9 +445,18 @@ int colonyfs_fusexx::getattr(const char *filepath, struct stat *stat) {
 
     // Retrieve the attribute for the file path.
     shared_ptr<attribute_value> pair = ValueFactory<attribute_value>::NewPointer( full.string() );
+
+    std::cout << "Count: " << pair.use_count() << std::endl;
+
     metadata_sink_(pair);
 
+    std::cout << "Count After: " << pair.use_count() << std::endl;
+
+
+
     const fattribute& attribute = pair->get_mapped();
+
+    printf("NLINK: %lu\n", attribute.stbuf.st_nlink );
 
     memset(stat, 0, sizeof(struct stat));
     memcpy(stat, &attribute.stbuf, sizeof(struct stat));

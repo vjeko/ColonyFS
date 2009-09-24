@@ -77,7 +77,11 @@ public:
 
 
   void operator()(shared_ptr<T> value) {
-    cache_(value);
+    try {
+      cache_(value);
+    } catch(colony::cache_miss_e& e) {
+      throw colony::lookup_e();
+    }
   }
 
 

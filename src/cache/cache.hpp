@@ -43,31 +43,17 @@ public:
 
 
 
-
-  const boost::shared_ptr<value_type>
-  operator()(const key_type key) {
-
-    boost::shared_ptr<T> value = ValueFactory<T>::NewPointer(key);
+  void operator()(shared_ptr<T> value) {
 
     try {
 
-      value = cache_impl_.read(value->get_key());
+      cache_impl_.read(value);
 
     } catch(colony::cache_miss_e& e) {
 
       policy_.PreRead(value);
 
     }
-
-    return value;
-  }
-
-
-
-
-  void operator()(shared_ptr<T> value) {
-
-    cache_impl_.read(value);
 
   }
 
@@ -94,6 +80,27 @@ public:
     );
 
     return dummy;
+  }
+
+
+
+
+  const boost::shared_ptr<value_type>
+  operator()(const key_type key) {
+
+    boost::shared_ptr<T> value = ValueFactory<T>::NewPointer(key);
+
+    try {
+
+      value = cache_impl_.read(value->get_key());
+
+    } catch(colony::cache_miss_e& e) {
+
+      policy_.PreRead(value);
+
+    }
+
+    return value;
   }
 
 
