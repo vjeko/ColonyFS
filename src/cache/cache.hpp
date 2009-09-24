@@ -43,47 +43,6 @@ public:
 
 
 
-  void operator()(shared_ptr<T> value) {
-
-    try {
-
-      cache_impl_.read(value);
-
-    } catch(colony::cache_miss_e& e) {
-
-      policy_.PreRead(value);
-
-    }
-
-  }
-
-
-
-
-
-  void operator[](shared_ptr<T> value) {
-
-    cache_impl_.mutate(value);
-
-  }
-
-
-
-  const shared_ptr<value_type>
-  operator[](const key_type key) {
-
-    boost::shared_ptr<T> value = cache_impl_.mutate(key);
-    boost::shared_ptr<T>
-    dummy(
-        value.get(),
-        boost::bind(&Policy::OnWrite, &policy_, _1)
-    );
-
-    return dummy;
-  }
-
-
-
 
   const boost::shared_ptr<value_type>
   operator()(const key_type key) {
@@ -101,6 +60,22 @@ public:
     }
 
     return value;
+  }
+
+
+
+
+  const boost::shared_ptr<value_type>
+  operator[](const key_type key) {
+
+    boost::shared_ptr<T> value = cache_impl_.mutate(key);
+    boost::shared_ptr<T>
+    dummy(
+        value.get(),
+        boost::bind(&Policy::OnWrite, &policy_, _1)
+    );
+
+    return dummy;
   }
 
 
