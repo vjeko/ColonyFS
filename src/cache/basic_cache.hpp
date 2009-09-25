@@ -39,10 +39,40 @@ public:
   basic_cache() {}
   virtual ~basic_cache() {}
 
-  const boost::shared_ptr<element_type>
-  read(const key_type key) {
 
-    boost::shared_ptr<element_type> value;
+
+  void insert(shared_ptr<T>& value) {
+
+    const key_type key = value->get_key();
+
+    /*
+     * When using a default constructor (such as with STL containers),
+     * the use count is zero. This means we must not use reset, but
+     * instead we have to resort to a copy constructor, which will set the
+     * use count to one and validate the pointer.
+     */
+    whole_[key] = shared_ptr<T>(value.get());
+
+  }
+
+
+
+
+  /* Label that entry as dirty. */
+  void set_dirty(shared_ptr<T>& value) {
+
+    const key_type key = value->get_key();
+
+    dirty_[key] = whole_[key];
+
+  }
+
+
+
+
+  void read(shared_ptr<T>& value) {
+
+    const key_type key = value->get_key();
 
     typename whole_type::iterator it = whole_.find(key);
 
@@ -52,33 +82,23 @@ public:
       throw colony::cache_miss_e();
 
     } else {
-      value = it->second;
+
+      /*
+       * Reset the value while retaining the use count and the deleter.
+       * However, make sure to validate the pointer.
+       *
+       * Also, we have to make sure not to interfere with the underlying
+       * cache implementation. Thus, only <reset(shared_ptr<T>, T*)> can
+       * be used.
+       */
+      value.reset(value, it->second.get());
+
     }
 
-    return value;
-  }
+    /* Let's make sure that everything is in order. */
+    BOOST_ASSERT(whole_[key].use_count() != 0);
+    BOOST_ASSERT(value.use_count() != 0);
 
-
-
-
-  const boost::shared_ptr<element_type>
-  mutate(const key_type key) {
-
-    boost::shared_ptr<element_type> value;
-
-    typename whole_type::iterator it = whole_.find(key);
-
-    if (it == whole_.end()) {
-
-      value = boost::shared_ptr<element_type>(new element_type(key));
-      whole_[key] = value;
-
-    } else {
-      value = it->second;
-    }
-
-    dirty_[key] = value;
-    return value;
   }
 
 

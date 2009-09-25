@@ -36,11 +36,20 @@ struct ValueFactory {
   }
 
 
+  template<typename Deleter>
+  static boost::shared_ptr<element_type> NewPointer(std::string key, Deleter deleter) {
+
+    boost::shared_ptr<element_type> result(new element_type, deleter);
+    result->set_instruction(key);
+
+    return result;
+  }
+
 
 
   static boost::shared_ptr<element_type> NewPointer(std::string key) {
 
-    boost::shared_ptr<element_type> result = boost::make_shared<T>();
+    boost::shared_ptr<element_type> result(new element_type);
     result->set_instruction(key);
 
     return result;
@@ -58,10 +67,18 @@ struct ValueFactory<colony::storage::chunk_data> {
 
 
 
+  template<typename Deleter>
+  static boost::shared_ptr<element_type> NewPointer(element_type::key_type key, Deleter deleter) {
+
+    return boost::shared_ptr<element_type>( new element_type(key), deleter);
+
+  }
+
+
 
   static boost::shared_ptr<element_type> NewPointer(element_type::key_type key) {
 
-    return boost::make_shared<element_type>(key);
+    return boost::shared_ptr<element_type>( new element_type(key) );
   }
 
 };

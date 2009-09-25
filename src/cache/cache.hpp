@@ -47,19 +47,16 @@ public:
   const boost::shared_ptr<value_type>
   operator()(const key_type key) {
 
-    boost::shared_ptr<T> value = ValueFactory<T>::NewPointer(key);
+    boost::shared_ptr<T> value =
+        ValueFactory<T>::NewPointer(key, boost::bind(&Policy::OnRead, &policy_, _1));
 
     try {
-
-      value = cache_impl_.read(value->get_key());
-
+      cache_impl_.read(value);
     } catch(colony::cache_miss_e& e) {
-
       policy_.PreRead(value);
-
     }
 
-    return value;
+    return boost::shared_ptr<value_type>(value);
   }
 
 
@@ -68,14 +65,18 @@ public:
   const boost::shared_ptr<value_type>
   operator[](const key_type key) {
 
-    boost::shared_ptr<T> value = cache_impl_.mutate(key);
-    boost::shared_ptr<T>
-    dummy(
-        value.get(),
-        boost::bind(&Policy::OnWrite, &policy_, _1)
-    );
+    boost::shared_ptr<T> value =
+        ValueFactory<T>::NewPointer(key, boost::bind(&Policy::OnWrite, &policy_, _1));
 
-    return dummy;
+    try {
+      cache_impl_.read(value);
+    } catch (colony::cache_miss_e& e) {
+      cache_impl_.insert(value);
+    }
+
+    cache_impl_.set_dirty(value);
+
+    return boost::shared_ptr<value_type>(value);
   }
 
 
@@ -87,8 +88,13 @@ public:
 
     typename dirty_type::const_iterator it;
     for(it = cache_impl_.dirty_.begin(); it != cache_impl_.dirty_.end(); ++it) {
+
       shared_ptr<T> value = it->second.lock();
+
+      BOOST_ASSERT(value.use_count() == 2);
+
       policy_.OnFlush(value);
+
     }
 
     cache_impl_.dirty_.clear();

@@ -37,6 +37,12 @@ struct basic_metadata {
 
   }
 
+  void set_key(key_type key) {
+    uid_ = key.get<0>();
+    cuid_ = key.get<1>();
+  }
+
+
   uid_type   uid_;
   cuid_type  cuid_;
 };

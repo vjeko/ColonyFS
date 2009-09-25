@@ -74,16 +74,20 @@ public:
   virtual ~sink_local_impl() {};
 
 
+  shared_ptr<T> operator[](const key_type& key) {
+    return cache_[key];
+  }
 
-
-  inline shared_ptr<T> operator()(const key_type& key) {
+  shared_ptr<T> operator()(const key_type& key) {
     return cache_(key);
   }
 
 
   inline void commit(shared_ptr<T> pair) {
+    /*
     shared_ptr<T> hit = cache_[pair->get_key()];
     (*hit) = (*pair);
+    */
   }
 
 
@@ -146,7 +150,14 @@ public:
 
 
 
-  inline shared_ptr<T> operator()(const key_type key) {
+  shared_ptr<T> operator[](const key_type key) {
+    return implementation_[key];
+  }
+
+
+
+
+  shared_ptr<T> operator()(const key_type key) {
     return implementation_(key);
   }
 
