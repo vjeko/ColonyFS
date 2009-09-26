@@ -18,27 +18,47 @@
 
 #include <utility>
 
+#include "../exceptions.hpp"
+
+
+
+
 namespace colony { namespace storage {
+
+
+
 
 db::db() :
       file_(file("UNSPECIFIED")) {}
 
+
+
+
 db::~db() {}
+
+
+
 
 const file& db::operator()(const chunk_metadata::uid_type uid) const {
 
   uid_map_type::const_iterator uid_iterator = uid_map_.find(uid);
 
   if (uid_iterator == uid_map_.end()) {
-    throw std::runtime_error("trying to index inexistent file");
+    throw colony::inexistent_file_e() << filepath_i(uid);
   }
 
   return uid_iterator->second;
 }
 
+
+
+
 file& db::operator[](const chunk_metadata::uid_type uid) {
   return uid_map_[uid];
 }
+
+
+
 
 void db::save_chunk(
     const chunk_metadata& metadata,
@@ -46,26 +66,34 @@ void db::save_chunk(
 
   (*this)[metadata.uid_][metadata.cuid_] = representation;
 
-  std::cout << "PUT: " << representation << std::endl;
-  std::cout << (*this)(metadata.uid_)(metadata.cuid_) << std::endl;;
-
 }
+
+
+
 
 const db::representation_type db::load_chunk(
     const chunk_metadata::uid_type uid,
     const chunk_metadata::cuid_type cuid) const {
 
-  std::cout << "GET: " << (*this)(uid)(cuid) << std::endl;
   return (*this)(uid)(cuid);
 }
+
+
+
 
 const db::representation_type db::load_chunk(const chunk_metadata metadata) const {
   return (*this)(metadata.uid_)(metadata.cuid_);
 }
 
+
+
+
 file::num_of_chunks_type db::get_num_of_chunks(
     const chunk_metadata::uid_type& uid) const {
   return (*this)(uid).get_num_of_chunks();
 }
+
+
+
 
 } } // namespace

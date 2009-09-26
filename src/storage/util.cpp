@@ -6,12 +6,15 @@
  */
 
 #include "util.hpp"
-#include "../debug.hpp"
 
-#include <sstream>
-#include <iostream>
+#include "../debug.hpp"
+#include "../exceptions.hpp"
 
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
+
+
+
 
 namespace colony { namespace storage {
 
@@ -24,34 +27,82 @@ boost::filesystem::path prefix;
 
 namespace bfs = boost::filesystem;
 
+
+
+
 /* Private Functions & Variables */
 namespace {
+
+
+
 
 rlog::RLogChannel *storage_util_detail_(
     RLOG_CHANNEL( "storage/util/detail" ) );
 
 }
 
+
+
+
 void set_prefix(boost::filesystem::path path) {
+
+  // Does the specified path exist?
+  if ( !boost::filesystem::exists(path) ) {
+    rError("Placement path does not exist: %s", path.string().c_str());
+    throw colony::inexistent_file_e();
+  }
+
+  // Is the specified path a directory?
+  if ( !boost::filesystem::is_directory(path) ) {
+    rError("Placement path is not a directory: %s", path.string().c_str());
+    throw colony::invalid_file_e();
+  }
+
+  // TODO: Is the specified path writable to?
+
+
+
   prefix = path;
 }
+
+
 
 
 void deposit_chunk(
     const boost::shared_ptr<chunk_data> chunk_ptr,
     db& database) {
 
-  std::ostringstream representation;
-  representation << prefix << chunk_ptr->uid_ << "-" << chunk_ptr->cuid_;
+  const std::string uid = chunk_ptr->uid_;
+  const std::string cuid = boost::lexical_cast<std::string>(chunk_ptr->cuid_);
 
-  boost::filesystem::ofstream stream(representation.str(),
+
+  boost::filesystem::path filepath = prefix / uid;
+  boost::filesystem::path destionation("__" + filepath.filename() + "__" + cuid);
+
+  // What if the file is not in the root directory?
+  if( !boost::filesystem::exists(filepath.parent_path()) ) {
+    boost::filesystem::create_directory(filepath.parent_path());
+  }
+
+
+
+  boost::filesystem::path representation = filepath.parent_path() / destionation;
+
+
+  representation = representation.normalize();
+
+
+  boost::filesystem::ofstream stream(representation.string(),
       std::ios::out | std::ios::binary);
 
   stream.write(&chunk_ptr->data_ptr_->front(), chunk_ptr->data_ptr_->size());
   stream.close();
 
-  database.save_chunk(*chunk_ptr, representation.str());
+  database.save_chunk(*chunk_ptr, representation.string());
 }
+
+
+
 
 // TODO: User unbounded generics here, instead of inheritance.
 boost::shared_ptr<chunk_data> retrieve_chunk(
@@ -59,6 +110,9 @@ boost::shared_ptr<chunk_data> retrieve_chunk(
     const db& database) {
   return retrieve_chunk(metadata->uid_, metadata->cuid_, database);
 }
+
+
+
 
 boost::shared_ptr<chunk_data> retrieve_chunk(
     const chunk_metadata::uid_type uid,
