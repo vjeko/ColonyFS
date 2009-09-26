@@ -331,18 +331,25 @@ int colonyfs_fusexx::mkdir(const char* filepath, mode_t mode) {
 
 int colonyfs_fusexx::access(const char* filepath, int mode) {
   // TODO: Implement this.
-  rLog(fuse_control_, "access: %s", filepath);
+  rLog(fuse_control_, "access: %s ", filepath);
 
   return 0;
-
 }
 
+
+
+int colonyfs_fusexx::release(const char* filepath, struct fuse_file_info* fi) {
+  // TODO: Implement this.
+  rLog(fuse_control_, "release: %s (%d)", filepath, fi->flags);
+
+  return 0;
+}
 
 
 
 int colonyfs_fusexx::open(const char *filepath, struct fuse_file_info *fi) {
   // TODO: Need to check if the operation is permitted for the given flags.
-  rLog(fuse_control_, "open: %s", filepath);
+  rLog(fuse_control_, "open: %s (%d)", filepath, fi->flags);
 
   return 0;
 }
@@ -719,6 +726,7 @@ int colonyfs_fusexx::lock (
 
   return 0;
 }
+
 
 
 

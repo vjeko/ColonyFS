@@ -98,7 +98,7 @@ namespace fusexx {
 		    static int write (const char*, const char*, size_t, off_t,struct fuse_file_info *) { _unimplemented_(); }
 		    static int statfs (const char*, struct statvfs *) { _unimplemented_(); }
 		    static int flush (const char*, struct fuse_file_info *) { _unimplemented_(); }
-		    static int release (const char*, struct fuse_file_info *) { _unimplemented_(); }
+		    static int release (const char*, struct fuse_file_info *);
 		    static int fsync (const char*, int, struct fuse_file_info *) { _unimplemented_(); }
 		    static int setxattr (const char*, const char*, const char*, size_t, int) { _unimplemented_(); }
 		    static int getxattr (const char*, const char*, char*, size_t) { _unimplemented_(); }
@@ -110,7 +110,7 @@ namespace fusexx {
 		    static int fsyncdir (const char*, int, struct fuse_file_info *) { _unimplemented_(); }
 		    static void *init (struct fuse_conn_info *conn) { return NULL; }
 		    static void  destroy (void *) { }
-		    static int access (const char*, int) { _unimplemented_(); }
+		    static int access (const char*, int);
 		    static int create (const char*, mode_t, struct fuse_file_info *) { _unimplemented_(); }
 		    static int ftruncate (const char*, off_t, struct fuse_file_info *) { _unimplemented_(); }
 		    static int fgetattr (const char*, struct stat *, struct fuse_file_info *) { _unimplemented_(); }

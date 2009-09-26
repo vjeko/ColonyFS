@@ -327,6 +327,13 @@ public:
       struct flock* fl);
 
 
+  // TODO: Implement sfatfs().
+
+
+  static int release(const char* filepath, struct fuse_file_info* fi);
+
+
+
 private:
 
   static bool validate_path(boost::filesystem::path path);
