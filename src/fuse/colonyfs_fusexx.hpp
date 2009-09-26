@@ -320,6 +320,12 @@ public:
   static int flush(const char* filepath, struct fuse_file_info * fi);
 
 
+  static int lock(
+      const char* filepath,
+      struct fuse_file_info* fi,
+      int cmd,
+      struct flock* fl);
+
 
 private:
 

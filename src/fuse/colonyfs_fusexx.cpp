@@ -708,6 +708,21 @@ int colonyfs_fusexx::flush(const char* filepath, struct fuse_file_info * fi) {
 }
 
 
+
+int colonyfs_fusexx::lock (
+    const char* filepath,
+    struct fuse_file_info* fi,
+    int cmd,
+    struct flock* fl) {
+
+  rError("Lock called: File: %s: CMD: %d", filepath, cmd);
+
+  return 0;
+}
+
+
+
+
 metadata_sink_t colonyfs_fusexx::metadata_sink_;
 colony::aggregator<colony::storage::chunk_data>  colonyfs_fusexx::data_sink_;
 rlog::RLogChannel* colonyfs_fusexx::fuse_control_( RLOG_CHANNEL( "fuse/control" ) );

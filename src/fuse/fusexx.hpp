@@ -114,9 +114,11 @@ namespace fusexx {
 		    static int create (const char*, mode_t, struct fuse_file_info *) { _unimplemented_(); }
 		    static int ftruncate (const char*, off_t, struct fuse_file_info *) { _unimplemented_(); }
 		    static int fgetattr (const char*, struct stat *, struct fuse_file_info *) { _unimplemented_(); }
+		    static int lock (const char *, struct fuse_file_info *, int cmd, struct flock *);
+
 
 		    static void loadOperations () {
-				operations.readlink = T::readlink;
+		      operations.readlink = T::readlink;
 			    operations.getattr = T::getattr;
 			    operations.getdir = T::getdir;
 			    operations.mknod = T::mknod;
@@ -151,6 +153,7 @@ namespace fusexx {
 			    operations.create = T::create;
 			    operations.ftruncate = T::ftruncate;
 			    operations.fgetattr = T::fgetattr;
+			    operations.lock = T::lock;
 			}
 			
 			/*
