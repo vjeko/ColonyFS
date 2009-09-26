@@ -12,6 +12,7 @@
 
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/filesystem.hpp>
 
 
 
@@ -81,7 +82,7 @@ void deposit_chunk(
 
   // What if the file is not in the root directory?
   if( !boost::filesystem::exists(filepath.parent_path()) ) {
-    boost::filesystem::create_directory(filepath.parent_path());
+    boost::filesystem::create_directories(filepath.parent_path());
   }
 
 
