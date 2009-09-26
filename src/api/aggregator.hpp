@@ -39,6 +39,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
+#include <boost/spirit/include/phoenix.hpp>
 
 namespace colony {
 
@@ -232,11 +233,13 @@ public:
 
     using colony::storage::chunk_data;
 
+    using namespace boost::phoenix::arg_names;
+
     copy(
         filepath,
         buffer,
-        boost::bind< shared_ptr<chunk_data> >(&aggregator::create_if_missing, this, _1, _2),
-        boost::bind(&aggregator::write_to_chunk, this, _1, _2, _3, _4, _5),
+        boost::phoenix::bind< shared_ptr<chunk_data> >(&aggregator::create_if_missing, this, arg1, arg2),
+        boost::phoenix::bind(&aggregator::write_to_chunk, this, arg1, arg2, arg3, arg4, arg5),
         size,
         offset);
 
@@ -253,11 +256,13 @@ public:
 
     using colony::storage::chunk_data;
 
+    using namespace boost::phoenix::arg_names;
+
     copy(
         filepath,
         buffer,
-        boost::bind< shared_ptr<chunk_data> >(&aggregator::raise_if_missing, this, _1, _2),
-        boost::bind(&aggregator::read_from_chunk, this, _1, _2, _3, _4, _5),
+        boost::phoenix::bind< shared_ptr<chunk_data> >(&aggregator::raise_if_missing, this, arg1, arg2),
+        boost::phoenix::bind(&aggregator::read_from_chunk, this, arg1, arg2, arg3, arg4, arg5),
         size,
         offset);
 

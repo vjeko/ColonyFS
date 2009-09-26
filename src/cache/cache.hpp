@@ -16,10 +16,9 @@
 #include "../accessor.hpp"
 
 #include <boost/shared_ptr.hpp>
-#include <boost/bind/protect.hpp>
 #include <boost/asio/io_service.hpp>
 
-
+#include <boost/spirit/include/phoenix.hpp>
 
 
 namespace colony {
@@ -47,8 +46,11 @@ public:
   const boost::shared_ptr<value_type>
   operator()(const key_type key) {
 
+    using namespace boost::phoenix;
+    using namespace boost::phoenix::arg_names;
+
     boost::shared_ptr<T> value =
-        ValueFactory<T>::NewPointer(key, boost::bind(&Policy::OnRead, &policy_, _1));
+        ValueFactory<T>::NewPointer(key, bind(&Policy::OnRead, policy_, arg1));
 
     try {
       cache_impl_.read(value);
@@ -65,8 +67,11 @@ public:
   const boost::shared_ptr<value_type>
   operator[](const key_type key) {
 
+    using namespace boost::phoenix;
+    using namespace boost::phoenix::arg_names;
+
     boost::shared_ptr<T> value =
-        ValueFactory<T>::NewPointer(key, boost::bind(&Policy::OnWrite, &policy_, _1));
+        ValueFactory<T>::NewPointer(key, bind(&Policy::OnRead, policy_, arg1));
 
     try {
       cache_impl_.read(value);

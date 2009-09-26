@@ -331,7 +331,7 @@ int colonyfs_fusexx::mkdir(const char* filepath, mode_t mode) {
 
 int colonyfs_fusexx::access(const char* filepath, int mode) {
   // TODO: Implement this.
-  rLog(fuse_control_, "access: %s ", filepath);
+    rLog(fuse_control_, "access: %s ", filepath);
 
   return 0;
 }
