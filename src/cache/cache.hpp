@@ -87,6 +87,21 @@ public:
 
 
 
+  void erase(const key_type key) {
+
+    using namespace boost::phoenix;
+    using namespace boost::phoenix::arg_names;
+
+    boost::shared_ptr<T> value =
+        ValueFactory<T>::NewPointer(key, bind(&Policy::OnRead, policy_, arg1));
+
+   cache_impl_.erase(value);
+   policy_.OnErase(value);
+  }
+
+
+
+
   void flush() {
 
     // FIXME: Concurrency issues!

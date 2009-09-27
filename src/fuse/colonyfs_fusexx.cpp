@@ -210,7 +210,7 @@ int colonyfs_fusexx::rename(const char* oldpath, const char* newpath) {
   newfull_pair->get_mapped() = oldfull_pair->get_mapped();
 
 
-  metadata_sink_.erase( oldfull_pair );
+  metadata_sink_.erase( oldfull.string() );
 
   // FIXME: Implement data rename.
   data_sink_.rename(oldfull, newfull, newfull_pair->get_mapped().stbuf.st_size);
@@ -578,22 +578,24 @@ int colonyfs_fusexx::unlink(const char* filepath) {
   if (!validate_path(leaf)) return -ENAMETOOLONG;
 
 
-  // Remove the file from the parent.
-  shared_ptr<attribute_value> pair = metadata_sink_[ branch.string() ];
+  shared_ptr<attribute_value> pair = metadata_sink_[ full.string() ];
   fattribute& attribute = pair->get_mapped();
-
 
   if ( attribute.stbuf.st_uid != getuid() && getuid() != 0 ) return -EACCES;
 
-  fattribute::list_t& content = attribute.list;
+  // Remove the file from the parent.
+  shared_ptr<attribute_value> parent_pair = metadata_sink_[ branch.string() ];
+  fattribute& parent_attribute = parent_pair->get_mapped();
+
+  fattribute::list_t& content = parent_attribute.list;
   content.remove(leaf.string());
 
 
-  // Delete the binary data.
-  data_sink_.erase(full.string(), attribute.stbuf.st_size);
-
   // Delete attribute.
   metadata_sink_.erase(full.string());
+
+  // Delete the binary data.
+  data_sink_.erase(full.string(), attribute.stbuf.st_size);
 
 
   return 0;

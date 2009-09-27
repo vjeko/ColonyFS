@@ -35,6 +35,12 @@ struct MetadataOnFlush : boost::noncopyable {
     }
   }
 
+  void OnErase(shared_ptr<T> p) {
+
+    const std::string delete_value("");
+    DHT::Instance().put(p->get_key(), delete_value);
+  }
+
   void OnRead(T* p) {}
 
   void OnWrite(T* p) {}

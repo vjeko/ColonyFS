@@ -148,9 +148,9 @@ std::map<std::string, xmlrpc_c::value> harmony::generate_op(
     const std::string& key) {
 
   boost::hash<std::string> string_hash;
-  const size_t hash = string_hash(key);
+  const int hash = (unsigned short) string_hash(key);
 
-  rInfo("Hash: (%lu)", hash);
+  rInfo("Hash: (%d)", hash);
 
   std::map<std::string, xmlrpc_c::value> op_param_map;
   op_param_map[XML_KEY_TAG] = xmlrpc_c::value_int(hash);

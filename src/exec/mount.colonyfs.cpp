@@ -1,6 +1,7 @@
 
 #include "../fuse/colonyfs_fusexx.hpp"
 #include "../debug.hpp"
+#include "../algo/CSScheduler.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -19,6 +20,7 @@ int main(int argc, char **argv) {
   client_log.subscribeTo( RLOG_CHANNEL("intercom/user_harmony/control") ) ;
   //client_log.subscribeTo( RLOG_CHANNEL("sink") ) ;
 
+  //colony::CSScheduler::SetUp();
 
   colonyfs_fusexx hello;
 

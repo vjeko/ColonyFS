@@ -64,16 +64,9 @@ public:
   typedef typename T::value_type         value_type;
   typedef typename T::mapped_type        mapped_type;
 
-
-
-
   sink_local_impl() {};
 
-
-
-
   virtual ~sink_local_impl() {};
-
 
   shared_ptr<T> operator[](const key_type& key) {
     return cache_[key];
@@ -83,31 +76,9 @@ public:
     return cache_(key);
   }
 
-
-  inline void commit(shared_ptr<T> pair) {
-    /*
-    shared_ptr<T> hit = cache_[pair->get_key()];
-    (*hit) = (*pair);
-    */
-  }
-
-
-
-
-  inline void erase(shared_ptr<T> object) {
-    //implementation_.erase(object->get_key());
-  }
-
-
-
-
   inline void erase(const key_type& key) {
-    //T object(key);
-    //implementation_.erase(object.get_key());
+    cache_.erase(key);
   }
-
-
-
 
   inline void flush() {
     cache_.flush();
@@ -117,8 +88,6 @@ public:
 
 
 private:
-
-
 
   cache<T, MetadataOnFlush<T> >       cache_;
 };
@@ -143,48 +112,23 @@ public:
 
   aggregator() {};
 
-
-
-
   virtual ~aggregator() {};
-
-
-
 
   shared_ptr<T> operator[](const key_type key) {
     return implementation_[key];
   }
 
-
-
-
   shared_ptr<T> operator()(const key_type key) {
     return implementation_(key);
   }
-
-
-
 
   inline void commit(shared_ptr<T> pair) {
     implementation_.commit(pair);
   }
 
-
-
-
-  inline void erase(shared_ptr<T> object) {
-    implementation_.erase(object);
-  }
-
-
-
-
   inline void erase(const key_type& key) {
     implementation_.erase(key);
   }
-
-
-
 
   inline void flush() {
     implementation_.flush();

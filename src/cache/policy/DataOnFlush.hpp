@@ -42,6 +42,8 @@ struct DataOnFlush : boost::noncopyable {
 
   void OnWrite(T* p) {}
 
+  void OnErase(shared_ptr<T> p) {}
+
   void OnFlush(shared_ptr<T> p) {
 
     const std::string hostname = colony::CSScheduler::GetCS();
