@@ -71,7 +71,9 @@ public:
     using namespace boost::phoenix::arg_names;
 
     boost::shared_ptr<T> value =
-        ValueFactory<T>::NewPointer(key, bind(&Policy::OnRead, policy_, arg1));
+        ValueFactory<T>::NewPointer(key, bind(&Policy::OnWrite, policy_, arg1));
+
+    policy_.PreWrite(value);
 
     try {
       cache_impl_.read(value);

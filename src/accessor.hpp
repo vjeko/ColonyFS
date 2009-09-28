@@ -9,6 +9,8 @@
 #define ACCESSOR_HPP_
 
 #include <boost/asio/io_service.hpp>
+#include <boost/thread.hpp>
+#include <boost/spirit/include/phoenix.hpp>
 
 #include "xmlrpc/harmony.hpp"
 
@@ -41,15 +43,28 @@ public:
 
   typedef colony::intercom::user_harmony instance_type;
   typedef boost::asio::io_service        io_service_type;
+  typedef boost::asio::io_service::work  work_type;
 
   static io_service_type& IoService() {
     static io_service_type io_service;
+    static work_type work(io_service);
+
     return io_service;
   }
 
   static instance_type& Instance() {
     static instance_type client(IoService(), "harmony-test");
     return client;
+  }
+
+  static void Thread() {
+
+	  boost::thread runner(
+		  boost::phoenix::bind(
+				  &boost::asio::io_service::run,
+				  boost::phoenix::ref(IoService())
+		  )
+	  );
   }
 
 private:

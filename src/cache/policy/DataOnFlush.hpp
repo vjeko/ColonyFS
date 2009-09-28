@@ -10,6 +10,10 @@
 
 #include <boost/noncopyable.hpp>
 
+#include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
+#include <set>
+
 #include "MetadataOnFlush.hpp"
 
 #include "../cache.hpp"
@@ -24,25 +28,49 @@ struct DataOnFlush : boost::noncopyable {
 
   typedef colony::xmlrpc::chunk_value C;
 
-  DataOnFlush() {}
+  DataOnFlush() {
 
-  void NoOp(T* p) {}
+	  Client::Thread();
+
+  }
+
+
+
 
   void PreRead(shared_ptr<T> p) {
 
     const std::string hostname = colony::CSScheduler::GetCS();
 
     Client::Instance().retrieve_chunk(hostname, p);
-
+/*
     Client::IoService().reset();
     Client::IoService().run();
+    */
   }
 
   void OnRead(T* p) {}
 
+
+
+
+  void PreWrite(shared_ptr<T> p) {
+
+	  track_[p->uid_].insert(p->get_key());
+
+	  std::cout << "Chumk #:" << track_[p->uid_].size() << std::endl;
+
+  }
+
   void OnWrite(T* p) {}
 
+
+
+
+
   void OnErase(shared_ptr<T> p) {}
+
+
+
 
   void OnFlush(shared_ptr<T> p) {
 
@@ -59,13 +87,21 @@ struct DataOnFlush : boost::noncopyable {
 
   void OnDone() {
     cache_.flush();
-
+/*
     Client::IoService().reset();
     Client::IoService().run();
+    */
   }
 
 
+
+  boost::unordered_map<
+	  std::string,
+	  std::set<typename T::key_type>
+  > track_;
+
   colony::cache<C, MetadataOnFlush<C> > cache_;
+
 };
 
 #endif /* DATAONFLUSH_HPP_ */

@@ -26,24 +26,29 @@ private:
 
   CSScheduler() {};
 
+  typedef std::vector<std::string> csl_type;
 
+  static csl_type& GetCSL() {
+    static csl_type csl;
+    return csl;
+  }
 
 public:
 
+  static void SetCSL() {
+    GetCSL().push_back("carol");
+    GetCSL().push_back("bob");
+    GetCSL().push_back("eve");
+    GetCSL().push_back("mallory");
+  }
+
   static const std::string GetCS() {
 
-    static std::vector<std::string> chunkservers_;
+    static boost::mt19937 rng;
+    static boost::uniform_int<> size(0, GetCSL().size() - 1);
+    static boost::variate_generator<boost::mt19937&, boost::uniform_int<> > var_rng(rng, size);
 
-    chunkservers_.push_back("carol");
-    chunkservers_.push_back("bob");
-    chunkservers_.push_back("eve");
-    chunkservers_.push_back("mallory");
-
-    boost::mt19937 rng;
-    boost::uniform_int<> size(0, chunkservers_.size() - 1);
-    boost::variate_generator<boost::mt19937&, boost::uniform_int<> > var_rng(rng, size);
-
-    return chunkservers_[var_rng()];
+    return GetCSL()[var_rng()];
   }
 
 };

@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
   client_log.subscribeTo( RLOG_CHANNEL("intercom/user_harmony/control") ) ;
   //client_log.subscribeTo( RLOG_CHANNEL("sink") ) ;
 
-  //colony::CSScheduler::SetUp();
+  colony::CSScheduler::SetCSL();
 
   colonyfs_fusexx hello;
 
