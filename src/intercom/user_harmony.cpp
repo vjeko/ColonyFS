@@ -6,6 +6,8 @@
  */
 
 #include "user_harmony.hpp"
+#include "../accessor.hpp"
+
 
 #include "../xmlrpc/values.hpp"
 
@@ -160,6 +162,7 @@ void user_harmony::end(
     connection_ptr_t connection_ptr) {
 
   rLog(user_harmony_control_, "... done");
+  Timer::Print();
 
 }
 
@@ -168,6 +171,7 @@ void user_harmony::end(
     connection_ptr_t connection_ptr) {
 
   rLog(user_harmony_control_, "... done");
+  Timer::Print();
 
 }
 

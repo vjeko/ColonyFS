@@ -114,6 +114,7 @@ public:
   template <typename T>
   void get_pair (boost::shared_ptr<T> pair) {
     value_t raw_value = get(pair->get_key());
+    // TODO: What if the archive is not valid?
     pair->set_value(raw_value);
   }
 
@@ -149,9 +150,9 @@ private:
   void validate();
 
 
-  xmlrpc_c::clientSimple    client_;
-  static const int          port_ = 36459;
-  std::string               url_;
+  xmlrpc_c::clientSimple         client_;
+  static const int               port_ = 36459;
+  std::string                    url_;
 
 };
 

@@ -39,8 +39,6 @@ struct MetadataOnFlush : boost::noncopyable {
 
 
 
-  void PreWrite(shared_ptr<T> p) {}
-
   void OnWrite(T* p) {}
 
 

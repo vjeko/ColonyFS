@@ -29,11 +29,15 @@ class cache {
 
 public:
 
+  typedef cache<T, Policy>      this_type;
+
   typedef typename T::key_type  key_type;
   typedef T                     value_type;
 
   typedef typename basic_cache<T>::whole_type   whole_type;
   typedef typename basic_cache<T>::dirty_type   dirty_type;
+
+  typedef colony::basic_cache<T>                cache_impl;
 
 
 
@@ -73,8 +77,6 @@ public:
     boost::shared_ptr<T> value =
         ValueFactory<T>::NewPointer(key, bind(&Policy::OnWrite, policy_, arg1));
 
-    policy_.PreWrite(value);
-
     try {
       cache_impl_.read(value);
     } catch (colony::cache_miss_e& e) {
@@ -113,7 +115,7 @@ public:
 
       shared_ptr<T> value = it->second.lock();
 
-      BOOST_ASSERT(value.use_count() == 2);
+      BOOST_ASSERT(value.use_count() > 1);
 
       policy_.OnFlush(value);
 

@@ -10,6 +10,7 @@
 
 #include <boost/noncopyable.hpp>
 
+#include <boost/weak_ptr.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 #include <set>
@@ -28,6 +29,8 @@ struct DataOnFlush : boost::noncopyable {
 
   typedef colony::xmlrpc::chunk_value C;
 
+  typedef std::set< boost::weak_ptr<T> > set_type;
+
   DataOnFlush() {
 
 	  Client::Thread();
@@ -42,24 +45,13 @@ struct DataOnFlush : boost::noncopyable {
     const std::string hostname = colony::CSScheduler::GetCS();
 
     Client::Instance().retrieve_chunk(hostname, p);
-/*
-    Client::IoService().reset();
-    Client::IoService().run();
-    */
+
   }
 
   void OnRead(T* p) {}
 
 
 
-
-  void PreWrite(shared_ptr<T> p) {
-
-	  track_[p->uid_].insert(p->get_key());
-
-	  std::cout << "Chumk #:" << track_[p->uid_].size() << std::endl;
-
-  }
 
   void OnWrite(T* p) {}
 
@@ -87,17 +79,13 @@ struct DataOnFlush : boost::noncopyable {
 
   void OnDone() {
     cache_.flush();
-/*
-    Client::IoService().reset();
-    Client::IoService().run();
-    */
   }
 
 
 
   boost::unordered_map<
 	  std::string,
-	  std::set<typename T::key_type>
+	  set_type
   > track_;
 
   colony::cache<C, MetadataOnFlush<C> > cache_;

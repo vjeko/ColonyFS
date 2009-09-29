@@ -14,6 +14,30 @@
 
 #include "xmlrpc/harmony.hpp"
 
+#include <boost/timer.hpp>
+
+#include <ctime>
+
+
+class Timer {
+
+public:
+
+  static void Print() {
+
+    struct timeval time;
+    gettimeofday(&time, NULL);
+
+    long seconds  = time.tv_sec;
+    long useconds = time.tv_usec;
+
+    std::cout << seconds << "." << useconds << std::endl;
+
+  }
+
+
+};
+
 
 
 
@@ -59,12 +83,27 @@ public:
 
   static void Thread() {
 
-	  boost::thread runner(
+	  boost::thread runner1(
 		  boost::phoenix::bind(
 				  &boost::asio::io_service::run,
 				  boost::phoenix::ref(IoService())
 		  )
 	  );
+
+	  boost::thread runner2(
+		  boost::phoenix::bind(
+				  &boost::asio::io_service::run,
+				  boost::phoenix::ref(IoService())
+		  )
+	  );
+
+	  boost::thread runner3(
+		  boost::phoenix::bind(
+				  &boost::asio::io_service::run,
+				  boost::phoenix::ref(IoService())
+		  )
+	  );
+
   }
 
 private:

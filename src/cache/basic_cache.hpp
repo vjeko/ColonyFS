@@ -108,6 +108,11 @@ public:
   }
 
 
+  void clear(shared_ptr<T>& value) {
+	  dirty_.erase(value->get_key());
+  }
+
+
 
 
   whole_type whole_;
