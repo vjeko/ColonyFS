@@ -24,6 +24,14 @@ lib xmlrpc_xmlparse ;
 lib xmlrpc_xmltok ;
 lib xmlrpc_util ;
 
+
+lib tbb_debug ;
+lib tbbmalloc_proxy_debug ;
+lib tbbmalloc_debug ;
+
+
+
+
 # Default Project Requirements.
 project colony
   : requirements 
@@ -118,6 +126,7 @@ exe mount.colonyfs :
   uledfs
   uledfs_xmlrpc
   boost_program_options
+  tbb_debug
   :
 
   <linkflags>"`pkg-config fuse --libs`"

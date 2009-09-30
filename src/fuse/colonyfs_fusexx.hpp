@@ -11,8 +11,49 @@
 #include <boost/unordered_map.hpp>
 
 
+#include <tbb/task.h>
+#include <tbb/atomic.h>
+#include <tbb/task_scheduler_init.h>
+
 
 typedef colony::aggregator<colony::xmlrpc::attribute_value>  metadata_sink_t;
+typedef colony::aggregator<colony::storage::chunk_data>      data_sink_t;
+
+
+
+typedef tbb::atomic<int> counter_type;
+
+
+
+class dht_task : public tbb::task {
+
+
+public:
+
+
+  dht_task(counter_type& counter, metadata_sink_t& sink) :
+    counter_(counter),
+    sink_(sink) {}
+
+  tbb::task* execute() {
+
+    sink_.flush();
+
+
+
+    counter_.fetch_and_increment();
+
+    return NULL;
+  }
+
+
+
+
+
+  counter_type&     counter_;
+  metadata_sink_t&  sink_;
+
+};
 
 
 
@@ -334,7 +375,7 @@ public:
 
 
 
-private:
+
 
   static bool validate_path(boost::filesystem::path path);
 

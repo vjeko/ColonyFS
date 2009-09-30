@@ -53,7 +53,15 @@ bool harmony::put(const std::string& key, const std::string& value) {
   const std::string url("http://barb.cs.washington.edu:36459");
   xmlrpc_c::value         result;
 
-  client_.call(url, METHOD_CALL, param_list, &result);
+  RetryPut:
+
+  try {
+    client_.call(url, METHOD_CALL, param_list, &result);
+  } catch (girerr::error& e) {
+    sleep(0.2);
+
+    goto RetryPut;
+  }
 
   xmlrpc_c::value_array response(result);
 
@@ -109,7 +117,16 @@ std::string harmony::get(const std::string& key) {
   const std::string url("http://barb.cs.washington.edu:36459");
   xmlrpc_c::value         result;
 
-  client_.call(url, METHOD_CALL, param_list, &result);
+  RetryPut:
+
+  try {
+    client_.call(url, METHOD_CALL, param_list, &result);
+  } catch (girerr::error& e) {
+    sleep(0.2);
+
+    goto RetryPut;
+  }
+
 
   xmlrpc_c::value_array response(result);
 
