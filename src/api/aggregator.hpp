@@ -118,6 +118,16 @@ public:
     return implementation_[key];
   }
 
+  template<typename Handler>
+  int read(const key_type key, Handler) {
+
+
+
+
+
+
+  }
+
   shared_ptr<T> operator()(const key_type key) {
     return implementation_(key);
   }

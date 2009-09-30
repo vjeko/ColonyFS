@@ -8,17 +8,19 @@
 #include <assert.h>
 #include <string.h>
 
+
 #include <boost/foreach.hpp>
 
+  tbb::task *root_task;
 
 
-counter_type flush_count;
+counter_type g_flush_counter;
 
 colonyfs_fusexx::colonyfs_fusexx() {
 
   using namespace colony::xmlrpc;
 
-  flush_count = 10;
+  g_flush_counter = 10;
 
 
   const std::string root_path("/");
@@ -204,20 +206,25 @@ int colonyfs_fusexx::flush(const char* filepath, struct fuse_file_info * fi) {
   rLog(fuse_control_, "flush: %s", filepath);
 
 
-  tbb::task *root_task = new(tbb::task::allocate_root()) tbb::empty_task;
+
+  root_task = new(tbb::task::allocate_root()) tbb::empty_task;
+  root_task->set_ref_count(1);
+
+
 
   // Busy wait.
-  while (flush_count <= 0) {}
+  while (g_flush_counter <= 0) {}
 
-
-  flush_count.fetch_and_decrement();
+  g_flush_counter.fetch_and_decrement();
 
   root_task->increment_ref_count();
 
   tbb::task *sync_task =
-      new(root_task->allocate_child()) dht_task(flush_count, metadata_sink_);
+      new(root_task->allocate_child()) dht_task(g_flush_counter, metadata_sink_);
 
   root_task->spawn(*sync_task);
+
+
 
   data_sink_.flush();
 
