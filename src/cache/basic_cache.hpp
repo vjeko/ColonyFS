@@ -17,6 +17,7 @@
 
 #include "../debug.hpp"
 #include "../exceptions.hpp"
+#include "../synchronization.hpp"
 #include "../storage/chunk_data.hpp"
 
 #include <boost/smart_ptr.hpp>

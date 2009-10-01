@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE( value_filename ) {
   element_type original(g_filename, g_chunk_num);
 
   std::string key = original.get_key();
-  std::string value = original.get_value();
+  std::vector<unsigned char> value = original.get_valuev();
 
   element_type reconstructed = ValueFactory<element_type>::Reconstruct(key, value);
   instruction instruction = reconstructed.get_instruction();
@@ -47,6 +47,7 @@ BOOST_AUTO_TEST_CASE( value_filename ) {
   BOOST_CHECK_EQUAL(FILENAME_INSTRUCTION, instruction.get_type());
   BOOST_CHECK_EQUAL(g_filename, instruction.get_argument());
   BOOST_CHECK_EQUAL(g_chunk_num, reconstructed.get_mapped());
+
 }
 
 

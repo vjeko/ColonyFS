@@ -10,6 +10,8 @@
 
 #include <string>
 #include <vector>
+#include <iterator>
+
 
 #include <sys/stat.h>
 
@@ -116,12 +118,22 @@ public:
 
 
   std::string&     get_key() {
-    return base_value::serialize(instruction_, key_);
+    base_value::serialize(instruction_, key_);
+
+    return key_;
   };
 
   std::string&     get_value() {
-    return base_value::serialize(mapped_, value_);
+    base_value::serialize(mapped_, value_);
+
+    return value_;
   }
+
+
+  std::vector<unsigned char>     get_valuev() {
+    return base_value::serialize(mapped_, value_byte_);
+  }
+
 
   mapped_type&             get_mapped() {
     return mapped_;
@@ -137,6 +149,10 @@ public:
   void   set_key(const std::string& key) {
     deserialize(key, instruction_);
   };
+
+  void   set_value(const std::vector<unsigned char>& value) {
+    deserialize(value, mapped_);
+  }
 
   void   set_value(const std::string& value) {
     deserialize(value, mapped_);
@@ -154,6 +170,17 @@ public:
   }
 
 
+  template<typename Destination>
+  static void deserialize(const std::vector<unsigned char>& value, Destination& destionation) {
+
+    // TODO: Need a better implementation.
+    std::string tmp(value.begin(), value.end());
+    std::stringstream ss(tmp);
+
+    iarchive_type ia(ss);
+    ia >> destionation;
+
+  }
 
 
   template<typename Destination>
@@ -163,14 +190,29 @@ public:
     ia >> destionation;
   }
 
+
   template<typename Value>
-  static std::string& serialize(Value& value, std::string& destionation) {
+  static std::vector<unsigned char>& serialize(Value& value, std::vector<unsigned char>& destionation) {
+
+    // TODO: Need a better implementation.
+    std::stringstream ss;
+    oarchive_type oa(ss);
+    oa << value;
+
+    std::string tmp = ss.str();
+
+    destionation = std::vector<unsigned char>(tmp.begin(), tmp.end());
+    return destionation;
+  }
+
+
+  template<typename Value>
+  static void serialize(Value& value, std::string& destionation) {
     std::stringstream ss;
     oarchive_type oa(ss);
     oa << value;
 
     destionation = ss.str();
-    return destionation;
   }
 
   static std::string get_signature(std::string argument) {
@@ -189,6 +231,8 @@ public:
 
   T              mapped_;
   std::string    value_;
+
+  std::vector<unsigned char> value_byte_;
 };
 
 

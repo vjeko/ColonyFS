@@ -151,7 +151,6 @@ private:
       const std::string& key,
       const std::string& value);
 
-
   std::map<std::string, xmlrpc_c::value> generate_op(
       const std::string& key,
       const std::vector<unsigned char>& value);

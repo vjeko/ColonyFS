@@ -239,7 +239,6 @@ std::map<std::string, xmlrpc_c::value> harmony::generate_op(
   const int hash = (unsigned short) string_hash(key);
 
   rInfo("Hash: (%d)", hash);
-  std::cout << "Actual Key: " << key << std::endl;
 
   std::map<std::string, xmlrpc_c::value> op_param_map;
   op_param_map[XML_KEY_TAG] = xmlrpc_c::value_int(hash);

@@ -147,10 +147,6 @@ void chunkserver_harmony::send_data(
 
   if (!e) {
 
-
-    rLog(com_chunkserver_harmony_control_, "sending data: (%s)(%d)",
-        metadata_ptr->uid_.c_str(), metadata_ptr->cuid_);
-
     boost::shared_ptr<colony::storage::chunk_data> chunk_ptr;
 
     try {
@@ -159,6 +155,9 @@ void chunkserver_harmony::send_data(
       rError("Trying to index inexistent chunk... aborting.");
       return;
     }
+
+    rLog(com_chunkserver_harmony_control_, "sending data: (%s)(%d)(%lu)",
+        chunk_ptr->uid_.c_str(), chunk_ptr->cuid_, chunk_ptr->data_ptr_->size());
 
     conn->async_write(*chunk_ptr,
         boost::bind(&chunkserver_harmony::end, this,

@@ -14,6 +14,7 @@
 
 #include "../intercom/user_harmony.hpp"
 #include "../accessor.hpp"
+#include "../synchronization.hpp"
 
 #include <boost/shared_ptr.hpp>
 #include <boost/asio/io_service.hpp>
@@ -57,10 +58,19 @@ public:
         ValueFactory<T>::NewPointer(key, bind(&Policy::OnRead, policy_, arg1));
 
     try {
+
+      Sync::Lock(value->get_key());
+
       cache_impl_.read(value);
+
+      Sync::Unlock(value->get_key());
+
     } catch(colony::cache_miss_e& e) {
+
       policy_.PreRead(value);
+
       cache_impl_.insert(value);
+
     }
 
     return boost::shared_ptr<value_type>(value);

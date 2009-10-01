@@ -36,7 +36,7 @@ void user_harmony::retrieve_chunk(
     std::string hostname,
     boost::shared_ptr<colony::storage::chunk_data> data_ptr) {
 
-  Sync::Lock(data_ptr->get_key());
+  //Sync::Lock(data_ptr->get_key());
 
   request_read(hostname, data_ptr);
 }

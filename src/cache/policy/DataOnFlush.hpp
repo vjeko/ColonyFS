@@ -51,6 +51,7 @@ struct DataOnFlush : boost::noncopyable {
 
     Client::Instance().retrieve_chunk(hostname, p);
 
+
   }
 
   void OnRead(T* p) {}

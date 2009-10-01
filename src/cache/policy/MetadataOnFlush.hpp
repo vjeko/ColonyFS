@@ -12,6 +12,7 @@
 
 #include "../cache.hpp"
 #include "../../accessor.hpp"
+#include "../../synchronization.hpp"
 
 #include <sstream>
 
@@ -23,17 +24,22 @@ struct MetadataOnFlush : boost::noncopyable {
 
   MetadataOnFlush() {}
 
-  void PreRead(shared_ptr<T> p) {
+  void PreRead(shared_ptr<T> value) {
     try {
 
-      DHT::Instance().get_pair(p);
+      DHT::Instance().get_pair(value);
       rInfo("Value found!");
 
     } catch (colony::xmlrpc::key_missing_error& e) {
 
+      Sync::Unlock(value->get_key());
+
       rError("Value not in the DHT!");
       throw colony::lookup_e();
     }
+
+    Sync::Unlock(value->get_key());
+
   }
 
   void OnRead(T* p) {}

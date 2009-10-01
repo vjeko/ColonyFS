@@ -25,6 +25,15 @@ struct ValueFactory {
 
 
 
+  static element_type Reconstruct(std::string key, std::vector<unsigned char> value) {
+
+    element_type result;
+    result.set_key(key);
+    result.set_value(value);
+
+    return result;
+  }
+
 
   static element_type Reconstruct(std::string key, std::string value) {
 
