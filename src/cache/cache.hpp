@@ -67,9 +67,8 @@ public:
 
     } catch(colony::cache_miss_e& e) {
 
-      policy_.PreRead(value);
-
       cache_impl_.insert(value);
+      policy_.PreRead(value);
 
     }
 
