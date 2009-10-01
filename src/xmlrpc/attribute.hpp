@@ -39,6 +39,8 @@ public:
     ar & stbuf.st_mode;
     ar & stbuf.st_size;
 
+    ar & stbuf.st_nlink;
+
     ar & stbuf.st_mtim.tv_sec;
     ar & stbuf.st_mtim.tv_nsec;
 

@@ -42,7 +42,12 @@ struct DataOnFlush : boost::noncopyable {
 
   void PreRead(shared_ptr<T> p) {
 
-    const std::string hostname = colony::CSScheduler::GetCS();
+    std::string key(boost::lexical_cast<std::string>(p->cuid_) + p->uid_);
+
+    shared_ptr<C> cs_info(new C(key));
+    DHT::Instance().get_pair(cs_info);
+
+    const std::string hostname = cs_info->get_mapped();
 
     Client::Instance().retrieve_chunk(hostname, p);
 
@@ -72,9 +77,10 @@ struct DataOnFlush : boost::noncopyable {
 
     std::string key(boost::lexical_cast<std::string>(p->cuid_) + p->uid_);
 
-    shared_ptr<C> tmp(new C(key));
-    shared_ptr<C> chunk_info = cache_[tmp->get_key()];
+    shared_ptr<C> chunk_info = cache_[key];
     chunk_info->set_mapped(hostname);
+
+    DHT::Instance().set_pair(chunk_info);
   }
 
   void OnDone() {

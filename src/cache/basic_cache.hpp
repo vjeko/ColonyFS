@@ -113,6 +113,11 @@ public:
   }
 
 
+  void clear() {
+    whole_.clear();
+    dirty_.clear();
+  }
+
 
 
   whole_type whole_;

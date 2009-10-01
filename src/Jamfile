@@ -86,6 +86,7 @@ lib uledfs :
   boost_filesystem
   boost_serialization
   boost_program_options
+  tbb_debug
   ;
 
 exe chunkserver :

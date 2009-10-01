@@ -6,7 +6,9 @@
  */
 
 #include "user_harmony.hpp"
+
 #include "../accessor.hpp"
+#include "../synchronization.hpp"
 
 
 #include "../xmlrpc/values.hpp"
@@ -33,6 +35,8 @@ user_harmony::~user_harmony() { }
 void user_harmony::retrieve_chunk(
     std::string hostname,
     boost::shared_ptr<colony::storage::chunk_data> data_ptr) {
+
+  Sync::Lock(data_ptr->get_key());
 
   request_read(hostname, data_ptr);
 }
@@ -93,7 +97,7 @@ void user_harmony::receive_data(
   rLog(user_harmony_control_, "receiving chunk data... ");
 
   connection_ptr->async_read(*chunk_ptr,
-      boost::bind(&user_harmony::end,
+      boost::bind(&user_harmony::end_retrieve,
           this,
           boost::asio::placeholders::error,
           chunk_ptr,
@@ -107,6 +111,8 @@ void user_harmony::receive_data(
 void user_harmony::deposit_chunk(
     std::string hostname,
     boost::shared_ptr<colony::storage::chunk_data const> data_ptr) {
+
+  Sync::Lock(data_ptr->get_key());
 
   get_metadata(hostname, data_ptr);
 
@@ -147,7 +153,7 @@ void user_harmony::send_data(
   rLog(user_harmony_control_, "depositing chunk");
 
   connection_ptr->async_write(*chunk_ptr,
-      boost::bind(&user_harmony::end,
+      boost::bind(&user_harmony::end_deposit,
           this,
           boost::asio::placeholders::error,
           chunk_ptr,
@@ -156,21 +162,28 @@ void user_harmony::send_data(
 
 }
 
-void user_harmony::end(
+
+void user_harmony::end_deposit(
     const boost::system::error_code& e,
     const boost::shared_ptr<colony::storage::chunk_data const> data_ptr,
     connection_ptr_t connection_ptr) {
 
-  rLog(user_harmony_control_, "... done");
+  Sync::Unlock(data_ptr->get_key());
+
+  rLog(user_harmony_control_, "... done (Size: %lu)" , data_ptr->data_ptr_->size());
   Timer::Print();
 
 }
 
-void user_harmony::end(
+void user_harmony::end_retrieve(
     const boost::system::error_code& e,
+    const boost::shared_ptr<colony::storage::chunk_data const> data_ptr,
     connection_ptr_t connection_ptr) {
 
-  rLog(user_harmony_control_, "... done");
+  rLog(user_harmony_control_, "... done (Size: %lu)", data_ptr->data_ptr_->size());
+
+	Sync::Unlock(data_ptr->get_key());
+
   Timer::Print();
 
 }

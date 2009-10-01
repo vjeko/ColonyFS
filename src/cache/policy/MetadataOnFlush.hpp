@@ -55,7 +55,11 @@ struct MetadataOnFlush : boost::noncopyable {
 
 
 
-  void OnFlush(shared_ptr<T> p) {}
+  void OnFlush(shared_ptr<T> p) {
+
+	  DHT::Instance().set_pair(p);
+
+  }
 
   void OnDone() {}
 };

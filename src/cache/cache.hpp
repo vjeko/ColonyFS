@@ -60,6 +60,7 @@ public:
       cache_impl_.read(value);
     } catch(colony::cache_miss_e& e) {
       policy_.PreRead(value);
+      cache_impl_.insert(value);
     }
 
     return boost::shared_ptr<value_type>(value);
@@ -104,6 +105,9 @@ public:
   }
 
 
+  void clear() {
+    cache_impl_.clear();
+  }
 
 
   void flush() {
@@ -122,6 +126,7 @@ public:
     }
 
     cache_impl_.dirty_.clear();
+
     policy_.OnDone();
 
   }

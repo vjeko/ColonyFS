@@ -18,6 +18,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 #include <iostream>
 #include <sstream>
 
@@ -74,7 +75,10 @@ public:
   virtual ~harmony();
 
   bool put(const std::string&, const std::string&);
+
   std::string get(const std::string&);
+
+  std::vector<unsigned char> getv(const std::string);
 
   /*
    * Get value.
@@ -146,6 +150,11 @@ private:
   std::map<std::string, xmlrpc_c::value> generate_op(
       const std::string& key,
       const std::string& value);
+
+
+  std::map<std::string, xmlrpc_c::value> generate_op(
+      const std::string& key,
+      const std::vector<unsigned char>& value);
 
   void validate();
 

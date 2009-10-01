@@ -6,6 +6,7 @@
  */
 
 #include "file.hpp"
+#include "../exceptions.hpp"
 
 namespace colony { namespace storage {
 
@@ -40,7 +41,7 @@ const file::cuid_map_type::mapped_type file::operator()(
     chunk_iterator = cuid_map_.find(cuid);
 
   if (chunk_iterator == cuid_map_.end())
-    throw std::runtime_error("trying to index nonexistent chunk");
+    throw colony::inexistent_file_e();
 
   return chunk_iterator->second;
 }

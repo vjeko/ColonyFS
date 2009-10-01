@@ -9,6 +9,7 @@
 #define AGGREGATOR_HPP_
 
 #include "../debug.hpp"
+#include "../synchronization.hpp"
 
 #include "../xmlrpc/values.hpp"
 #include "../xmlrpc/attribute.hpp"
@@ -80,6 +81,10 @@ public:
     cache_.erase(key);
   }
 
+  inline void clear() {
+    cache_.clear();
+  }
+
   inline void flush() {
     cache_.flush();
   }
@@ -118,16 +123,6 @@ public:
     return implementation_[key];
   }
 
-  template<typename Handler>
-  int read(const key_type key, Handler) {
-
-
-
-
-
-
-  }
-
   shared_ptr<T> operator()(const key_type key) {
     return implementation_(key);
   }
@@ -138,6 +133,10 @@ public:
 
   inline void erase(const key_type& key) {
     implementation_.erase(key);
+  }
+
+  inline void clear() {
+    implementation_.clear();
   }
 
   inline void flush() {
@@ -295,6 +294,9 @@ public:
     cache_.flush();
   }
 
+  void clear() {
+    cache_.clear();
+  }
 
 
 
@@ -381,10 +383,14 @@ private:
       size_t chunk_delta
       ) {
 
+    Sync::Lock(source->get_key());
+
     BOOST_ASSERT(source->data_ptr_->size() >= chunk_delta);
 
     colony::storage::chunk_data::data_type& chunk_buffer = *(source->data_ptr_);
     memcpy(destination + destination_offset, &chunk_buffer[source_offset], chunk_delta);
+
+    Sync::Unlock(source->get_key());
 
   }
 

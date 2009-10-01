@@ -19,7 +19,7 @@ struct basic_metadata {
 
   typedef std::string                                      uid_type;
   typedef int                                              cuid_type;
-  typedef boost::tuple<const uid_type, const cuid_type>    key_type;
+  typedef boost::tuple<const uid_type, const cuid_type>                key_type;
 
   basic_metadata(uid_type uid, cuid_type cuid) :
     uid_(uid), cuid_(cuid) {}
@@ -40,6 +40,10 @@ struct basic_metadata {
   void set_key(key_type key) {
     uid_ = key.get<0>();
     cuid_ = key.get<1>();
+  }
+
+  key_type get_key() const {
+    return boost::make_tuple(uid_, cuid_);;
   }
 
 

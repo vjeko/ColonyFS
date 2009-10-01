@@ -40,26 +40,7 @@ public:
       std::string hostname,
       boost::shared_ptr<colony::storage::chunk_data const>);
 
-  /*
-   * Retrieve a random value from a container.
-   *
-   * Requires: Forward Iterator.
-   */
-  template<typename T>
-  typename T::value_type random_value(T& container) {
 
-    // Initialize the random number generator.
-    boost::uniform_int<> range(0, container.size() - 1);
-    boost::variate_generator<rng_type&, boost::uniform_int<> > generator(rng_, range);
-
-    // Generate secret number.
-    const size_t index   = generator();
-
-    typename T::const_iterator it = container.begin();
-
-    for (size_t i = 0; i < index; i++) {  ++it; }
-    return (*it);
-  }
 
 private:
 
@@ -118,11 +99,12 @@ private:
       connection_ptr_t,
       boost::shared_ptr<colony::storage::chunk_data const>);
 
-  void end(
+  void end_deposit(
       const boost::system::error_code& e,
-      connection_ptr_t);
+      const boost::shared_ptr<colony::storage::chunk_data const> data_ptr,
+      connection_ptr_t connection_ptr);
 
-  void end(
+  void end_retrieve(
       const boost::system::error_code& e,
       const boost::shared_ptr<colony::storage::chunk_data const> data_ptr,
       connection_ptr_t connection_ptr);
@@ -130,7 +112,6 @@ private:
   std::string                         swarm_;
   rlog::RLogChannel                  *user_harmony_control_;
 
-  rng_type                                  rng_;
   xmlrpc::chunkserver_value::value_type     chunkservers_;
 };
 

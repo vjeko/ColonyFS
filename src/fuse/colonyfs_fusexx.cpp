@@ -11,10 +11,12 @@
 
 #include <boost/foreach.hpp>
 
-  tbb::task *root_task;
 
 
+tbb::task *root_task;
 counter_type g_flush_counter;
+
+
 
 colonyfs_fusexx::colonyfs_fusexx() {
 
@@ -49,7 +51,7 @@ colonyfs_fusexx::colonyfs_fusexx() {
     // Time of last modification?
     clock_gettime(CLOCK_REALTIME, &attribute.stbuf.st_mtim);
 
-    DHT::Instance().set_pair(pair);
+    //DHT::Instance().set_pair(pair);
 
     rLog(fuse_control_, "... initialization complete");
 
@@ -203,7 +205,7 @@ int colonyfs_fusexx::fgetattr (
 
 int colonyfs_fusexx::flush(const char* filepath, struct fuse_file_info * fi) {
 
-  rLog(fuse_control_, "flush: %s", filepath);
+  rLog(fuse_control_, "flush: %s (Flags: %d)", filepath, fi->flags);
 
 
 
@@ -227,6 +229,7 @@ int colonyfs_fusexx::flush(const char* filepath, struct fuse_file_info * fi) {
 
 
   data_sink_.flush();
+  data_sink_.clear();
 
   return 0;
 }
@@ -255,8 +258,7 @@ int colonyfs_fusexx::getattr(const char *filepath, struct stat *stat) {
 
     // Double check that the returned attribute is valid.
     BOOST_ASSERT(
-        (attribute.stbuf.st_nlink != 0) ||
-        S_ISLNK(attribute.stbuf.st_mode)
+        (attribute.stbuf.st_nlink != 0)
         );
 
 
