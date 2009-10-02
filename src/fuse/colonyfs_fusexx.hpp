@@ -1,5 +1,6 @@
 // hello.hpp
 #include "fusexx.hpp"
+#include "../synchronization.hpp"
 #include "../api/aggregator.hpp"
 #include "../xmlrpc/attribute.hpp"
 #include "../xmlrpc/values.hpp"
@@ -31,7 +32,8 @@ class dht_task : public tbb::task {
 public:
 
 
-  dht_task(counter_type& counter, metadata_sink_t& sink) :
+  dht_task(std::string filename, counter_type& counter, metadata_sink_t& sink) :
+    filename_(filename),
     counter_(counter),
     sink_(sink) {}
 
@@ -43,6 +45,8 @@ public:
 
     counter_.fetch_and_increment();
 
+    Sync::FM()[filename_].unlock();
+
     return NULL;
   }
 
@@ -50,6 +54,7 @@ public:
 
 
 
+  std::string       filename_;
   counter_type&     counter_;
   metadata_sink_t&  sink_;
 

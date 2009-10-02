@@ -205,6 +205,9 @@ int colonyfs_fusexx::fgetattr (
 
 int colonyfs_fusexx::flush(const char* filepath, struct fuse_file_info * fi) {
 
+  Sync::FM()[filepath].lock();
+
+
   rLog(fuse_control_, "flush: %s (Flags: %d)", filepath, fi->flags);
 
 
@@ -219,10 +222,10 @@ int colonyfs_fusexx::flush(const char* filepath, struct fuse_file_info * fi) {
 
   g_flush_counter.fetch_and_decrement();
 
-  root_task->increment_ref_count();
+  //root_task->increment_ref_count();
 
   tbb::task *sync_task =
-      new(root_task->allocate_child()) dht_task(g_flush_counter, metadata_sink_);
+      new(root_task->allocate_child()) dht_task(filepath, g_flush_counter, metadata_sink_);
 
   root_task->spawn(*sync_task);
 
@@ -255,6 +258,7 @@ int colonyfs_fusexx::getattr(const char *filepath, struct stat *stat) {
     shared_ptr<attribute_value> pair = metadata_sink_( full.string() );
     const fattribute& attribute = pair->get_mapped();
 
+    rLog(fuse_control_, "getattr: (+) %s", full.string().c_str());
 
     // Double check that the returned attribute is valid.
     BOOST_ASSERT(
@@ -264,8 +268,6 @@ int colonyfs_fusexx::getattr(const char *filepath, struct stat *stat) {
 
     memset(stat, 0, sizeof(struct stat));
     memcpy(stat, &attribute.stbuf, sizeof(struct stat));
-
-    rLog(fuse_control_, "getattr: (+) %s", full.string().c_str());
 
     return 0;
 

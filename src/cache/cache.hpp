@@ -67,8 +67,14 @@ public:
 
     } catch(colony::cache_miss_e& e) {
 
-      cache_impl_.insert(value);
+      // Read and then insert. Not the other way around.
       policy_.PreRead(value);
+
+      Sync::Lock(value->get_key());
+
+      cache_impl_.insert(value);
+
+      Sync::Unlock(value->get_key());
 
     }
 
