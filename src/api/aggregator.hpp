@@ -77,8 +77,8 @@ public:
     return cache_(key);
   }
 
-  inline void erase(const key_type& key) {
-    cache_.erase(key);
+  inline void purge(const key_type& key) {
+    cache_.purge(key);
   }
 
   inline void purge() {
@@ -134,8 +134,8 @@ public:
     implementation_.commit(pair);
   }
 
-  inline void erase(const key_type& key) {
-    implementation_.erase(key);
+  inline void purge(const key_type& key) {
+    implementation_.purge(key);
   }
 
   inline void purge() {
@@ -296,11 +296,26 @@ public:
   }
 
 
+  void purge(std::string filename) {
+    BOOST_FOREACH(int i, index_map_[filename]) {
+      storage::chunk_data::key_type key = boost::make_tuple(filename, i);
+      cache_.purge(key);
+    }
+  }
+
+
+  void invalidate(std::string filename) {
+    BOOST_FOREACH(int i, index_map_[filename]) {
+      storage::chunk_data::key_type key = boost::make_tuple(filename, i);
+      cache_.invalidate(key);
+    }
+  }
 
 
   void invalidate() {
     cache_.invalidate();
   }
+
 
   void purge() {
     cache_.purge();
@@ -413,7 +428,10 @@ private:
 
     colony::storage::basic_metadata::key_type key(filepath.string(), count);
 
-    return cache_[key];
+    shared_ptr<colony::storage::chunk_data> result = cache_[key];
+    index_map_[result->uid_].insert(result->cuid_);
+
+    return result;
 
   }
 
@@ -426,15 +444,13 @@ private:
 
     colony::storage::basic_metadata::key_type key(filepath.string(), count);
 
-    const shared_ptr<colony::storage::chunk_data> result = cache_(key);
-
-    return result;
+    return cache_(key);;
 
   }
 
 
 
-
+  boost::unordered_map<std::string, std::set<int> >                     index_map_;
   cache<
     value_type,
     DataOnFlush<value_type>

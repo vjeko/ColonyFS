@@ -107,7 +107,7 @@ public:
 
 
 
-  void erase(const key_type key) {
+  void purge(const key_type key) {
 
     using namespace boost::phoenix;
     using namespace boost::phoenix::arg_names;

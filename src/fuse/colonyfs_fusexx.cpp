@@ -551,7 +551,7 @@ int colonyfs_fusexx::rename(const char* oldpath, const char* newpath) {
   newfull_pair->get_mapped() = oldfull_pair->get_mapped();
 
 
-  metadata_sink_.erase( oldfull.string() );
+  metadata_sink_.purge( oldfull.string() );
 
   // FIXME: Implement data rename.
   data_sink_.rename(oldfull, newfull, newfull_pair->get_mapped().stbuf.st_size);
@@ -575,7 +575,7 @@ int colonyfs_fusexx::rmdir(const char* filepath) {
 
 
   // Remove metadata for the given file.
-  metadata_sink_.erase(full.string().c_str());
+  metadata_sink_.purge(full.string().c_str());
 
   try {
 
@@ -715,7 +715,7 @@ int colonyfs_fusexx::unlink(const char* filepath) {
 
 
   // Delete attribute.
-  metadata_sink_.erase(full.string());
+  metadata_sink_.purge(full.string());
 
   // Delete the binary data.
   data_sink_.erase(full.string(), attribute.stbuf.st_size);
