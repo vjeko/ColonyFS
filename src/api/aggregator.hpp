@@ -89,6 +89,9 @@ public:
     cache_.flush();
   }
 
+  inline void flush(const key_type key) {
+    cache_.flush(key);
+  }
 
 
 
@@ -141,6 +144,11 @@ public:
 
   inline void flush() {
     implementation_.flush();
+  }
+
+
+  inline void flush(const key_type key) {
+    implementation_.flush(key);
   }
 
 

@@ -58,7 +58,7 @@ bool harmony::put(const std::string& key, const std::string& value) {
   try {
     client_.call(url, METHOD_CALL, param_list, &result);
   } catch (girerr::error& e) {
-    sleep(0.2);
+    sleep(1);
 
     goto RetryPut;
   }

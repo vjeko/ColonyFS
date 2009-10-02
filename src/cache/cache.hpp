@@ -125,6 +125,22 @@ public:
   }
 
 
+
+  void flush(const key_type key) {
+
+    using namespace boost::phoenix;
+    using namespace boost::phoenix::arg_names;
+
+    boost::shared_ptr<T> value =
+        ValueFactory<T>::NewPointer(key, bind(&Policy::OnRead, policy_, arg1));
+
+    cache_impl_.read(value);
+    policy_.OnFlush(value);
+    cache_impl_.dirty_.erase(key);
+  }
+
+
+
   void flush() {
 
     // FIXME: Concurrency issues!

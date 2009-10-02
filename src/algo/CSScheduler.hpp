@@ -42,6 +42,16 @@ public:
     GetCSL().push_back("mallory");
   }
 
+  static const int GetRandom(int start, int end) {
+
+    static boost::mt19937 rng;
+    static boost::uniform_int<> size(start, end);
+    static boost::variate_generator<boost::mt19937&, boost::uniform_int<> > var_rng(rng, size);
+
+    return var_rng();
+
+  }
+
   static const std::string GetCS() {
 
     static boost::mt19937 rng;

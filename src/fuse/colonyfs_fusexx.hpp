@@ -32,16 +32,19 @@ class dht_task : public tbb::task {
 public:
 
 
-  dht_task(std::string filename, counter_type& counter, metadata_sink_t& sink) :
+  dht_task(
+      std::string filename,
+      counter_type& counter,
+      metadata_sink_t& sink,
+      data_sink_t& data_sink) :
     filename_(filename),
     counter_(counter),
-    sink_(sink) {}
+    sink_(sink),
+    data_sink_(data_sink){}
 
   tbb::task* execute() {
 
-    sink_.flush();
-
-
+    sink_.flush(filename_);
 
     counter_.fetch_and_increment();
 
@@ -57,6 +60,7 @@ public:
   std::string       filename_;
   counter_type&     counter_;
   metadata_sink_t&  sink_;
+  data_sink_t&      data_sink_;
 
 };
 
