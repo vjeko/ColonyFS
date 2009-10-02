@@ -44,7 +44,7 @@ public:
 
   tbb::task* execute() {
 
-    sink_.flush(filename_);
+    sink_.invalidate(filename_);
 
     counter_.fetch_and_increment();
 

@@ -85,7 +85,7 @@ struct DataOnFlush : boost::noncopyable {
   }
 
   void OnDone() {
-    cache_.flush();
+    cache_.invalidate();
   }
 
 

@@ -81,16 +81,16 @@ public:
     cache_.erase(key);
   }
 
-  inline void clear() {
-    cache_.clear();
+  inline void purge() {
+    cache_.purge();
   }
 
-  inline void flush() {
-    cache_.flush();
+  inline void invalidate() {
+    cache_.invalidate();
   }
 
-  inline void flush(const key_type key) {
-    cache_.flush(key);
+  inline void invalidate(const key_type key) {
+    cache_.invalidate(key);
   }
 
 
@@ -138,17 +138,17 @@ public:
     implementation_.erase(key);
   }
 
-  inline void clear() {
-    implementation_.clear();
+  inline void purge() {
+    implementation_.purge();
   }
 
-  inline void flush() {
-    implementation_.flush();
+  inline void invalidate() {
+    implementation_.invalidate();
   }
 
 
-  inline void flush(const key_type key) {
-    implementation_.flush(key);
+  inline void invalidate(const key_type key) {
+    implementation_.invalidate(key);
   }
 
 
@@ -298,12 +298,12 @@ public:
 
 
 
-  void flush() {
-    cache_.flush();
+  void invalidate() {
+    cache_.invalidate();
   }
 
-  void clear() {
-    cache_.clear();
+  void purge() {
+    cache_.purge();
   }
 
 

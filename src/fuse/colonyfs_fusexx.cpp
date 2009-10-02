@@ -232,8 +232,8 @@ int colonyfs_fusexx::flush(const char* filepath, struct fuse_file_info * fi) {
 
 
 
-  data_sink_.flush();
-  data_sink_.clear();
+  data_sink_.invalidate();
+  data_sink_.purge();
 
   return 0;
 }
@@ -492,8 +492,8 @@ int colonyfs_fusexx::release(const char* filepath, struct fuse_file_info* fi) {
   // TODO: Implement this.
   rLog(fuse_control_, "release: %s (%d)", filepath, fi->flags);
 
-  data_sink_.flush();
-  metadata_sink_.flush();
+  data_sink_.invalidate();
+  metadata_sink_.invalidate();
 
   return 0;
 }

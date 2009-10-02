@@ -120,13 +120,13 @@ public:
   }
 
 
-  void clear() {
+  void purge() {
     cache_impl_.clear();
   }
 
 
 
-  void flush(const key_type key) {
+  void invalidate(const key_type key) {
 
     using namespace boost::phoenix;
     using namespace boost::phoenix::arg_names;
@@ -141,7 +141,7 @@ public:
 
 
 
-  void flush() {
+  void invalidate() {
 
     // FIXME: Concurrency issues!
 
