@@ -134,9 +134,11 @@ public:
     boost::shared_ptr<T> value =
         ValueFactory<T>::NewPointer(key, bind(&Policy::OnRead, policy_, arg1));
 
-    cache_impl_.read(value);
-    policy_.OnFlush(value);
-    cache_impl_.dirty_.erase(key);
+    try {
+      cache_impl_.read_dirty(value);
+      policy_.OnFlush(value);
+      cache_impl_.dirty_.erase(key);
+    } catch(colony::cache_miss_e& e) {}
   }
 
 

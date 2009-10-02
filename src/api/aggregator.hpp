@@ -408,9 +408,6 @@ private:
 
     Sync::Lock(source->get_key());
 
-    std::cout << "Delta Size: " << chunk_delta << std::endl;
-    std::cout << "Chunk Size: " << source->data_ptr_->size() << std::endl;
-
     BOOST_ASSERT(source->data_ptr_->size() >= chunk_delta);
 
     colony::storage::chunk_data::data_type& chunk_buffer = *(source->data_ptr_);

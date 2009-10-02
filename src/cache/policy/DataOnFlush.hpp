@@ -78,9 +78,8 @@ struct DataOnFlush : boost::noncopyable {
 
     std::string key(boost::lexical_cast<std::string>(p->cuid_) + p->uid_);
 
-    shared_ptr<C> chunk_info = cache_[key];
+    shared_ptr<C> chunk_info = ValueFactory<C>::NewPointer(key);
     chunk_info->set_mapped(hostname);
-
     DHT::Instance().set_pair(chunk_info);
   }
 

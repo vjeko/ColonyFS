@@ -70,6 +70,26 @@ public:
 
 
 
+  void read_dirty(shared_ptr<T>& value) {
+
+    const key_type key = value->get_key();
+
+    typename dirty_type::iterator it = dirty_.find(key);
+
+    if (it == dirty_.end()) {
+
+      rWarning("Value not in the cache!");
+      throw colony::cache_miss_e();
+
+    } else {
+
+      read(value);
+
+    }
+
+  }
+
+
 
   void read(shared_ptr<T>& value) {
 

@@ -7,6 +7,7 @@
 
 #include "harmony.hpp"
 #include "../debug.hpp"
+#include "../algo/CSScheduler.hpp"
 
 #include <iostream>
 #include <vector>
@@ -58,7 +59,7 @@ bool harmony::put(const std::string& key, const std::string& value) {
   try {
     client_.call(url, METHOD_CALL, param_list, &result);
   } catch (girerr::error& e) {
-    sleep(1);
+    sleep(CSScheduler::GetRandom(0,20)/10);
 
     goto RetryPut;
   }
@@ -122,7 +123,7 @@ std::vector<unsigned char> harmony::getv(const std::string key) {
   try {
     client_.call(url, METHOD_CALL, param_list, &result);
   } catch (girerr::error& e) {
-    sleep(0.2);
+    sleep(CSScheduler::GetRandom(0,20)/10);
 
     goto RetryPut;
   }
