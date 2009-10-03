@@ -44,13 +44,13 @@ public:
 	 */
 	virtual void check() = 0;
 
-	virtual const boost::program_options::options_description get_program_options();
+	virtual boost::program_options::options_description get_program_options();
 
 	/* Getters. */
-	virtual const name_t get_name();
-	virtual const quota_t get_quota();
-	virtual const std::string get_dht_url();
-	virtual const std::string get_swarm();
+	virtual name_t get_name();
+	virtual quota_t get_quota();
+	virtual std::string get_dht_url();
+	virtual std::string get_swarm();
 
 protected:
 

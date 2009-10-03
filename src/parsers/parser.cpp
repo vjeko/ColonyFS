@@ -63,10 +63,10 @@ void parser::check() {
 
 parser::~parser() {}
 
-const boost::program_options::options_description parser::get_program_options() { return config_; }
-const parser::name_t parser::get_name() { return name_; }
-const parser::quota_t parser::get_quota() {return quota_; }
-const std::string  parser::get_dht_url() { return dht_url_; }
-const std::string  parser::get_swarm() { return swarm_; }
+boost::program_options::options_description parser::get_program_options() { return config_; }
+parser::name_t parser::get_name() { return name_; }
+parser::quota_t parser::get_quota() {return quota_; }
+std::string  parser::get_dht_url() { return dht_url_; }
+std::string  parser::get_swarm() { return swarm_; }
 
 } }
