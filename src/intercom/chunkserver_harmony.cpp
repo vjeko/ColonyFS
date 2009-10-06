@@ -115,7 +115,7 @@ void chunkserver_harmony::display_data(
 
     colony::storage::deposit_chunk(chunk_ptr, database_);
 
-    rLog(com_chunkserver_harmony_control_, "done: (%s)(%d)(%lu)",
+    rLog(com_chunkserver_harmony_control_, "done: (%s)(%d)(%zu)",
         chunk_ptr->uid_.c_str(), chunk_ptr->cuid_, chunk_ptr->data_ptr_->size());
 
   } else {
@@ -156,7 +156,7 @@ void chunkserver_harmony::send_data(
       return;
     }
 
-    rLog(com_chunkserver_harmony_control_, "sending data: (%s)(%d)(%lu)",
+    rLog(com_chunkserver_harmony_control_, "sending data: (%s)(%d)(%zu)",
         chunk_ptr->uid_.c_str(), chunk_ptr->cuid_, chunk_ptr->data_ptr_->size());
 
     conn->async_write(*chunk_ptr,

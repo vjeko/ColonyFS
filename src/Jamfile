@@ -43,8 +43,8 @@ project colony
     <define>_FILE_OFFSET_BITS=64
 
     # Email boost mailing list abount this.
-    # <hardcode-dll-paths>true
-    <dll-path>/homes/gws/balkan/lib
+    #<hardcode-dll-paths>true
+    #<dll-path>/homes/gws/balkan/x64/lib
 
   # Build Type.
   : default-build debug

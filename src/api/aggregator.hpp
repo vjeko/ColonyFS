@@ -348,10 +348,10 @@ private:
     const size_t chunk_index_start = offset / CHUNK_SIZE;
     const size_t chunk_index_end = (size + offset) / CHUNK_SIZE;
 
-    rLog(sink_log_, "Buffer Offset: %lu", offset);
-    rLog(sink_log_, "Buffer Size: %lu", size);
-    rLog(sink_log_, "Chunk Index Start: %lu", chunk_index_start);
-    rLog(sink_log_, "Chunk Index End: %lu", chunk_index_end);
+    rLog(sink_log_, "Buffer Offset: %zu", offset);
+    rLog(sink_log_, "Buffer Size: %zu", size);
+    rLog(sink_log_, "Chunk Index Start: %zu", chunk_index_start);
+    rLog(sink_log_, "Chunk Index End: %zu", chunk_index_end);
 
     for (size_t count = chunk_index_start; count <= chunk_index_end; count++) {
 
@@ -360,10 +360,10 @@ private:
       const size_t chunk_end = ((buffer_start + remaining_size) > CHUNK_SIZE) ? CHUNK_SIZE : chunk_start + remaining_size;
       const size_t chunk_delta = chunk_end - chunk_start;
 
-      rLog(sink_log_, "Chunk Start: %lu", chunk_start);
-      rLog(sink_log_, "Chunk End: %lu", chunk_end);
-      rLog(sink_log_, "Remaining Size: %lu", remaining_size);
-      rLog(sink_log_, "Chunk Delta: %lu", chunk_delta);
+      rLog(sink_log_, "Chunk Start: %zu", chunk_start);
+      rLog(sink_log_, "Chunk End: %zu", chunk_end);
+      rLog(sink_log_, "Remaining Size: %zu", remaining_size);
+      rLog(sink_log_, "Chunk Delta: %zu", chunk_delta);
 
       shared_ptr<chunk_data> chunk = key_policy(filepath, count);
 
