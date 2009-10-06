@@ -44,7 +44,8 @@ project colony
 
     # Email boost mailing list abount this.
     #<hardcode-dll-paths>true
-    #<dll-path>/homes/gws/balkan/x64/lib
+    <dll-path>/homes/gws/balkan/x64/lib
+    <dll-path>/homes/gws/balkan/i686/lib
 
   # Build Type.
   : default-build debug

@@ -170,7 +170,7 @@ void user_harmony::end_deposit(
 
   Sync::Unlock(data_ptr->get_key());
 
-  rLog(user_harmony_control_, "... done (Size: %lu)" , data_ptr->data_ptr_->size());
+  rLog(user_harmony_control_, "... done (Size: %zu)" , data_ptr->data_ptr_->size());
   Timer::Print();
 
 }
@@ -180,7 +180,7 @@ void user_harmony::end_retrieve(
     const boost::shared_ptr<colony::storage::chunk_data const> data_ptr,
     connection_ptr_t connection_ptr) {
 
-  rLog(user_harmony_control_, "... done (Size: %lu)", data_ptr->data_ptr_->size());
+  rLog(user_harmony_control_, "... done (Size: %zu)", data_ptr->data_ptr_->size());
 
 	Sync::Unlock(data_ptr->get_key());
 
