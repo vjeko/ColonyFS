@@ -32,13 +32,10 @@ struct MetadataOnFlush : boost::noncopyable {
 
     } catch (colony::xmlrpc::key_missing_error& e) {
 
-      Sync::Unlock(value->get_key());
-
       rError("Value not in the DHT!");
       throw colony::lookup_e();
-    }
 
-    Sync::Unlock(value->get_key());
+    }
 
   }
 

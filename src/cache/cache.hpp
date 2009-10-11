@@ -16,10 +16,14 @@
 #include "../accessor.hpp"
 #include "../synchronization.hpp"
 
-#include <boost/shared_ptr.hpp>
-#include <boost/asio/io_service.hpp>
+#include <map>
 
+#include <boost/shared_ptr.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
+#include <boost/asio/io_service.hpp>
 #include <boost/spirit/include/phoenix.hpp>
+
+#include <tbb/spin_mutex.h>
 
 
 namespace colony {
@@ -40,6 +44,8 @@ public:
 
   typedef colony::basic_cache<T>                cache_impl;
 
+  typedef tbb::spin_mutex                       mutex_type;
+
 
 
 
@@ -54,27 +60,25 @@ public:
     using namespace boost::phoenix;
     using namespace boost::phoenix::arg_names;
 
+    mutex_type& mutex = mutex_map_[key];
+    mutex_type::scoped_lock lock( mutex );
+
     boost::shared_ptr<T> value =
         ValueFactory<T>::NewPointer(key, bind(&Policy::OnRead, policy_, arg1));
 
     try {
 
-      Sync::Lock(value->get_key());
-
       cache_impl_.read(value);
 
-      Sync::Unlock(value->get_key());
-
-    } catch(colony::cache_miss_e& e) {
+    } catch (colony::cache_miss_e& e) {
 
       // Read and then insert. Not the other way around.
       policy_.PreRead(value);
 
-      Sync::Lock(value->get_key());
+      Sync::mutex_type& mutex = Sync::MM()[value->get_key()];
+      Sync::mutex_type::scoped_lock lock(mutex);
 
       cache_impl_.insert(value);
-
-      Sync::Unlock(value->get_key());
 
     }
 
@@ -89,6 +93,9 @@ public:
 
     using namespace boost::phoenix;
     using namespace boost::phoenix::arg_names;
+
+    mutex_type& mutex = mutex_map_[key];
+    mutex_type::scoped_lock lock( mutex );
 
     boost::shared_ptr<T> value =
         ValueFactory<T>::NewPointer(key, bind(&Policy::OnWrite, policy_, arg1));
@@ -166,9 +173,9 @@ public:
 
 
 
-
-  Policy                       policy_;
-  colony::basic_cache<T>       cache_impl_;
+  std::map<key_type, mutex_type>       mutex_map_;
+  Policy                               policy_;
+  colony::basic_cache<T>               cache_impl_;
 
 };
 

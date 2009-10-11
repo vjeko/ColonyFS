@@ -222,8 +222,6 @@ int colonyfs_fusexx::flush(const char* filepath, struct fuse_file_info * fi) {
 
   g_flush_counter.fetch_and_decrement();
 
-  //root_task->increment_ref_count();
-
   tbb::task *sync_task =
       new(root_task->allocate_child())
       dht_task(filepath, g_flush_counter, metadata_sink_, data_sink_);
