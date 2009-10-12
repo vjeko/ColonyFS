@@ -56,6 +56,10 @@ public:
     ar & data_ptr_;
   }
 
+  data_type& get_data() {
+    return *data_ptr_;
+  }
+
   boost::scoped_ptr<data_type>    data_ptr_;
 };
 

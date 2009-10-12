@@ -50,8 +50,6 @@ public:
 
     counter_.fetch_and_increment();
 
-    Sync::FM()[filename_].unlock();
-
     return NULL;
   }
 

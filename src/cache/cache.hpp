@@ -75,8 +75,7 @@ public:
       // Read and then insert. Not the other way around.
       policy_.PreRead(value);
 
-      Sync::mutex_type& mutex = Sync::MM()[value->get_key()];
-      Sync::mutex_type::scoped_lock lock(mutex);
+      CV::Instance(value).lock();
 
       cache_impl_.insert(value);
 

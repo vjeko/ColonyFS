@@ -406,14 +406,11 @@ private:
       size_t chunk_delta
       ) {
 
-    Sync::Lock(source->get_key());
-
     BOOST_ASSERT(source->data_ptr_->size() >= chunk_delta);
 
     colony::storage::chunk_data::data_type& chunk_buffer = *(source->data_ptr_);
     memcpy(destination + destination_offset, &chunk_buffer[source_offset], chunk_delta);
 
-    Sync::Unlock(source->get_key());
   }
 
 

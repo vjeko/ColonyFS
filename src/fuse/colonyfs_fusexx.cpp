@@ -205,16 +205,12 @@ int colonyfs_fusexx::fgetattr (
 
 int colonyfs_fusexx::flush(const char* filepath, struct fuse_file_info * fi) {
 
-  Sync::FM()[filepath].lock();
-
 
   rLog(fuse_control_, "flush: %s (Flags: %d)", filepath, fi->flags);
 
 
-
   root_task = new(tbb::task::allocate_root()) tbb::empty_task;
   root_task->set_ref_count(1);
-
 
 
   // Busy wait.
